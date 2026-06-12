@@ -113,4 +113,55 @@ router.delete('/:id', (req, res) => {
     });
 });
 
+// Rutas para gestionar Tipos de Documento
+router.get('/tipos/lista', (req, res) => {
+    const db = req.app.get('db');
+    db.query("SELECT * FROM tipos_documento ORDER BY id ASC", (err, results) => {
+        if (err) return res.status(500).json({ error: "Error al obtener tipos de documento", detalle: err.message });
+        res.json(results);
+    });
+});
+
+router.post('/tipos', (req, res) => {
+    const db = req.app.get('db');
+    const { nombre } = req.body;
+    if (!nombre) return res.status(400).json({ error: "El nombre del tipo es requerido" });
+
+    db.query("INSERT INTO tipos_documento (nombre) VALUES (?)", [nombre], (err, result) => {
+        if (err) {
+            if (err.code === 'ER_DUP_ENTRY') {
+                return res.status(400).json({ error: "El tipo de documento ya existe" });
+            }
+            return res.status(500).json({ error: "Error al crear tipo de documento", detalle: err.message });
+        }
+        res.json({ mensaje: "Tipo de documento creado con éxito", id: result.insertId });
+    });
+});
+
+router.put('/tipos/:id', (req, res) => {
+    const db = req.app.get('db');
+    const id = req.params.id;
+    const { nombre } = req.body;
+    if (!nombre) return res.status(400).json({ error: "El nombre del tipo es requerido" });
+
+    db.query("UPDATE tipos_documento SET nombre = ? WHERE id = ?", [nombre, id], (err, result) => {
+        if (err) {
+            if (err.code === 'ER_DUP_ENTRY') {
+                return res.status(400).json({ error: "El tipo de documento ya existe" });
+            }
+            return res.status(500).json({ error: "Error al actualizar tipo de documento", detalle: err.message });
+        }
+        res.json({ mensaje: "Tipo de documento actualizado con éxito" });
+    });
+});
+
+router.delete('/tipos/:id', (req, res) => {
+    const db = req.app.get('db');
+    const id = req.params.id;
+    db.query("DELETE FROM tipos_documento WHERE id = ?", [id], (err, result) => {
+        if (err) return res.status(500).json({ error: "Error al eliminar tipo de documento", detalle: err.message });
+        res.json({ mensaje: "Tipo de documento eliminado con éxito" });
+    });
+});
+
 module.exports = router;

@@ -57,14 +57,14 @@
           </div>
           
           <div class="mb-6">
-            <h3 class="text-xl font-bold text-slate-900 mb-3">{{ ticket.tema || ticket.tipo }}</h3>
+            <h3 class="text-xl font-bold text-slate-900 mb-3">{{ ticket.tema || ticket.Categoria || ticket.tipo }}</h3>
             <p class="text-slate-700 whitespace-pre-line bg-slate-50 p-5 rounded-2xl border border-slate-100 text-sm leading-relaxed">{{ ticket.descripcion }}</p>
           </div>
 
           <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm bg-slate-50/50 p-4 rounded-2xl border border-slate-50">
             <div>
               <span class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Categoría</span>
-              <span class="font-bold text-slate-800">{{ ticket.tipo }}</span>
+              <span class="font-bold text-slate-800">{{ ticket.Categoria || ticket.tipo || 'General' }}</span>
             </div>
             <div>
               <span class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Prioridad</span>
@@ -82,7 +82,7 @@
         </div>
 
         <!-- Conversación / Respuestas -->
-        <div class="bg-white/95 backdrop-blur-xl rounded-3xl shadow-xl border border-white/20 overflow-hidden">
+        <div v-if="ticket.estado !== 'Cerrado'" class="bg-white/95 backdrop-blur-xl rounded-3xl shadow-xl border border-white/20 overflow-hidden">
           <div class="p-6 border-b border-slate-100 bg-slate-50/80 flex items-center justify-between">
             <h3 class="font-black text-slate-800 uppercase tracking-tight text-sm">Historial de Conversación</h3>
             <span class="text-xs font-bold text-blue-700 bg-blue-100 px-3 py-1.5 rounded-full">{{ respuestas.length }} mensajes</span>
@@ -137,6 +137,15 @@
               </form>
             </div>
           </div>
+        </div>
+
+        <!-- Mensaje de CERRADO -->
+        <div v-else class="bg-red-50/95 backdrop-blur-xl rounded-3xl shadow-xl border border-red-200 overflow-hidden p-8 text-center">
+          <div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-red-100 text-red-600 mb-4 shadow-inner">
+            <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
+          </div>
+          <h3 class="text-2xl font-black text-red-800 uppercase tracking-tight mb-2">Ticket Cerrado</h3>
+          <p class="text-red-700/80 font-medium max-w-md mx-auto">Este ticket ha sido cerrado y ya no admite nuevas respuestas ni es posible ver el historial de conversación.</p>
         </div>
         
       </div>

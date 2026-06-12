@@ -94,7 +94,7 @@ const asignadoAvatar = computed(() => {
   return null;
 })
 
-const categoria = computed(() => props.ticket.categoria || props.ticket.tipo || 'General')
+const categoria = computed(() => props.ticket.Categoria || props.ticket.categoria || props.ticket.tipo || 'General')
 
 const tiempo = computed(() => {
   if (props.ticket.tiempo) return props.ticket.tiempo;

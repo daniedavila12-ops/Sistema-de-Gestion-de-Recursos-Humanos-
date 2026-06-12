@@ -38,23 +38,29 @@
         Servicios Externos
       </p>
       
-      <div class="grid grid-cols-3 gap-4">
+      <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
         <NuxtLink to="/biblioteca" 
           class="flex flex-col items-center p-5 bg-slate-800/40 border border-white/5 rounded-3xl hover:bg-slate-800 hover:border-blue-500/50 transition-all group">
           <span class="text-3xl mb-3 group-hover:scale-110 transition-transform">📚</span>
-          <span class="text-white text-[9px] font-black uppercase tracking-widest opacity-70 group-hover:opacity-100">Biblioteca</span>
+          <span class="text-white text-[9px] font-black uppercase tracking-widest text-center opacity-70 group-hover:opacity-100">Biblioteca</span>
         </NuxtLink>
 
         <NuxtLink to="/tickets-soporte" 
           class="flex flex-col items-center p-5 bg-slate-800/40 border border-white/5 rounded-3xl hover:bg-slate-800 hover:border-yellow-500/50 transition-all group">
           <span class="text-3xl mb-3 group-hover:scale-110 transition-transform">🎫</span>
-          <span class="text-white text-[9px] font-black uppercase tracking-widest opacity-70 group-hover:opacity-100">Tickets</span>
+          <span class="text-white text-[9px] font-black uppercase tracking-widest text-center opacity-70 group-hover:opacity-100">Tickets</span>
+        </NuxtLink>
+
+        <NuxtLink to="/crear-reporte-incidencia" 
+          class="flex flex-col items-center p-5 bg-slate-800/40 border border-white/5 rounded-3xl hover:bg-slate-800 hover:border-red-500/50 transition-all group">
+          <span class="text-3xl mb-3 group-hover:scale-110 transition-transform">⚠️</span>
+          <span class="text-white text-[9px] font-black uppercase tracking-widest text-center opacity-70 group-hover:opacity-100">Incidentes</span>
         </NuxtLink>
 
         <NuxtLink to="/reporte-sms" 
           class="flex flex-col items-center p-5 bg-slate-800/40 border border-white/5 rounded-3xl hover:bg-slate-800 hover:border-green-500/50 transition-all group">
           <span class="text-3xl mb-3 group-hover:scale-110 transition-transform">📩</span>
-          <span class="text-white text-[9px] font-black uppercase tracking-widest opacity-70 group-hover:opacity-100">Reporte SMS</span>
+          <span class="text-white text-[9px] font-black uppercase tracking-widest text-center opacity-70 group-hover:opacity-100">Reporte SMS</span>
         </NuxtLink>
       </div>
     </div>

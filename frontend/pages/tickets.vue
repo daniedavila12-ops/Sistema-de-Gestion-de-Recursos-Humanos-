@@ -370,11 +370,11 @@ const aplicarFiltro = (filtro) => {
 const filtrarTickets = () => {
   let data = todosLosTickets.value
   
-  if (rolID.value != 1 && rolID.value != 2) {
-    data = data.filter(t => t.usuario_id == nuevoTicket.value.usuario_id)
-  }
-
   const uid = nuevoTicket.value.usuario_id
+  
+  if (rolID.value != 1) {
+    data = data.filter(t => t.asignado_usuario_id == uid)
+  }
 
   // 1. Filtro de Sidebar
   if (filtroActivo.value === 'todas') {
@@ -471,9 +471,9 @@ const fetchTickets = async () => {
     todosLosTickets.value = data
 
     const uid = nuevoTicket.value.usuario_id;
-    let countsData = data
-    if (rolID.value != 1 && rolID.value != 2) {
-      countsData = data.filter(t => t.usuario_id == uid)
+    let countsData = data;
+    if (rolID.value != 1) {
+      countsData = data.filter(t => t.asignado_usuario_id == uid);
     }
     
     unfilteredTicketsForCounts.value = countsData

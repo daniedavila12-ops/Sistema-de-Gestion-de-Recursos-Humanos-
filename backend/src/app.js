@@ -19,6 +19,7 @@ const usuariosRoutes = require('./routes/usuarios');
 const bibliotecaRoutes = require('./routes/biblioteca');
 const documentosLegalesRoutes = require('./routes/documentos-legales');
 const categoriasLegalesRoutes = require('./routes/categorias-legales');
+const reportesIncidenciaRoutes = require('./routes/reportes-incidencia');
 
 const app = express();
 
@@ -34,20 +35,24 @@ app.use(cors({
 }));
 
 // --- CONEXIÓN A LA BASE DE DATOS ---
-const db = mysql.createConnection({
+const db = mysql.createPool({
     host: process.env.DB_HOST ?? 'localhost',
     port: process.env.DB_PORT ?? 3306,
     user: process.env.DB_USER ?? 'root',
     password: process.env.DB_PASS ?? '',
     database: process.env.DB_NAME ?? 'sistema_rrhh',
-    multipleStatements: true
+    multipleStatements: true,
+    waitForConnections: true,
+    connectionLimit: 10,
+    queueLimit: 0
 });
 
-db.connect((err) => {
+db.getConnection((err, connection) => {
     if (err) {
         console.error('❌ ERROR MYSQL: ', err.message);
     } else {
-        console.log('✅ Base de Datos MySQL conectada');
+        console.log('✅ Base de Datos MySQL conectada (Pool)');
+        connection.release();
     }
 });
 
@@ -69,64 +74,139 @@ app.use('/api/usuarios', usuariosRoutes);
 app.use('/api/biblioteca', bibliotecaRoutes);
 app.use('/api/documentos-legales', documentosLegalesRoutes);
 app.use('/api/categorias-legales', categoriasLegalesRoutes);
+app.use('/api/reportes-incidencia', reportesIncidenciaRoutes);
 app.use('/api/logs', logsRoutes);
 
-// 1. OBTENER MENÚ DINÁMICO (Rutas corregidas)
+// 1. OBTENER TODOS LOS MÓDULOS
+app.get('/api/modulos', (req, res) => {
+    db.query('SELECT id, nombre FROM modulos ORDER BY id ASC', (err, results) => {
+        if (err) return res.status(500).json(err);
+        res.json(results);
+    });
+});
+
+// 2. OBTENER MENÚ DINÁMICO (Rutas corregidas)
 app.get('/api/menu/:rol_id', (req, res) => {
     const { rol_id } = req.params;
     
-    // MENÚ BASE
-    let menu = [
-        { nombre: 'Dashboard', ruta: '/', icono: '🏠' }
-    ];
-
-    // MÓDULOS DE RECURSOS HUMANOS
-    if (rol_id == 1 || rol_id == 2) {
-        menu.push({ nombre: 'RECURSOS HUMANOS', esCabecera: true });
-        menu.push(
-            { nombre: 'Empleados', ruta: '/empleados', icono: '👥' },
-            { nombre: 'Nuevo Empleado', ruta: '/empleados/nuevo', icono: '👤+' },
-            { nombre: 'Registrar Vacaciones', ruta: '/vacaciones', icono: '🏖️' },
-            { nombre: 'Reportes', ruta: '/reportes', icono: '📊' },
-            { nombre: 'Departamentos', ruta: '/departamentos', icono: '🏢' }
-        );
-        
-        // As per request, Gestión Manuales under RECURSOS HUMANOS
-        if (rol_id == 1) {
-            menu.push({ nombre: 'Gestión Manuales', ruta: '/admin/manuales', icono: '📚' });
-            menu.push({ nombre: 'Documentos Legales', ruta: '/documentos-legales', icono: '📁' });
+    // Consultar permisos activos del rol
+    const sql = `
+        SELECT m.nombre 
+        FROM modulos m 
+        JOIN rol_modulo rm ON m.id = rm.modulo_id 
+        WHERE rm.rol_id = ? AND rm.puedeVer = 1
+    `;
+    
+    db.query(sql, [rol_id], (err, results) => {
+        if (err) {
+            console.error('Error al obtener menú:', err);
+            return res.status(500).json(err);
         }
-    }
+        
+        // Mapear nombres de módulos permitidos
+        const allowed = results.map(r => r.nombre);
+        // Si es admin (rol_id == 1), permitimos todo por defecto
+        const isAdmin = (rol_id == 1);
+        const hasAccess = (moduleName) => isAdmin || allowed.includes(moduleName);
 
-    // MÓDULOS DE IT
-    let itItems = [];
+        // MENÚ BASE
+        let menu = [
+            { nombre: 'Dashboard', ruta: '/', icono: '🏠' }
+        ];
+
+        // MÓDULOS DE RECURSOS HUMANOS
+        let rrhhItems = [];
+        
+        if (hasAccess('Empleados')) {
+            rrhhItems.push({ nombre: 'Empleados', ruta: '/empleados', icono: '👥' });
+            rrhhItems.push({ nombre: 'Nuevo Empleado', ruta: '/empleados/nuevo', icono: '👤+' });
+        }
+        if (hasAccess('Vacaciones')) {
+            rrhhItems.push({ nombre: 'Registrar Vacaciones', ruta: '/vacaciones', icono: '🏖️' });
+        }
+        if (hasAccess('Reportes') || hasAccess('Módulo de Reportes')) {
+            rrhhItems.push({ nombre: 'Reportes', ruta: '/reportes', icono: '📊' });
+        }
+        if (hasAccess('Departamentos')) {
+            rrhhItems.push({ nombre: 'Departamentos', ruta: '/departamentos', icono: '🏢' });
+        }
+        if (hasAccess('Reportes de Incidencia')) {
+            rrhhItems.push({ nombre: 'Reportes de Incidencia', ruta: '/reportes-incidencia', icono: '⚠️' });
+        }
+        if (hasAccess('Gestión de Manuales')) {
+            rrhhItems.push({ nombre: 'Gestión Manuales', ruta: '/admin/manuales', icono: '📚' });
+        }
+        if (hasAccess('Archivero Legal') || hasAccess('Documentos Legales')) {
+            rrhhItems.push({ nombre: 'Documentos Legales', ruta: '/documentos-legales', icono: '📁' });
+        }
+
+        if (rrhhItems.length > 0) {
+            menu.push({ nombre: 'RECURSOS HUMANOS', esCabecera: true });
+            menu = menu.concat(rrhhItems);
+        }
+
+        // MÓDULOS DE IT
+        let itItems = [];
+        
+        if (hasAccess('Tickets')) {
+            itItems.push({ nombre: 'Tickets', ruta: '/tickets', icono: '🎫' });
+        }
+        if (hasAccess('Control de Usuarios') || hasAccess('Roles y Permisos') || hasAccess('Control Usuarios y Roles')) {
+            itItems.push({ nombre: 'Control Usuarios y Roles', ruta: '/admin/usuarios', icono: '🔐' });
+        }
+        if (hasAccess('Logs de Sistema')) {
+            itItems.push({ nombre: 'Logs de Sistema', ruta: '/admin/logs', icono: '📋' });
+        }
+
+        if (itItems.length > 0) {
+            menu.push({ nombre: 'Departamento de IT', esCabecera: true });
+            menu = menu.concat(itItems);
+        }
+
+        res.json(menu);
+    });
+});
+
+app.get('/api/dashboard-permisos/:rol_id', (req, res) => {
+    const { rol_id } = req.params;
     
-    // Tickets is now under IT for everyone
-    itItems.push({ nombre: 'Tickets', ruta: '/tickets', icono: '🎫' });
+    const sql = `
+        SELECT m.nombre 
+        FROM modulos m 
+        JOIN rol_modulo rm ON m.id = rm.modulo_id 
+        WHERE rm.rol_id = ? AND rm.puedeVer = 1
+    `;
     
-    if (rol_id == 1 || rol_id == 2) {
-        itItems.push({ nombre: 'Control Usuarios y Roles', ruta: '/admin/usuarios', icono: '🔐' });
-    }
-    if (rol_id == 1) {
-        itItems.push({ nombre: 'Logs de Sistema', ruta: '/admin/logs', icono: '📋' });
-    }
-
-    if (itItems.length > 0) {
-        menu.push({ nombre: 'Departamento de IT', esCabecera: true });
-        menu = menu.concat(itItems);
-    }
-
-    res.json(menu);
+    db.query(sql, [rol_id], (err, results) => {
+        if (err) return res.status(500).json(err);
+        const allowed = results.map(r => r.nombre);
+        const isAdmin = (rol_id == 1);
+        res.json(isAdmin ? 'ALL' : allowed);
+    });
 });
 
 // 2. ESTADÍSTICAS PARA LAS TARJETAS DEL DASHBOARD
 app.get('/api/stats/resumen', (req, res) => {
+    const { usuario_id, nombre, rol_id } = req.query;
+
+    let incidenciasQuery = `SELECT COUNT(*) FROM reportes_incidencias WHERE estado = 'Pendiente'`;
+    let ticketsQuery = `SELECT COUNT(*) FROM tickets WHERE estado = 'Pendiente'`;
+
+    const escapedId = db.escape(usuario_id || null);
+    ticketsQuery += ` AND asignado_usuario_id = ${escapedId}`;
+
+    if (rol_id && String(rol_id) !== '1' && String(rol_id) !== '2') {
+        const escapedNombre = db.escape(nombre || '');
+        incidenciasQuery += ` AND (jefe_reporta = ${escapedNombre} OR asignado_usuario_id = ${escapedId})`;
+    }
+
     const sql = `
         SELECT 
             (SELECT COUNT(*) FROM empleados) as total,
             (SELECT COUNT(*) FROM empleados WHERE estado = 1) as activos,
             (SELECT COUNT(*) FROM empleados WHERE estado = 0) as inactivos,
-            (SELECT COUNT(*) FROM tickets WHERE estado = 'Pendiente') as tickets,
+            (${ticketsQuery}) as tickets,
+            (${incidenciasQuery}) as incidencias,
             (SELECT COUNT(*) FROM departamentos) as categorias,
             (SELECT COUNT(*) FROM empleados WHERE MONTH(fecha_nacimiento) = MONTH(CURRENT_DATE)) as cumpleaneros,
             (SELECT COUNT(*) FROM contratos c1 WHERE c1.id IN (SELECT max_id FROM (SELECT MAX(id) AS max_id FROM contratos GROUP BY empleado_id) AS sub) AND c1.fechaFinal BETWEEN CURRENT_DATE AND DATE_ADD(CURRENT_DATE, INTERVAL 30 DAY)) as vencimientos,
@@ -207,6 +287,160 @@ app.get('/api/stats/dashboard-lists', (req, res) => {
     db.query("SELECT id, nombre, apellido, codigo_empleado, foto FROM empleados WHERE estado = 0 ORDER BY nombre, apellido", (err, results) => {
         if (!err) lists.inactivos = results;
         checkDone(err);
+    });
+});
+
+app.get('/api/stats/ausentismo', (req, res) => {
+    const sql = `
+        SELECT d.nombre as departamento, 
+               COUNT(e.id) as total_empleados,
+               IFNULL(SUM(f.faltas_count), 0) as total_faltas
+        FROM departamentos d
+        LEFT JOIN empleados e ON d.id = e.departamento_id AND e.estado = 1
+        LEFT JOIN (
+            SELECT empleado_id, COUNT(*) as faltas_count 
+            FROM faltas 
+            WHERE MONTH(fecha) = MONTH(CURRENT_DATE) AND YEAR(fecha) = YEAR(CURRENT_DATE)
+            GROUP BY empleado_id
+        ) f ON e.id = f.empleado_id
+        GROUP BY d.id, d.nombre
+    `;
+    db.query(sql, (err, results) => {
+        if (err) return res.status(500).json({ error: err.message });
+        const data = results.map(row => {
+            const dias_laborables_totales = row.total_empleados * 22;
+            const indice = dias_laborables_totales > 0 ? ((row.total_faltas / dias_laborables_totales) * 100).toFixed(2) : 0;
+            return { ...row, dias_laborables_totales, indice_ausentismo: parseFloat(indice) };
+        });
+        res.json(data);
+    });
+});
+
+app.get('/api/stats/saldos-vacaciones', (req, res) => {
+    const sql = `
+        SELECT e.id as empleado_id, e.nombre, e.apellido, e.codigo_empleado, d.nombre as departamento,
+               (SELECT MIN(fechaInicio) FROM contratos c WHERE c.empleado_id = e.id) as fecha_ingreso
+        FROM empleados e
+        LEFT JOIN departamentos d ON e.departamento_id = d.id
+        WHERE e.estado = 1
+    `;
+    db.query(sql, (err, empResults) => {
+        if (err) return res.status(500).json({ error: err.message });
+        
+        const sqlVacaciones = `SELECT empleado_id, tipoSolicitud, diasVacaciones, diasPagados FROM vacaciones`;
+        db.query(sqlVacaciones, (err, vacResults) => {
+            if (err) return res.status(500).json({ error: err.message });
+            
+            const today = new Date();
+            const data = empResults.map(emp => {
+                let diasAcumulados = 0;
+                let diasGozados = 0;
+                let diasPagados = 0;
+                
+                if (emp.fecha_ingreso) {
+                    const inicio = new Date(emp.fecha_ingreso);
+                    let aniosLaborados = today.getFullYear() - inicio.getFullYear();
+                    const m = today.getMonth() - inicio.getMonth();
+                    if (m < 0 || (m === 0 && today.getDate() < inicio.getDate())) {
+                        aniosLaborados--;
+                    }
+                    aniosLaborados = Math.max(0, aniosLaborados);
+                    
+                    for (let i = 1; i <= aniosLaborados; i++) {
+                        if (i >= 4) diasAcumulados += 20;
+                        else if (i === 3) diasAcumulados += 15;
+                        else if (i === 2) diasAcumulados += 12;
+                        else if (i === 1) diasAcumulados += 10;
+                    }
+                }
+                
+                const vacs = vacResults.filter(v => v.empleado_id === emp.empleado_id);
+                vacs.forEach(v => {
+                    if (v.tipoSolicitud === 'Pagadas') {
+                        diasPagados += parseFloat(v.diasPagados || 0);
+                        diasGozados += parseFloat(v.diasVacaciones || 0);
+                    } else if (v.tipoSolicitud !== 'Permiso Especial') {
+                        diasGozados += parseFloat(v.diasVacaciones || 0);
+                    }
+                });
+                
+                const saldo = Math.max(0, diasAcumulados - (diasGozados + diasPagados));
+                
+                return {
+                    empleado_id: emp.empleado_id,
+                    nombre: emp.nombre + ' ' + emp.apellido,
+                    codigo: emp.codigo_empleado,
+                    departamento: emp.departamento,
+                    fecha_ingreso: emp.fecha_ingreso,
+                    dias_acumulados: diasAcumulados,
+                    dias_gozados: diasGozados,
+                    dias_pagados: diasPagados,
+                    saldo_pendiente: saldo
+                };
+            });
+            
+            res.json(data);
+        });
+    });
+});
+
+app.get('/api/stats/contratos-estado', (req, res) => {
+    const sql = `
+        SELECT 
+            SUM(CASE WHEN c.fechaFinal IS NULL OR c.fechaFinal >= DATE_ADD(CURRENT_DATE, INTERVAL 30 DAY) THEN 1 ELSE 0 END) as activos,
+            SUM(CASE WHEN c.fechaFinal BETWEEN CURRENT_DATE AND DATE_ADD(CURRENT_DATE, INTERVAL 30 DAY) THEN 1 ELSE 0 END) as por_vencer,
+            SUM(CASE WHEN c.fechaFinal < CURRENT_DATE THEN 1 ELSE 0 END) as vencidos
+        FROM contratos c
+        JOIN empleados e ON c.empleado_id = e.id
+        WHERE c.id IN (SELECT MAX(id) FROM contratos GROUP BY empleado_id) AND e.estado = 1;
+    `;
+    db.query(sql, (err, results) => {
+        if (err) return res.status(500).json({ error: err.message });
+        res.json(results[0] || { activos: 0, por_vencer: 0, vencidos: 0 });
+    });
+});
+
+app.get('/api/stats/tipos-faltas', (req, res) => {
+    const sql = `
+        SELECT 
+            SUM(CASE WHEN documento IS NOT NULL OR motivo LIKE '%medic%' OR motivo LIKE '%permiso%' OR motivo LIKE '%justificad%' THEN 1 ELSE 0 END) as justificadas,
+            SUM(CASE WHEN documento IS NULL AND motivo NOT LIKE '%medic%' AND motivo NOT LIKE '%permiso%' AND motivo NOT LIKE '%justificad%' THEN 1 ELSE 0 END) as injustificadas
+        FROM faltas
+        WHERE MONTH(fecha) = MONTH(CURRENT_DATE) AND YEAR(fecha) = YEAR(CURRENT_DATE);
+    `;
+    db.query(sql, (err, results) => {
+        if (err) return res.status(500).json({ error: err.message });
+        res.json(results[0] || { justificadas: 0, injustificadas: 0 });
+    });
+});
+
+app.get('/api/stats/tendencia-ausentismo', (req, res) => {
+    const sql = `
+        SELECT MONTH(fecha) as mes, COUNT(*) as cantidad
+        FROM faltas
+        WHERE YEAR(fecha) = YEAR(CURRENT_DATE)
+        GROUP BY MONTH(fecha)
+        ORDER BY MONTH(fecha);
+    `;
+    db.query(sql, (err, results) => {
+        if (err) return res.status(500).json({ error: err.message });
+        res.json(results);
+    });
+});
+
+app.get('/api/stats/tendencia-tickets', (req, res) => {
+    const sql = `
+        SELECT DATE(fecha_creacion) as fecha,
+               COUNT(*) as creados,
+               SUM(CASE WHEN estado = 'Resuelto' OR estado = 'Cerrado' THEN 1 ELSE 0 END) as resueltos
+        FROM tickets
+        WHERE fecha_creacion >= DATE_SUB(CURRENT_DATE, INTERVAL 30 DAY)
+        GROUP BY DATE(fecha_creacion)
+        ORDER BY DATE(fecha_creacion);
+    `;
+    db.query(sql, (err, results) => {
+        if (err) return res.status(500).json({ error: err.message });
+        res.json(results);
     });
 });
 

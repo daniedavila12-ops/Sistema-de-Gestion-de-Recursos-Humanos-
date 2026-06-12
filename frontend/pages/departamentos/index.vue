@@ -133,6 +133,9 @@
                 <button @click="toggleEstado(dept)" :class="dept.estado ? 'bg-red-100 text-red-600 hover:bg-red-600 hover:text-white' : 'bg-green-100 text-green-600 hover:bg-green-600 hover:text-white'" class="p-2 rounded-lg text-xs font-bold transition-colors" :title="dept.estado ? 'Desactivar' : 'Activar'">
                   {{ dept.estado ? '🛑' : '✅' }}
                 </button>
+                <button @click="eliminarDepartamento(dept)" class="bg-red-100 text-red-600 hover:bg-red-600 hover:text-white p-2 rounded-lg text-xs font-bold transition-colors" title="Eliminar">
+                  🗑️
+                </button>
               </td>
             </tr>
           </tbody>
@@ -385,6 +388,19 @@ const toggleEstado = async (dept) => {
   } catch (error) {
     console.error('Error al cambiar estado', error)
     alert('❌ Error al cambiar el estado')
+  }
+}
+
+const eliminarDepartamento = async (dept) => {
+  if (!confirm(`¿Está seguro que desea eliminar el departamento "${dept.nombre}"? Esta acción no se puede deshacer.`)) return
+
+  try {
+    const res = await axios.delete(`http://localhost:3007/api/departamentos/eliminar/${dept.id}`)
+    alert('✅ ' + (res.data.mensaje || 'Departamento eliminado correctamente'))
+    cargarDepartamentos()
+  } catch (error) {
+    console.error('Error al eliminar departamento', error)
+    alert('❌ ' + (error.response?.data?.error || 'Error al eliminar el departamento'))
   }
 }
 

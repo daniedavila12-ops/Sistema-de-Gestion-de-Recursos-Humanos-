@@ -66,4 +66,19 @@ router.put('/estado/:id', (req, res) => {
     });
 });
 
+// Eliminar departamento
+router.delete('/eliminar/:id', (req, res) => {
+    const db = req.app.get('db');
+    const { id } = req.params;
+
+    const query = 'DELETE FROM departamentos WHERE id = ?';
+    db.execute(query, [id], (err, result) => {
+        if (err) {
+            // It might fail if there are employees assigned to this department
+            return res.status(500).json({ error: "Error al eliminar el departamento. Verifica que no tenga empleados asignados." });
+        }
+        res.json({ mensaje: "Departamento eliminado exitosamente" });
+    });
+});
+
 module.exports = router;

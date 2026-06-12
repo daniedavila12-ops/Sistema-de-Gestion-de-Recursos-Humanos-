@@ -8,7 +8,8 @@ const v = (valor) => (valor && String(valor).trim() !== "" ? valor : null);
 router.get('/', (req, res) => {
     const db = req.app.get('db');
     const sql = `
-        SELECT u.id, u.nombre, u.email, u.estado, u.rol_id, u.ultimoLogin, u.created_at, u.updated_at, r.nombre AS rol_nombre 
+        SELECT u.id, u.nombre, u.email, u.estado, u.rol_id, u.ultimoLogin, u.created_at, u.updated_at, r.nombre AS rol_nombre,
+               (SELECT COUNT(*) FROM reportes_incidencias WHERE asignado_usuario_id = u.id AND estado = 'Pendiente') AS incidentes_pendientes
         FROM usuarios u
         LEFT JOIN roles r ON u.rol_id = r.id
         ORDER BY u.id DESC

@@ -468,10 +468,10 @@ const fetchTicket = async () => {
 
     ticket.value = {
       id: `#TKT-${data.id.toString().padStart(3, '0')}`,
-      title: data.tema || data.tipo,
+      title: data.tema || data.Categoria || data.tipo,
       priority: data.prioridad || 'Media',
       status: data.estado || 'Pendiente',
-      category: data.tipo,
+      category: data.Categoria || data.tipo,
       dateCreated: fecha.toLocaleDateString('es-HN', dateOptions),
       lastUpdated: fechaUpdated.toLocaleDateString('es-HN', dateOptions),
       responseTime: responseTimeStr,
@@ -510,7 +510,7 @@ const openAssignModal = async () => {
   
   if (usersList.value.length === 0) {
     try {
-      const resU = await axios.get('http://localhost:3007/api/usuarios/lista');
+      const resU = await axios.get('http://localhost:3007/api/usuarios');
       usersList.value = resU.data;
     } catch(e) { console.error(e) }
   }

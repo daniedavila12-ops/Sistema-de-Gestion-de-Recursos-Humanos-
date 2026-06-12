@@ -1,33 +1,94 @@
 <template>
-  <div class="min-h-screen bg-slate-900 p-8 font-sans">
-    <div class="max-w-6xl mx-auto flex flex-col md:flex-row justify-between items-center mb-12 gap-4">
-      <div>
-        <NuxtLink to="/" class="text-blue-400 text-xs font-bold uppercase tracking-widest hover:underline flex items-center gap-2 mb-4">
-          ⬅️ Volver al Inicio
-        </NuxtLink>
-        <h1 class="text-5xl font-black text-white tracking-tighter uppercase">Archivero <span class="text-amber-500">Legal</span></h1>
-        <p class="text-slate-400 mt-2 font-medium italic">Repositorio seguro de documentos legales y normativas.</p>
+  <div class="min-h-screen bg-slate-900 flex font-sans overflow-x-hidden">
+    <!-- SIDEBAR -->
+    <aside class="w-64 bg-slate-800 text-white flex flex-col shadow-xl fixed h-full z-10 hidden md:flex">
+      <div class="p-6 text-2xl font-bold border-b border-slate-700 tracking-tight text-blue-400 uppercase">
+        RRHH Innova
       </div>
-      <div class="flex gap-4 items-center">
-        <button @click="abrirModal" class="bg-amber-600 hover:bg-amber-500 text-white px-6 py-3 rounded-2xl font-bold uppercase text-xs tracking-widest transition-colors flex items-center gap-2 shadow-lg shadow-amber-900/20">
-          <span>➕</span> Subir Documento
-        </button>
-        <div class="bg-slate-800 p-4 rounded-3xl border border-white/5">
-          <span class="text-3xl">⚖️</span>
+      
+      <nav class="flex-1 p-4 space-y-1 overflow-y-auto">
+        <div v-for="(item, index) in menuUsuario" :key="item.ruta || index">
+          <div v-if="item.esCabecera" class="text-[10px] font-black text-slate-500 uppercase tracking-widest mt-6 mb-2 px-3">
+            {{ item.nombre }}
+          </div>
+          <NuxtLink v-else :to="item.ruta" 
+            class="flex items-center gap-3 p-3 rounded-xl hover:bg-slate-700 transition-all duration-200 group"
+            active-class="bg-blue-600 shadow-lg">
+            <span class="text-xl group-hover:scale-110 transition-transform">{{ item.icono }}</span>
+            <span class="text-sm font-medium">{{ item.nombre }}</span>
+          </NuxtLink>
         </div>
+      </nav>
+
+      <div class="p-4 border-t border-slate-700 bg-slate-900/50">
+        <div class="mb-4 px-2 flex flex-col">
+          <span class="text-[9px] font-black text-slate-500 uppercase tracking-widest">Nivel de Acceso</span>
+          <span class="text-xs font-bold text-blue-400">{{ rolNombre }}</span>
+        </div>
+        <button @click="logout" class="w-full flex items-center gap-3 p-3 rounded-xl hover:bg-red-500/10 hover:text-red-400 transition-all font-bold text-xs uppercase tracking-widest">
+          <span>🚪</span> Cerrar Sesión
+        </button>
+      </div>
+    </aside>
+
+    <!-- MOBILE MENU BUTTON -->
+    <button @click="mobileMenuOpen = !mobileMenuOpen" class="md:hidden fixed top-4 right-4 z-50 p-3 bg-slate-800 text-white rounded-lg shadow-lg flex items-center justify-center">
+      <span class="text-xl">{{ mobileMenuOpen ? '✖' : '☰' }}</span>
+    </button>
+
+    <!-- MOBILE SIDEBAR -->
+    <div v-if="mobileMenuOpen" class="fixed inset-0 bg-slate-800 z-40 md:hidden flex flex-col">
+      <div class="p-6 text-2xl font-bold border-b border-slate-700 tracking-tight text-blue-400 uppercase">
+        RRHH Innova
+      </div>
+      <nav class="flex-1 p-4 space-y-2 overflow-y-auto">
+        <div v-for="(item, index) in menuUsuario" :key="item.ruta || index">
+          <div v-if="item.esCabecera" class="text-[10px] font-black text-slate-500 uppercase tracking-widest mt-6 mb-2 px-3">
+            {{ item.nombre }}
+          </div>
+          <NuxtLink v-else :to="item.ruta" @click="mobileMenuOpen = false"
+            class="flex items-center gap-3 p-4 rounded-xl hover:bg-slate-700 transition-all duration-200"
+            active-class="bg-blue-600 shadow-lg">
+            <span class="text-xl">{{ item.icono }}</span>
+            <span class="text-sm font-bold">{{ item.nombre }}</span>
+          </NuxtLink>
+        </div>
+      </nav>
+      <div class="p-6 border-t border-slate-700 bg-slate-900/50">
+         <button @click="logout" class="w-full flex items-center justify-center gap-3 p-4 rounded-xl bg-red-500/20 text-red-400 font-bold text-sm uppercase tracking-widest">
+          <span>🚪</span> Cerrar Sesión
+        </button>
       </div>
     </div>
 
-    <div class="max-w-6xl mx-auto mb-10">
-      <input v-model="search" type="text" placeholder="Buscar documento por título, categoría o descripción..." 
-        class="w-full bg-slate-800 border border-white/10 p-5 rounded-2xl text-white outline-none focus:border-amber-500 transition-all shadow-2xl">
-    </div>
+    <!-- MAIN CONTENT -->
+    <main class="flex-1 md:ml-64 p-4 md:p-8 w-full transition-all">
+      <header class="w-full mb-10 flex flex-col gap-5 bg-slate-800 p-5 rounded-3xl shadow-sm border border-white/5">
+        <div class="flex flex-col md:flex-row justify-between items-center w-full gap-4">
+          <div class="w-full md:w-auto">
+            <h1 class="text-3xl font-black text-white tracking-tight uppercase">Archivero <span class="text-amber-500">Legal</span></h1>
+            <p class="text-slate-400 mt-1 font-medium italic">Repositorio seguro de documentos legales y normativas.</p>
+          </div>
+          <div class="flex items-center gap-4">
+            <button @click="abrirModal" class="bg-amber-600 hover:bg-amber-500 text-white px-6 py-3 rounded-xl font-black uppercase text-xs transition-all shadow-lg shadow-amber-900/20 flex items-center gap-2">
+              <span>➕</span> Subir Documento
+            </button>
+            <div class="bg-slate-900 p-3 rounded-xl border border-white/10 hidden md:flex items-center justify-center">
+              <span class="text-2xl">⚖️</span>
+            </div>
+          </div>
+        </div>
+        <div class="w-full">
+          <input v-model="search" type="text" placeholder="Buscar documento por título, categoría o descripción..." 
+            class="w-full p-3 rounded-xl bg-slate-900 border border-white/10 text-sm text-white focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent transition-all placeholder:italic shadow-inner">
+        </div>
+      </header>
 
     <div v-if="cargando" class="text-center py-20 text-slate-500">
       <p class="text-xl italic font-medium">Accediendo al archivero...</p>
     </div>
 
-    <div v-else class="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+    <div v-else class="w-full grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
       <div v-for="doc in documentosFiltrados" :key="doc.id" 
         class="bg-white rounded-3xl overflow-hidden shadow-xl group hover:translate-y-[-5px] transition-all duration-300 relative">
         <div class="h-3 bg-amber-600"></div>
@@ -89,7 +150,7 @@
       </div>
     </div>
 
-    <div v-if="!cargando && documentosFiltrados.length === 0" class="text-center py-20 text-slate-500 bg-slate-800/50 rounded-3xl border border-white/5 max-w-6xl mx-auto">
+    <div v-if="!cargando && documentosFiltrados.length === 0" class="text-center py-20 text-slate-500 bg-slate-800/50 rounded-3xl border border-white/5 w-full">
       <span class="text-6xl mb-4 block opacity-50">🗄️</span>
       <p class="text-xl italic font-medium">El archivero está vacío o no hay resultados.</p>
     </div>
@@ -238,11 +299,88 @@
         </div>
       </div>
     </div>
+    </main>
   </div>
 </template>
 
 <script setup>
 import { ref, computed, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
+import axios from 'axios'
+
+const router = useRouter()
+const rolID = ref(null)
+const rolNombre = ref('Cargando...')
+const menuUsuario = ref([])
+const usuarioActual = ref('')
+const fotoUsuario = ref(null)
+
+// Lógica Modal Perfil
+const dropdownPerfilAbierto = ref(false)
+const modalAbiertoPerfil = ref(false)
+const loadingPassword = ref(false)
+const formPassword = ref({ actual: '', nueva: '', confirmar: '' })
+const fileInputPerfil = ref(null)
+
+const triggerFileInputPerfil = () => {
+  fileInputPerfil.value.click()
+}
+
+const uploadFotoPerfil = async (event) => {
+  const file = event.target.files[0]
+  if (!file) return
+
+  const formData = new FormData()
+  formData.append('foto', file)
+
+  try {
+    const id = localStorage.getItem('usuarioID')
+    const res = await axios.post(`http://localhost:3007/api/auth/${id}/foto`, formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data'
+      }
+    })
+
+    fotoUsuario.value = res.data.fotoUrl
+    localStorage.setItem('usuarioFoto', res.data.fotoUrl)
+    alert('✅ ' + res.data.mensaje)
+  } catch (err) {
+    console.error("Error al subir la foto:", err)
+    alert('❌ Error al subir la foto')
+  }
+}
+
+const abrirModalPerfil = () => { modalAbiertoPerfil.value = true }
+const cerrarModalPerfil = () => {
+  modalAbiertoPerfil.value = false
+  formPassword.value = { actual: '', nueva: '', confirmar: '' }
+}
+
+const cambiarPassword = async () => {
+  if (formPassword.value.nueva !== formPassword.value.confirmar) {
+    alert('❌ Las contraseñas nuevas no coinciden')
+    return
+  }
+  try {
+    loadingPassword.value = true
+    const userId = localStorage.getItem('usuarioID')
+    const res = await axios.put(`http://localhost:3007/api/auth/${userId}/password`, {
+      actual: formPassword.value.actual,
+      nueva: formPassword.value.nueva
+    })
+    alert('✅ ' + res.data.mensaje)
+    cerrarModalPerfil()
+  } catch (err) {
+    alert('❌ ' + (err.response?.data?.error || 'Error al cambiar contraseña'))
+  } finally {
+    loadingPassword.value = false
+  }
+}
+
+const logout = () => {
+  localStorage.clear()
+  router.push('/login')
+}
 
 const config = useRuntimeConfig()
 const search = ref('')
@@ -340,6 +478,27 @@ const cargarCategorias = async () => {
 }
 
 onMounted(async () => {
+  rolID.value = localStorage.getItem('usuarioRol') || 2
+  usuarioActual.value = localStorage.getItem('usuarioNombre') || 'Usuario Sistema'
+  fotoUsuario.value = localStorage.getItem('usuarioFoto') || null
+
+  if (rolID.value == 1) {
+    rolNombre.value = 'Administrador IT'
+  } else if (rolID.value == 2) {
+    rolNombre.value = 'Recursos Humanos'
+  } else {
+    rolNombre.value = 'Empleado'
+  }
+
+  try {
+    const m = await fetch(`${config.public.apiBase}/api/menu/${rolID.value}`)
+    if (m.ok) {
+      menuUsuario.value = await m.json()
+    }
+  } catch (e) {
+    console.error('Error cargando menú', e)
+  }
+
   cargando.value = true
   await Promise.all([cargarDocumentos(), cargarCategorias()])
   cargando.value = false
@@ -434,13 +593,8 @@ const subirDocumento = async () => {
      formData.append('archivosEliminar', JSON.stringify(form.value.archivosEliminar))
   }
   
-  let userId = 1;
-  try {
-    const authUser = JSON.parse(localStorage.getItem('auth_user') || '{}')
-    if (authUser && authUser.id) {
-      userId = authUser.id;
-    }
-  } catch(e) {}
+  let userId = localStorage.getItem('usuarioID') || 1;
+
   formData.append('creado_por', userId)
 
   try {

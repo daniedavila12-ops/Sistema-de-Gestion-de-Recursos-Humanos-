@@ -139,6 +139,9 @@
         <button @click="activeTab = 'proyecciones'" :class="['px-6 py-3 font-bold text-xs uppercase tracking-widest whitespace-nowrap border-b-2 transition-colors', activeTab === 'proyecciones' ? 'border-blue-500 text-blue-600' : 'border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300']">
           📅 Proyecciones Vacaciones
         </button>
+        <button @click="activeTab = 'asistencia'" :class="['px-6 py-3 font-bold text-xs uppercase tracking-widest whitespace-nowrap border-b-2 transition-colors', activeTab === 'asistencia' ? 'border-blue-500 text-blue-600' : 'border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300']">
+          ⏳ Asistencia y Tiempos
+        </button>
       </div>
 
       <!-- TAB: DASHBOARD -->
@@ -289,6 +292,44 @@
           </div>
         </div>
 
+        <!-- NEW SECTION: DISTRIBUCIÓN Y PROPORCIONES (ANILLO) -->
+        <h3 class="text-md font-black text-slate-800 uppercase tracking-widest mt-8 mb-4 border-b border-slate-200 pb-2">Distribución y Proporciones</h3>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6 mb-6">
+          <!-- Distribución de la Plantilla -->
+          <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 flex flex-col h-[300px]">
+             <h2 class="text-sm font-black text-slate-800 uppercase tracking-widest mb-2 flex items-center gap-2">
+                 <span class="w-2 h-2 rounded-full bg-blue-500"></span>
+                 Distribución de la Plantilla
+              </h2>
+              <div class="flex-1 relative w-full h-full flex justify-center items-center pb-4">
+                <Doughnut v-if="!loadingDepts && chartPlantillaProporcionData" :data="chartPlantillaProporcionData" :options="doughnutOptionsPercent" />
+              </div>
+          </div>
+          <!-- Estado de Contratos -->
+          <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 flex flex-col h-[300px]">
+             <h2 class="text-sm font-black text-slate-800 uppercase tracking-widest mb-2 flex items-center gap-2">
+                 <span class="w-2 h-2 rounded-full bg-orange-500"></span>
+                 Estado de Contratos
+              </h2>
+              <div class="flex-1 relative w-full h-full flex justify-center items-center pb-4">
+                <Doughnut v-if="chartContratosData" :data="chartContratosData" :options="doughnutOptionsPercent" />
+              </div>
+          </div>
+          <!-- Tipos de Faltas -->
+          <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 flex flex-col h-[300px]">
+             <h2 class="text-sm font-black text-slate-800 uppercase tracking-widest mb-2 flex items-center gap-2">
+                 <span class="w-2 h-2 rounded-full bg-rose-500"></span>
+                 Tipos de Faltas (Mes)
+              </h2>
+              <div class="flex-1 relative w-full h-full flex justify-center items-center pb-4">
+                <Doughnut v-if="chartFaltasData" :data="chartFaltasData" :options="doughnutOptionsPercent" />
+              </div>
+          </div>
+        </div>
+
+        <!-- NEW SECTION: TENDENCIAS EN EL TIEMPO (LÍNEAS) -->
+        <h3 class="text-md font-black text-slate-800 uppercase tracking-widest mt-8 mb-4 border-b border-slate-200 pb-2">Tendencias en el Tiempo</h3>
+        
         <!-- TENDENCIAS DE CONTRATACIÓN (LINE CHART) -->
         <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 flex flex-col mb-6 min-h-[320px]">
           <div class="flex justify-between items-center mb-4">
@@ -300,6 +341,36 @@
           <div class="flex-1 relative w-full h-full flex justify-center items-center">
             <Line v-if="!loadingEmpleados && chartTendenciasData" :data="chartTendenciasData" :options="lineOptions" />
             <span v-else class="text-slate-400 italic text-xs">Cargando tendencias...</span>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6 mb-6">
+          <!-- Tendencia de Ausentismo Histórico -->
+          <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 flex flex-col min-h-[320px]">
+            <div class="flex justify-between items-center mb-4">
+              <h2 class="text-sm font-black text-slate-800 uppercase tracking-widest flex items-center gap-2">
+                 <span class="w-2 h-2 rounded-full bg-rose-500"></span>
+                 Tendencia de Ausentismo Histórico
+              </h2>
+            </div>
+            <div class="flex-1 relative w-full h-full flex justify-center items-center">
+              <Line v-if="chartTendenciaAusentismoData" :data="chartTendenciaAusentismoData" :options="lineOptions" />
+              <span v-else class="text-slate-400 italic text-xs">Cargando tendencia...</span>
+            </div>
+          </div>
+          
+          <!-- Evolución de Tickets -->
+          <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 flex flex-col min-h-[320px]">
+            <div class="flex justify-between items-center mb-4">
+              <h2 class="text-sm font-black text-slate-800 uppercase tracking-widest flex items-center gap-2">
+                 <span class="w-2 h-2 rounded-full bg-amber-500"></span>
+                 Evolución de Tickets (30 Días)
+              </h2>
+            </div>
+            <div class="flex-1 relative w-full h-full flex justify-center items-center">
+              <Line v-if="chartTendenciaTicketsData" :data="chartTendenciaTicketsData" :options="lineOptions" />
+              <span v-else class="text-slate-400 italic text-xs">Cargando evolución...</span>
+            </div>
           </div>
         </div>
       </div>
@@ -482,6 +553,97 @@
         </div>
       </div>
 
+      <!-- TAB: ASISTENCIA Y TIEMPOS -->
+      <div v-if="activeTab === 'asistencia'" class="space-y-6">
+        <!-- Índice de Ausentismo -->
+        <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
+          <div class="flex flex-col md:flex-row justify-between items-center mb-6 gap-4 border-b border-slate-100 pb-4">
+            <h2 class="text-lg font-black text-slate-800 uppercase tracking-tighter flex items-center gap-2">
+              <span class="text-rose-500">⚠️</span> Índice de Ausentismo (Mes Actual)
+            </h2>
+            <button @click="exportarCSV(ausentismoDatos, 'Indice_Ausentismo')" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg font-bold text-xs uppercase tracking-widest transition-colors shadow-sm flex items-center justify-center gap-2">
+              <span>📊</span> CSV
+            </button>
+          </div>
+          <div v-if="loadingAusentismo" class="text-center py-10 text-slate-400 italic">Cargando ausentismo...</div>
+          <div v-else class="overflow-x-auto">
+            <table class="w-full text-left border-collapse">
+              <thead>
+                <tr class="bg-slate-50 border-b border-slate-200">
+                  <th class="p-3 text-[10px] font-black text-slate-500 uppercase tracking-widest">Departamento</th>
+                  <th class="p-3 text-[10px] font-black text-slate-500 uppercase tracking-widest text-center">Total Empleados</th>
+                  <th class="p-3 text-[10px] font-black text-slate-500 uppercase tracking-widest text-center">Faltas (Mes)</th>
+                  <th class="p-3 text-[10px] font-black text-slate-500 uppercase tracking-widest text-center">Días Laborables Esperados</th>
+                  <th class="p-3 text-[10px] font-black text-slate-500 uppercase tracking-widest text-right">Índice Ausentismo (%)</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-for="d in ausentismoDatos" :key="d.departamento" class="border-b border-slate-100 hover:bg-slate-50 transition-colors">
+                  <td class="p-3 text-sm font-bold text-slate-800">{{ d.departamento || 'N/A' }}</td>
+                  <td class="p-3 text-sm text-slate-600 text-center">{{ d.total_empleados }}</td>
+                  <td class="p-3 text-sm font-black text-rose-600 text-center">{{ d.total_faltas }}</td>
+                  <td class="p-3 text-sm text-slate-600 text-center">{{ d.dias_laborables_totales }}</td>
+                  <td class="p-3 text-sm font-black text-right" :class="d.indice_ausentismo > 5 ? 'text-rose-600' : 'text-emerald-600'">
+                    {{ d.indice_ausentismo }}%
+                  </td>
+                </tr>
+                <tr v-if="ausentismoDatos.length === 0">
+                  <td colspan="5" class="p-6 text-center text-slate-400 italic">No hay datos de ausentismo.</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Saldos de Vacaciones -->
+        <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
+          <div class="flex flex-col md:flex-row justify-between items-center mb-6 gap-4 border-b border-slate-100 pb-4">
+            <h2 class="text-lg font-black text-slate-800 uppercase tracking-tighter flex items-center gap-2">
+              <span class="text-blue-500">🏖️</span> Saldos de Vacaciones
+            </h2>
+            <div class="flex flex-col md:flex-row gap-3 w-full md:w-auto">
+              <input v-model="saldosFiltro" type="text" placeholder="Buscar empleado..." class="p-2 border border-slate-200 rounded-lg text-sm bg-slate-50 w-full md:w-64 focus:border-blue-500 outline-none">
+              <button @click="exportarCSV(saldosFiltrados, 'Saldos_Vacaciones')" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg font-bold text-xs uppercase tracking-widest transition-colors shadow-sm flex items-center justify-center gap-2">
+                <span>📊</span> CSV
+              </button>
+            </div>
+          </div>
+          <div v-if="loadingSaldos" class="text-center py-10 text-slate-400 italic">Cargando saldos...</div>
+          <div v-else class="overflow-x-auto">
+            <table class="w-full text-left border-collapse">
+              <thead>
+                <tr class="bg-slate-50 border-b border-slate-200">
+                  <th class="p-3 text-[10px] font-black text-slate-500 uppercase tracking-widest">Empleado</th>
+                  <th class="p-3 text-[10px] font-black text-slate-500 uppercase tracking-widest">Departamento</th>
+                  <th class="p-3 text-[10px] font-black text-slate-500 uppercase tracking-widest text-center">Acumulados</th>
+                  <th class="p-3 text-[10px] font-black text-slate-500 uppercase tracking-widest text-center">Gozados</th>
+                  <th class="p-3 text-[10px] font-black text-slate-500 uppercase tracking-widest text-center">Pagados</th>
+                  <th class="p-3 text-[10px] font-black text-slate-500 uppercase tracking-widest text-center">Saldo Pendiente</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-for="s in saldosFiltrados" :key="s.empleado_id" class="border-b border-slate-100 hover:bg-slate-50 transition-colors">
+                  <td class="p-3 text-sm font-bold text-slate-900">
+                    {{ s.nombre }}<br>
+                    <span class="text-xs text-slate-500 font-normal">{{ s.codigo || 'N/A' }}</span>
+                  </td>
+                  <td class="p-3 text-xs font-medium text-slate-800">{{ s.departamento || 'N/A' }}</td>
+                  <td class="p-3 text-sm text-slate-700 font-bold text-center">{{ s.dias_acumulados }}</td>
+                  <td class="p-3 text-sm text-blue-600 font-bold text-center">{{ s.dias_gozados }}</td>
+                  <td class="p-3 text-sm text-emerald-600 font-bold text-center">{{ s.dias_pagados }}</td>
+                  <td class="p-3 text-sm font-black text-center" :class="s.saldo_pendiente > 0 ? 'text-orange-500' : 'text-slate-500'">
+                    {{ s.saldo_pendiente }}
+                  </td>
+                </tr>
+                <tr v-if="saldosFiltrados.length === 0">
+                  <td colspan="6" class="p-6 text-center text-slate-400 italic">No hay datos de saldos de vacaciones con los filtros aplicados.</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
     <!-- Modal Perfil -->
     <div v-if="modalAbiertoPerfil" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex justify-center items-center p-4">
       <div class="bg-white w-full max-w-md overflow-hidden rounded-3xl shadow-2xl animate-in fade-in zoom-in duration-200">
@@ -631,11 +793,59 @@ const deptStats = ref([])
 const loadingDepts = ref(true)
 
 const doughnutOptions = { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'right', labels: { boxWidth: 12, font: { size: 10, family: "'Inter', sans-serif" } } } }, cutout: '60%' }
+const doughnutOptionsPercent = {
+  responsive: true,
+  maintainAspectRatio: false,
+  plugins: {
+    legend: { position: 'right', labels: { boxWidth: 12, font: { size: 10, family: "'Inter', sans-serif" } } },
+    tooltip: {
+      callbacks: {
+        label: (context) => {
+          let label = context.label || '';
+          if (label) {
+            label += ': ';
+          }
+          if (context.parsed !== null) {
+            let total = context.dataset.data.reduce((a, b) => Number(a) + Number(b), 0);
+            let val = Number(context.parsed);
+            let perc = total > 0 ? ((val / total) * 100).toFixed(2) : 0;
+            label += val + ' (' + perc + '%)';
+          }
+          return label;
+        }
+      }
+    }
+  },
+  cutout: '60%'
+}
 const barOptions = { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false }, tooltip: { callbacks: { label: (context) => ` ${context.raw} Empleados` } } }, scales: { y: { beginAtZero: true, ticks: { stepSize: 1, font: { size: 10 } } }, x: { ticks: { font: { size: 10 } } } } }
 
 const chartEstadoData = computed(() => ({
   labels: ['Activos', 'Inactivos'],
   datasets: [{ backgroundColor: ['#10b981', '#ef4444'], borderWidth: 0, data: [stats.value.activos || 0, stats.value.inactivos || 0] }]
+}))
+
+const chartPlantillaProporcionData = computed(() => {
+  return {
+    labels: deptStats.value.map(d => d.departamento),
+    datasets: [{ 
+      backgroundColor: ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899', '#14b8a6', '#6366f1', '#f43f5e', '#84cc16'], 
+      borderWidth: 0, 
+      data: deptStats.value.map(d => d.cantidad) 
+    }]
+  }
+})
+
+const estadoContratos = ref({ activos: 0, por_vencer: 0, vencidos: 0 })
+const chartContratosData = computed(() => ({
+  labels: ['Activos', 'Por Vencer (30d)', 'Vencidos'],
+  datasets: [{ backgroundColor: ['#10b981', '#f59e0b', '#ef4444'], borderWidth: 0, data: [estadoContratos.value.activos || 0, estadoContratos.value.por_vencer || 0, estadoContratos.value.vencidos || 0] }]
+}))
+
+const tiposFaltas = ref({ justificadas: 0, injustificadas: 0 })
+const chartFaltasData = computed(() => ({
+  labels: ['Justificadas (Médicas/Permisos)', 'Injustificadas'],
+  datasets: [{ backgroundColor: ['#10b981', '#ef4444'], borderWidth: 0, data: [tiposFaltas.value.justificadas || 0, tiposFaltas.value.injustificadas || 0] }]
 }))
 
 const chartGeneroData = computed(() => {
@@ -789,6 +999,66 @@ const chartTendenciasData = computed(() => {
   };
 })
 
+const tendenciaAusentismo = ref([])
+const chartTendenciaAusentismoData = computed(() => {
+  if (tendenciaAusentismo.value.length === 0) return null;
+  const meses = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
+  const data = Array(12).fill(0);
+  tendenciaAusentismo.value.forEach(row => {
+    if (row.mes >= 1 && row.mes <= 12) {
+      data[row.mes - 1] = row.cantidad;
+    }
+  });
+
+  return {
+    labels: meses,
+    datasets: [
+      {
+        label: 'Faltas Registradas',
+        borderColor: '#f43f5e',
+        backgroundColor: '#f43f5e',
+        data: data,
+        tension: 0.4,
+        fill: true,
+        backgroundColor: 'rgba(244, 63, 94, 0.1)'
+      }
+    ]
+  };
+})
+
+const tendenciaTickets = ref([])
+const chartTendenciaTicketsData = computed(() => {
+  if (tendenciaTickets.value.length === 0) return null;
+  const labels = tendenciaTickets.value.map(row => {
+    const d = new Date(row.fecha);
+    return d.toLocaleDateString('es-HN', { day: '2-digit', month: 'short' });
+  });
+  const creados = tendenciaTickets.value.map(row => row.creados);
+  const resueltos = tendenciaTickets.value.map(row => row.resueltos);
+
+  return {
+    labels: labels,
+    datasets: [
+      {
+        label: 'Tickets Creados',
+        borderColor: '#f59e0b',
+        backgroundColor: '#f59e0b',
+        data: creados,
+        tension: 0.4,
+        fill: false
+      },
+      {
+        label: 'Tickets Resueltos',
+        borderColor: '#10b981',
+        backgroundColor: '#10b981',
+        data: resueltos,
+        tension: 0.4,
+        fill: false
+      }
+    ]
+  };
+})
+
 const cargarStats = async (isPolling = false) => {
   try {
     if (!isPolling) loadingStats.value = true
@@ -805,6 +1075,42 @@ const cargarDepartamentosStats = async (isPolling = false) => {
     deptStats.value = res.data
   } catch (error) { console.error('Error cargando stats de departamentos', error) } 
   finally { loadingDepts.value = false }
+}
+
+const cargarEstadoContratos = async (isPolling = false) => {
+  try {
+    const res = await axios.get('http://localhost:3007/api/stats/contratos-estado')
+    estadoContratos.value = res.data
+  } catch (e) {
+    console.error('Error cargando estado de contratos:', e)
+  }
+}
+
+const cargarTiposFaltas = async (isPolling = false) => {
+  try {
+    const res = await axios.get('http://localhost:3007/api/stats/tipos-faltas')
+    tiposFaltas.value = res.data
+  } catch (e) {
+    console.error('Error cargando tipos de faltas:', e)
+  }
+}
+
+const cargarTendenciaAusentismo = async (isPolling = false) => {
+  try {
+    const res = await axios.get('http://localhost:3007/api/stats/tendencia-ausentismo')
+    tendenciaAusentismo.value = res.data
+  } catch (e) {
+    console.error('Error cargando tendencia ausentismo:', e)
+  }
+}
+
+const cargarTendenciaTickets = async (isPolling = false) => {
+  try {
+    const res = await axios.get('http://localhost:3007/api/stats/tendencia-tickets')
+    tendenciaTickets.value = res.data
+  } catch (e) {
+    console.error('Error cargando tendencia tickets:', e)
+  }
 }
 
 // --- EMPLEADOS REPORTE ---
@@ -885,6 +1191,46 @@ const cargarProyecciones = async (isPolling = false) => {
     loadingProyecciones.value = false
   }
 }
+
+// --- ASISTENCIA Y TIEMPOS ---
+const ausentismoDatos = ref([])
+const loadingAusentismo = ref(false)
+const saldosDatos = ref([])
+const loadingSaldos = ref(false)
+const saldosFiltro = ref('')
+
+const cargarAusentismo = async (isPolling = false) => {
+  try {
+    if (!isPolling) loadingAusentismo.value = true
+    const res = await axios.get('http://localhost:3007/api/stats/ausentismo')
+    ausentismoDatos.value = res.data
+  } catch (e) {
+    console.error('Error cargando ausentismo:', e)
+  } finally {
+    loadingAusentismo.value = false
+  }
+}
+
+const cargarSaldos = async (isPolling = false) => {
+  try {
+    if (!isPolling) loadingSaldos.value = true
+    const res = await axios.get('http://localhost:3007/api/stats/saldos-vacaciones')
+    saldosDatos.value = res.data
+  } catch (e) {
+    console.error('Error cargando saldos de vacaciones:', e)
+  } finally {
+    loadingSaldos.value = false
+  }
+}
+
+const saldosFiltrados = computed(() => {
+  if (!saldosFiltro.value.trim()) return saldosDatos.value
+  const q = saldosFiltro.value.toLowerCase()
+  return saldosDatos.value.filter(s => 
+    s.nombre.toLowerCase().includes(q) || 
+    (s.codigo && s.codigo.toLowerCase().includes(q))
+  )
+})
 
 const getBadgeClass = (val) => {
   const map = {
@@ -973,17 +1319,29 @@ onMounted(async () => {
   await cargarDepartamentos()
   cargarStats(false)
   cargarDepartamentosStats(false)
+  cargarEstadoContratos(false)
+  cargarTiposFaltas(false)
+  cargarTendenciaAusentismo(false)
+  cargarTendenciaTickets(false)
   cargarEmpleados(false)
   cargarTickets(false)
   cargarProyecciones(false)
+  cargarAusentismo(false)
+  cargarSaldos(false)
 
   // Iniciar Polling en tiempo real (cada 15 segundos)
   pollingInterval = setInterval(() => {
     cargarStats(true)
     cargarDepartamentosStats(true)
+    cargarEstadoContratos(true)
+    cargarTiposFaltas(true)
+    cargarTendenciaAusentismo(true)
+    cargarTendenciaTickets(true)
     cargarEmpleados(true)
     cargarTickets(true)
     cargarProyecciones(true)
+    cargarAusentismo(true)
+    cargarSaldos(true)
   }, 15000)
 })
 

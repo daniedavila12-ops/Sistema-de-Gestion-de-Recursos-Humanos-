@@ -18,12 +18,15 @@ const storage = multer.diskStorage({
 const upload = multer({ storage: storage });
 
 // Conexión a la base de datos
-const db = mysql.createConnection({
+const db = mysql.createPool({
     host: process.env.DB_HOST ?? 'localhost',
     port: process.env.DB_PORT ?? 3306,
     user: process.env.DB_USER ?? 'root',
     password: process.env.DB_PASS ?? '',
-    database: process.env.DB_NAME ?? 'sistema_rrhh'
+    database: process.env.DB_NAME ?? 'sistema_rrhh',
+    waitForConnections: true,
+    connectionLimit: 10,
+    queueLimit: 0
 });
 
 router.post('/login', (req, res) => {

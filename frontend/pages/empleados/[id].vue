@@ -719,11 +719,15 @@
               <input v-model="formDocumento.titulo" type="text" required class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl text-slate-800 outline-none focus:border-blue-500 transition-all placeholder-slate-300" placeholder="Ej. Copia de Identidad, Certificado Médico...">
             </div>
             <div>
-              <label class="block text-[10px] font-black text-slate-400 uppercase mb-2 ml-1">Tipo de Documento</label>
+              <div class="flex justify-between items-center mb-2 ml-1">
+                <label class="block text-[10px] font-black text-slate-400 uppercase">Tipo de Documento</label>
+                <button type="button" @click="mostrarModalTipos = true" class="text-[10px] font-black text-blue-600 hover:text-blue-800 uppercase tracking-widest bg-blue-50 px-2 py-0.5 rounded-lg transition-colors">
+                  ⚙️ Gestionar Tipos
+                </button>
+              </div>
               <select v-model="formDocumento.tipo" required class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl text-slate-800 outline-none focus:border-blue-500 transition-all">
-                <option value="Documento General">Documento General</option>
-                <option value="Nota">Nota</option>
-                <option value="Contrato">Contrato</option>
+                <option value="">Selecciona un tipo...</option>
+                <option v-for="t in tiposDocumentos" :key="t.id" :value="t.nombre">{{ t.nombre }}</option>
               </select>
             </div>
             <div>
@@ -740,6 +744,42 @@
             </button>
           </div>
         </form>
+      </div>
+    </div>
+
+    <!-- Modal Gestión de Tipos de Documento -->
+    <div v-if="mostrarModalTipos" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center z-[60] p-4">
+      <div class="bg-white rounded-3xl shadow-2xl w-full max-w-md overflow-hidden border border-slate-100">
+        <header class="p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50">
+          <div>
+            <h3 class="text-xl font-black text-slate-800 uppercase tracking-tight">Tipos de Documento</h3>
+            <p class="text-xs text-slate-500 font-medium italic mt-1">Gestionar categorías</p>
+          </div>
+          <button @click="mostrarModalTipos = false" class="text-slate-400 hover:text-red-500 p-2 bg-white rounded-lg shadow-sm border border-slate-200 transition-colors">
+            ❌
+          </button>
+        </header>
+        
+        <div class="p-6 space-y-6">
+          <form @submit.prevent="agregarTipoDocumento" class="flex gap-3">
+            <input v-model="nuevoTipoDoc" type="text" required placeholder="Nuevo tipo de documento..." class="flex-1 px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm outline-none focus:border-blue-500 transition-all">
+            <button type="submit" :disabled="guardandoTipoDoc" class="px-5 py-2 bg-blue-600 text-white rounded-xl font-bold text-xs uppercase tracking-widest hover:bg-blue-700 shadow-sm transition-all disabled:opacity-50">
+              Agregar
+            </button>
+          </form>
+
+          <div class="max-h-60 overflow-y-auto pr-2 space-y-2">
+            <div v-for="tipo in tiposDocumentos" :key="tipo.id" class="flex justify-between items-center p-3 bg-slate-50 rounded-xl border border-slate-100">
+              <span class="font-bold text-sm text-slate-700">{{ tipo.nombre }}</span>
+              <button @click="eliminarTipoDocumento(tipo.id)" class="text-red-500 hover:text-red-700 p-1.5 hover:bg-red-50 rounded-lg transition-colors" title="Eliminar">
+                🗑️
+              </button>
+            </div>
+            <div v-if="tiposDocumentos.length === 0" class="text-center text-sm text-slate-400 py-4 italic">
+              No hay tipos de documento registrados.
+            </div>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -1365,6 +1405,45 @@ const uploadFoto = async (event) => {
   }
 }
 
+const tiposDocumentos = ref([])
+const mostrarModalTipos = ref(false)
+const nuevoTipoDoc = ref('')
+const guardandoTipoDoc = ref(false)
+
+const cargarTiposDocumentos = async () => {
+  try {
+    const res = await axios.get('http://localhost:3007/api/documentos/tipos/lista')
+    tiposDocumentos.value = res.data
+  } catch (err) {
+    console.error('Error al cargar tipos de documentos:', err)
+  }
+}
+
+const agregarTipoDocumento = async () => {
+  if (!nuevoTipoDoc.value.trim()) return
+  try {
+    guardandoTipoDoc.value = true
+    await axios.post('http://localhost:3007/api/documentos/tipos', { nombre: nuevoTipoDoc.value.trim() })
+    nuevoTipoDoc.value = ''
+    await cargarTiposDocumentos()
+  } catch (err) {
+    alert('❌ ' + (err.response?.data?.error || 'Error al agregar tipo de documento'))
+  } finally {
+    guardandoTipoDoc.value = false
+  }
+}
+
+const eliminarTipoDocumento = async (id) => {
+  if (confirm('¿Está seguro de que desea eliminar este tipo de documento?')) {
+    try {
+      await axios.delete(`http://localhost:3007/api/documentos/tipos/${id}`)
+      await cargarTiposDocumentos()
+    } catch (err) {
+      alert('❌ ' + (err.response?.data?.error || 'Error al eliminar tipo de documento'))
+    }
+  }
+}
+
 onMounted(async () => {
   rolID.value = localStorage.getItem('usuarioRol') || 2
   if (rolID.value == 1) {
@@ -1387,12 +1466,13 @@ onMounted(async () => {
     const res = await axios.get(`http://localhost:3007/api/empleados/${id}`)
     empleado.value = res.data
     
-    // Cargar contratos y vacaciones del empleado
+    // Cargar información relacionada
     await cargarContratos()
     await cargarVacaciones()
     await cargarFaltas()
     await cargarNotas()
     await cargarDocumentos()
+    await cargarTiposDocumentos()
   } catch (err) {
     console.error("Error al cargar el empleado:", err)
     error.value = err.response?.data?.mensaje || 'No se pudo cargar la información del empleado.'

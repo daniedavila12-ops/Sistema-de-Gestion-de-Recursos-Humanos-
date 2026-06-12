@@ -88,7 +88,7 @@
         </div>
       </header>
 
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6 mb-8">
         <div
           v-for="(stat, index) in tarjetas" :key="index" 
           @click="handleStatClick(stat.link)"
@@ -107,7 +107,7 @@
       <!-- Dashboard Lists -->
       <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
         <!-- Cumpleañeros -->
-        <div id="cumpleaneros" class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 flex flex-col h-[400px] scroll-mt-24">
+        <div v-if="dashboardLists.cumpleaneros !== null" id="cumpleaneros" class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 flex flex-col h-[400px] scroll-mt-24">
           <div class="flex justify-between items-center mb-4 shrink-0">
             <h2 class="text-lg font-black text-slate-800 uppercase tracking-tight flex items-center gap-2"><span class="text-2xl">🎂</span> Cumpleañeros</h2>
             <select v-model="mesCumpleaneros" @change="fetchCumpleaneros" class="p-2 text-xs bg-slate-50 border rounded-xl outline-none focus:border-blue-500 font-bold text-slate-600 cursor-pointer">
@@ -149,7 +149,7 @@
         </div>
 
         <!-- Contratos por Vencer -->
-        <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 flex flex-col h-[400px]">
+        <div v-if="dashboardLists.vencimientos !== null" class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 flex flex-col h-[400px]">
           <div class="flex justify-between items-center mb-4 shrink-0">
             <h2 class="text-lg font-black text-slate-800 uppercase tracking-tight flex items-center gap-2"><span class="text-2xl">📄</span> Contratos por Vencer</h2>
             <select v-model="mesVencimiento" @change="fetchVencimientos" class="p-2 text-xs bg-slate-50 border rounded-xl outline-none focus:border-blue-500 font-bold text-slate-600 cursor-pointer">
@@ -190,7 +190,7 @@
         </div>
         
         <!-- Empleados Activos -->
-        <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 flex flex-col h-[400px]">
+        <div v-if="dashboardLists.activos !== null" class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 flex flex-col h-[400px]">
           <div class="flex justify-between items-center mb-4 shrink-0">
             <h2 class="text-lg font-black text-slate-800 uppercase tracking-tight flex items-center gap-2"><span class="text-2xl">🟢</span> Empleados Activos</h2>
             <span v-if="dashboardLists.activos" class="bg-emerald-100 text-emerald-700 px-3 py-1 rounded-xl text-xs font-black">{{ dashboardLists.activos.length }}</span>
@@ -211,7 +211,7 @@
         </div>
         
         <!-- Empleados Inactivos -->
-        <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 flex flex-col h-[400px]">
+        <div v-if="dashboardLists.inactivos !== null" class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 flex flex-col h-[400px]">
           <div class="flex justify-between items-center mb-4 shrink-0">
             <h2 class="text-lg font-black text-slate-800 uppercase tracking-tight flex items-center gap-2"><span class="text-2xl">🔴</span> Empleados Inactivos</h2>
             <span v-if="dashboardLists.inactivos" class="bg-red-100 text-red-700 px-3 py-1 rounded-xl text-xs font-black">{{ dashboardLists.inactivos.length }}</span>
@@ -380,6 +380,8 @@ const menuUsuario = ref([])
 const departamentos = ref([])
 const stats = ref({ total: 0, tickets: 0, cumpleaneros: 0, vencimientos: 0 })
 const dashboardLists = ref({ cumpleaneros: [], vencimientos: [], activos: [], inactivos: [] })
+const allowedDashboard = ref([])
+const isDashboardAdmin = ref(false)
 const fechaActual = ref(new Date().toLocaleDateString('es-HN', { day: 'numeric', month: 'long', year: 'numeric' }))
 
 // Lógica Modal Perfil
@@ -494,7 +496,10 @@ const guardarEmpleado = async () => {
       };
 
       // Actualizar los contadores del Dashboard
-      const s = await axios.get('http://localhost:3007/api/stats/resumen');
+      const uId = localStorage.getItem('usuarioID') || '';
+      const uNombre = localStorage.getItem('usuarioNombre') || '';
+      const uRol = localStorage.getItem('usuarioRol') || '';
+      const s = await axios.get(`http://localhost:3007/api/stats/resumen?usuario_id=${uId}&nombre=${encodeURIComponent(uNombre)}&rol_id=${uRol}`);
       stats.value = s.data;
     }
   } catch (e) {
@@ -506,12 +511,25 @@ const guardarEmpleado = async () => {
   }
 };
 
-const tarjetas = computed(() => [
-  { label: 'Total Empleados', valor: stats.value.total, icon: '👥', color: 'border-indigo-500', bgIcon: 'bg-indigo-50', link: '/empleados' },
-  { label: 'Tickets Pendientes', valor: stats.value.tickets, icon: '🎫', color: 'border-yellow-500', bgIcon: 'bg-yellow-50', link: '/tickets' },
-  { label: 'Cumpleañeros', valor: stats.value.cumpleaneros, icon: '🎂', color: 'border-pink-500', bgIcon: 'bg-pink-50', link: '#cumpleaneros' },
-  { label: 'Vencimientos', valor: stats.value.vencimientos, icon: '📄', color: 'border-orange-600', bgIcon: 'bg-orange-50', link: '#vencimientos' },
-])
+const tarjetas = computed(() => {
+  let list = [
+    { label: 'Total Empleados', valor: stats.value.total, icon: '👥', color: 'border-indigo-500', bgIcon: 'bg-indigo-50', link: '/empleados' },
+    { label: 'Tickets Pendientes', valor: stats.value.tickets, icon: '🎫', color: 'border-yellow-500', bgIcon: 'bg-yellow-50', link: '/tickets' },
+    { label: 'Incidentes Pendientes', valor: stats.value.incidencias, icon: '⚠️', color: 'border-red-500', bgIcon: 'bg-red-50', link: '/reportes-incidencia' },
+    { label: 'Cumpleañeros', valor: stats.value.cumpleaneros, icon: '🎂', color: 'border-pink-500', bgIcon: 'bg-pink-50', link: '#cumpleaneros' },
+    { label: 'Vencimientos', valor: stats.value.vencimientos, icon: '📄', color: 'border-orange-600', bgIcon: 'bg-orange-50', link: '#vencimientos' },
+  ];
+
+  if (!isDashboardAdmin.value) {
+    if (!allowedDashboard.value.includes('Total Empleados')) list = list.filter(t => t.label !== 'Total Empleados');
+    if (!allowedDashboard.value.includes('Tickets Pendientes')) list = list.filter(t => t.label !== 'Tickets Pendientes');
+    if (!allowedDashboard.value.includes('Incidentes Pendientes')) list = list.filter(t => t.label !== 'Incidentes Pendientes');
+    if (!allowedDashboard.value.includes('Cumpleañeros')) list = list.filter(t => t.label !== 'Cumpleañeros');
+    if (!allowedDashboard.value.includes('Vencimientos')) list = list.filter(t => t.label !== 'Vencimientos');
+  }
+
+  return list;
+})
 
 const handleStatClick = (link) => {
   if (!link) return
@@ -604,12 +622,19 @@ onMounted(async () => {
   try {
     const m = await axios.get(`http://localhost:3007/api/menu/${rolID.value}`)
     menuUsuario.value = m.data
+    
+    const p = await axios.get(`http://localhost:3007/api/dashboard-permisos/${rolID.value}`)
+    isDashboardAdmin.value = p.data === 'ALL'
+    allowedDashboard.value = p.data === 'ALL' ? [] : (p.data || [])
   } catch (err) {
     console.error("Error cargando menu", err)
   }
 
   try {
-    const s = await axios.get('http://localhost:3007/api/stats/resumen')
+    const uId = localStorage.getItem('usuarioID') || '';
+    const uNombre = localStorage.getItem('usuarioNombre') || '';
+    const uRol = localStorage.getItem('usuarioRol') || '';
+    const s = await axios.get(`http://localhost:3007/api/stats/resumen?usuario_id=${uId}&nombre=${encodeURIComponent(uNombre)}&rol_id=${uRol}`)
     stats.value = s.data
   } catch (err) {
     console.error("Error cargando estadisticas resumen", err)
@@ -623,7 +648,17 @@ onMounted(async () => {
 
   try {
     const listsRes = await axios.get(`http://localhost:3007/api/stats/dashboard-lists?mes=${mesCumpleaneros.value}&mesVencimiento=${mesVencimiento.value}`)
-    dashboardLists.value = listsRes.data
+    const dLists = listsRes.data
+    
+    // Asignar permisos a las listas del dashboard
+    if (!isDashboardAdmin.value) {
+      if (!allowedDashboard.value.includes('Cumpleañeros')) dLists.cumpleaneros = null
+      if (!allowedDashboard.value.includes('Contratos por Vencer')) dLists.vencimientos = null
+      if (!allowedDashboard.value.includes('Empleados Activos')) dLists.activos = null
+      if (!allowedDashboard.value.includes('Empleados Inactivos')) dLists.inactivos = null
+    }
+    
+    dashboardLists.value = dLists
   } catch (err) {
     console.error("Error cargando listas del dashboard", err)
   }
