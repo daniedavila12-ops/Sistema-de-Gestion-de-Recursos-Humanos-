@@ -153,7 +153,7 @@
         </div>
         <div v-else class="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
            <!-- Empleados -->
-          <div class="bg-gradient-to-br from-blue-500 to-blue-700 p-5 rounded-2xl shadow-lg shadow-blue-500/20 text-white relative overflow-hidden group hover:-translate-y-1 transition-transform">
+          <div @click="activeTab = 'empleados'" class="bg-gradient-to-br from-blue-500 to-blue-700 p-5 rounded-2xl shadow-lg shadow-blue-500/20 text-white relative overflow-hidden group hover:-translate-y-1 transition-transform cursor-pointer active:scale-95">
             <div class="absolute -right-4 -top-4 text-white/20 text-7xl group-hover:scale-110 transition-transform">👥</div>
             <p class="text-[10px] font-black uppercase tracking-widest text-blue-100 mb-1 relative z-10">Total Empleados</p>
             <p class="text-4xl font-black relative z-10">{{ stats.total || 0 }}</p>
@@ -164,7 +164,7 @@
           </div>
           
           <!-- Tickets Ptes. -->
-          <div class="bg-gradient-to-br from-amber-400 to-orange-500 p-5 rounded-2xl shadow-lg shadow-orange-500/20 text-white relative overflow-hidden group hover:-translate-y-1 transition-transform">
+          <div @click="activeTab = 'tickets'" class="bg-gradient-to-br from-amber-400 to-orange-500 p-5 rounded-2xl shadow-lg shadow-orange-500/20 text-white relative overflow-hidden group hover:-translate-y-1 transition-transform cursor-pointer active:scale-95">
             <div class="absolute -right-4 -top-4 text-white/20 text-7xl group-hover:scale-110 transition-transform">🎫</div>
             <p class="text-[10px] font-black uppercase tracking-widest text-orange-100 mb-1 relative z-10">Tickets Ptes.</p>
             <p class="text-4xl font-black relative z-10">{{ stats.tickets || 0 }}</p>
@@ -172,7 +172,7 @@
           </div>
 
           <!-- De Vacaciones -->
-          <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 flex flex-col justify-between hover:shadow-md transition-shadow group relative overflow-hidden">
+          <div @click="activeTab = 'proyecciones'" class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 flex flex-col justify-between hover:shadow-md transition-shadow group relative overflow-hidden cursor-pointer active:scale-95">
             <div class="absolute top-0 right-0 w-16 h-16 bg-emerald-500/5 rounded-bl-full -z-10 group-hover:scale-150 transition-transform"></div>
             <div class="flex items-start justify-between">
               <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest leading-tight">De Vacaciones<br>(Actual)</p>
@@ -182,7 +182,7 @@
           </div>
 
           <!-- Faltas Mes -->
-          <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 flex flex-col justify-between hover:shadow-md transition-shadow group relative overflow-hidden">
+          <div @click="activeTab = 'asistencia'" class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 flex flex-col justify-between hover:shadow-md transition-shadow group relative overflow-hidden cursor-pointer active:scale-95">
             <div class="absolute top-0 right-0 w-16 h-16 bg-rose-500/5 rounded-bl-full -z-10 group-hover:scale-150 transition-transform"></div>
             <div class="flex items-start justify-between">
               <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest leading-tight">Faltas<br>(Este Mes)</p>
@@ -192,7 +192,7 @@
           </div>
 
           <!-- Documentos Legales -->
-          <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 flex flex-col justify-between hover:shadow-md transition-shadow group relative overflow-hidden">
+          <div @click="router.push('/documentos-legales')" class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 flex flex-col justify-between hover:shadow-md transition-shadow group relative overflow-hidden cursor-pointer active:scale-95">
             <div class="absolute top-0 right-0 w-16 h-16 bg-indigo-500/5 rounded-bl-full -z-10 group-hover:scale-150 transition-transform"></div>
             <div class="flex items-start justify-between">
               <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest leading-tight">Docs.<br>Legales</p>
@@ -202,7 +202,7 @@
           </div>
           
           <!-- Vencimientos -->
-          <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 flex flex-col justify-between hover:shadow-md transition-shadow group relative overflow-hidden">
+          <div @click="activeTab = 'empleados'" class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 flex flex-col justify-between hover:shadow-md transition-shadow group relative overflow-hidden cursor-pointer active:scale-95">
              <div class="absolute top-0 right-0 w-16 h-16 bg-purple-500/5 rounded-bl-full -z-10 group-hover:scale-150 transition-transform"></div>
             <div class="flex items-start justify-between">
               <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest leading-tight">Venc. Contrato<br>(30d)</p>
@@ -380,7 +380,13 @@
         <div class="flex flex-col md:flex-row justify-between items-center mb-6 gap-4 border-b border-slate-100 pb-4">
           <h2 class="text-lg font-black text-slate-800 uppercase tracking-tighter">Directorio Analítico</h2>
           <div class="flex flex-col md:flex-row gap-3 w-full md:w-auto">
-            <input v-model="empleadosFiltro" type="text" placeholder="Buscar por nombre o código..." class="p-2 border border-slate-200 rounded-lg text-sm bg-slate-50 w-full md:w-64 focus:border-blue-500 outline-none">
+            <div class="flex bg-slate-100 p-1 rounded-lg">
+              <button @click="empleadosVista = 'general'" :class="['px-3 py-1.5 text-xs font-bold rounded-md transition-colors', empleadosVista === 'general' ? 'bg-white shadow-sm text-blue-600' : 'text-slate-500 hover:text-slate-700']">General</button>
+              <button @click="empleadosVista = 'inicio_vacaciones'" :class="['px-3 py-1.5 text-xs font-bold rounded-md transition-colors', empleadosVista === 'inicio_vacaciones' ? 'bg-white shadow-sm text-emerald-600' : 'text-slate-500 hover:text-slate-700']">Inicio Vac.</button>
+              <button @click="empleadosVista = 'fin_vacaciones'" :class="['px-3 py-1.5 text-xs font-bold rounded-md transition-colors', empleadosVista === 'fin_vacaciones' ? 'bg-white shadow-sm text-orange-600' : 'text-slate-500 hover:text-slate-700']">Fin Vac.</button>
+              <button @click="empleadosVista = 'faltas'" :class="['px-3 py-1.5 text-xs font-bold rounded-md transition-colors', empleadosVista === 'faltas' ? 'bg-white shadow-sm text-red-600' : 'text-slate-500 hover:text-slate-700']">Faltas</button>
+            </div>
+            <input v-model="empleadosFiltro" type="text" placeholder="Buscar por nombre o código..." class="p-2 border border-slate-200 rounded-lg text-sm bg-slate-50 w-full md:w-48 focus:border-blue-500 outline-none">
             <select v-model="empleadosEstado" class="p-2 border border-slate-200 rounded-lg text-sm bg-slate-50 focus:border-blue-500 outline-none">
               <option value="todos">Todos los Estados</option>
               <option value="1">Activos</option>
@@ -399,27 +405,45 @@
               <tr class="bg-slate-50 border-b border-slate-200">
                 <th class="p-3 text-[10px] font-black text-slate-500 uppercase tracking-widest">Código</th>
                 <th class="p-3 text-[10px] font-black text-slate-500 uppercase tracking-widest">Empleado</th>
-                <th class="p-3 text-[10px] font-black text-slate-500 uppercase tracking-widest">Identidad</th>
-                <th class="p-3 text-[10px] font-black text-slate-500 uppercase tracking-widest">Puesto</th>
+                <th v-if="empleadosVista === 'general'" class="p-3 text-[10px] font-black text-slate-500 uppercase tracking-widest">Identidad</th>
+                <th v-if="empleadosVista === 'general'" class="p-3 text-[10px] font-black text-slate-500 uppercase tracking-widest">Puesto</th>
                 <th class="p-3 text-[10px] font-black text-slate-500 uppercase tracking-widest">Departamento</th>
-                <th class="p-3 text-[10px] font-black text-slate-500 uppercase tracking-widest text-center">Estado</th>
+                <th v-if="empleadosVista === 'general'" class="p-3 text-[10px] font-black text-slate-500 uppercase tracking-widest text-center">Estado</th>
+                
+                <th v-if="empleadosVista === 'inicio_vacaciones'" class="p-3 text-[10px] font-black text-emerald-600 uppercase tracking-widest text-center">Fecha Inicio Vacaciones</th>
+                <th v-if="empleadosVista === 'fin_vacaciones'" class="p-3 text-[10px] font-black text-orange-600 uppercase tracking-widest text-center">Fecha Fin Vacaciones</th>
+                <th v-if="empleadosVista === 'faltas'" class="p-3 text-[10px] font-black text-red-600 uppercase tracking-widest text-center">Total Faltas</th>
               </tr>
             </thead>
             <tbody>
               <tr v-for="emp in empleadosFiltrados" :key="emp.id" class="border-b border-slate-100 hover:bg-slate-50 transition-colors">
                 <td class="p-3 text-xs font-bold text-slate-700">{{ emp.codigo_empleado || 'N/A' }}</td>
                 <td class="p-3 text-sm font-bold text-slate-900">{{ emp.nombre }} {{ emp.apellido }}</td>
-                <td class="p-3 text-xs text-slate-600">{{ emp.numero_identidad || 'N/A' }}</td>
-                <td class="p-3 text-xs text-slate-600">{{ emp.puesto || 'N/A' }}</td>
-                <td class="p-3 text-xs font-medium text-slate-800">{{ getNombreDepartamento(emp.departamento_id) }}</td>
-                <td class="p-3 text-center">
+                <td v-if="empleadosVista === 'general'" class="p-3 text-xs text-slate-600">{{ emp.numero_identidad || 'N/A' }}</td>
+                <td v-if="empleadosVista === 'general'" class="p-3 text-xs text-slate-600">{{ emp.puesto || 'N/A' }}</td>
+                <td class="p-3 text-xs font-medium text-slate-800">{{ emp.departamento || getNombreDepartamento(emp.departamento_id) }}</td>
+                <td v-if="empleadosVista === 'general'" class="p-3 text-center">
                   <span :class="emp.estado == 1 ? 'bg-emerald-100 text-emerald-700' : 'bg-red-100 text-red-700'" class="px-2 py-1 rounded text-[10px] font-bold uppercase tracking-widest">
                     {{ emp.estado == 1 ? 'Activo' : 'Inactivo' }}
                   </span>
                 </td>
+
+                <td v-if="empleadosVista === 'inicio_vacaciones'" class="p-3 text-center text-sm font-black text-slate-700">
+                  <span v-if="emp.proxima_vacacion_inicio" class="bg-emerald-50 text-emerald-700 px-3 py-1 rounded-full border border-emerald-100">{{ new Date(emp.proxima_vacacion_inicio).toLocaleDateString('es-HN', {timeZone: 'UTC'}) }}</span>
+                  <span v-else class="text-slate-400 italic font-medium text-xs">Sin programar</span>
+                </td>
+                <td v-if="empleadosVista === 'fin_vacaciones'" class="p-3 text-center text-sm font-black text-slate-700">
+                  <span v-if="emp.proxima_vacacion_fin" class="bg-orange-50 text-orange-700 px-3 py-1 rounded-full border border-orange-100">{{ new Date(emp.proxima_vacacion_fin).toLocaleDateString('es-HN', {timeZone: 'UTC'}) }}</span>
+                  <span v-else class="text-slate-400 italic font-medium text-xs">Sin programar</span>
+                </td>
+                <td v-if="empleadosVista === 'faltas'" class="p-3 text-center text-sm font-black">
+                  <span :class="emp.total_faltas > 0 ? 'text-red-600 bg-red-50 border-red-100' : 'text-slate-500 bg-slate-50 border-slate-200'" class="px-3 py-1 rounded-full border">
+                    {{ emp.total_faltas || 0 }} faltas
+                  </span>
+                </td>
               </tr>
               <tr v-if="empleadosFiltrados.length === 0">
-                <td colspan="6" class="p-6 text-center text-slate-400 italic">No se encontraron empleados con los filtros aplicados.</td>
+                <td colspan="7" class="p-6 text-center text-slate-400 italic">No se encontraron empleados con los filtros aplicados.</td>
               </tr>
             </tbody>
           </table>
@@ -1118,11 +1142,12 @@ const empleados = ref([])
 const loadingEmpleados = ref(false)
 const empleadosFiltro = ref('')
 const empleadosEstado = ref('todos')
+const empleadosVista = ref('general')
 
 const cargarEmpleados = async (isPolling = false) => {
   try {
     if (!isPolling) loadingEmpleados.value = true
-    const res = await axios.get('http://localhost:3007/api/empleados/lista')
+    const res = await axios.get('http://localhost:3007/api/stats/empleados-detalles')
     empleados.value = res.data
   } catch (e) {
     console.error('Error cargando empleados:', e)

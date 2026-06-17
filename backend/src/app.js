@@ -444,6 +444,27 @@ app.get('/api/stats/tendencia-tickets', (req, res) => {
     });
 });
 
+app.get('/api/stats/empleados-detalles', (req, res) => {
+    const sql = `
+        SELECT 
+            e.id, 
+            e.nombre, 
+            e.apellido, 
+            e.codigo_empleado,
+            e.estado,
+            d.nombre as departamento,
+            (SELECT v.fechaInicio FROM vacaciones v WHERE v.empleado_id = e.id AND v.fechaFinal >= CURDATE() ORDER BY v.fechaInicio ASC LIMIT 1) as proxima_vacacion_inicio,
+            (SELECT v.fechaRegreso FROM vacaciones v WHERE v.empleado_id = e.id AND v.fechaFinal >= CURDATE() ORDER BY v.fechaRegreso ASC LIMIT 1) as proxima_vacacion_fin,
+            (SELECT COUNT(*) FROM faltas f WHERE f.empleado_id = e.id) as total_faltas
+        FROM empleados e
+        LEFT JOIN departamentos d ON e.departamento_id = d.id
+    `;
+    db.query(sql, (err, results) => {
+        if (err) return res.status(500).json({ error: err.message });
+        res.json(results);
+    });
+});
+
 // 3. SISTEMA DE NOTIFICACIONES
 app.get('/api/notificaciones/:usuario_id', (req, res) => {
     const { usuario_id } = req.params;
