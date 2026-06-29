@@ -298,6 +298,69 @@ const rolNombre = ref('Cargando...')
 const fotoUsuario = ref(null)
 const menuUsuario = ref([])
 
+// Lógica Modal Perfil
+const dropdownPerfilAbierto = ref(false)
+const modalAbiertoPerfil = ref(false)
+const loadingPassword = ref(false)
+const formPassword = ref({ actual: '', nueva: '', confirmar: '' })
+const fileInputPerfil = ref(null)
+
+const triggerFileInputPerfil = () => {
+  fileInputPerfil.value.click()
+}
+
+const uploadFotoPerfil = async (event) => {
+  const file = event.target.files[0]
+  if (!file) return
+
+  const formData = new FormData()
+  formData.append('foto', file)
+
+  try {
+    const id = localStorage.getItem('usuarioID')
+    const res = await axios.post(`http://localhost:3007/api/auth/${id}/foto`, formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data'
+      }
+    })
+
+    fotoUsuario.value = res.data.fotoUrl
+    localStorage.setItem('usuarioFoto', res.data.fotoUrl)
+    alert('✅ ' + res.data.mensaje)
+  } catch (err) {
+    console.error("Error al subir la foto:", err)
+    alert('❌ Error al subir la foto')
+  }
+}
+
+const abrirModalPerfil = () => { modalAbiertoPerfil.value = true }
+const cerrarModalPerfil = () => {
+  modalAbiertoPerfil.value = false
+  formPassword.value = { actual: '', nueva: '', confirmar: '' }
+}
+
+const cambiarPassword = async () => {
+  if (formPassword.value.nueva !== formPassword.value.confirmar) {
+    alert("Las contraseñas nuevas no coinciden")
+    return
+  }
+  try {
+    loadingPassword.value = true
+    const id = localStorage.getItem('usuarioID')
+    const response = await axios.put(`http://localhost:3007/api/auth/${id}/password`, {
+      password_actual: formPassword.value.actual,
+      password_nueva: formPassword.value.nueva
+    })
+    alert('✅ ' + response.data.mensaje)
+    cerrarModalPerfil()
+  } catch (error) {
+    console.error(error)
+    alert('❌ ' + (error.response?.data?.mensaje || "Error al cambiar contraseña"))
+  } finally {
+    loadingPassword.value = false
+  }
+}
+
 // Variables del módulo
 const mostrarModal = ref(false)
 const loading = ref(false)
@@ -416,7 +479,15 @@ const filtrarTickets = () => {
   }
 
   // 4. Ordenamiento
+  const isClosed = (estado) => ['Resuelto', 'Cerrado', 'Cancelado', 'Desestimado'].includes(estado)
+
   data = data.sort((a, b) => {
+    const aClosed = isClosed(a.estado)
+    const bClosed = isClosed(b.estado)
+
+    if (aClosed && !bClosed) return 1
+    if (!aClosed && bClosed) return -1
+
     if (sortOption.value === 'reciente') {
       return new Date(b.fecha_creacion) - new Date(a.fecha_creacion)
     } else if (sortOption.value === 'antiguo') {

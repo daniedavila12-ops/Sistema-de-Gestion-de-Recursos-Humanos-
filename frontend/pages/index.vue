@@ -43,6 +43,7 @@
           <p class="text-slate-500 mt-1 font-medium italic">📅 {{ fechaActual }}</p>
         </div>
         <div class="flex items-center gap-6">
+          <NotificationBell v-if="isDashboardAdmin || allowedDashboard.includes('Campanita de Notificaciones')" />
           <div class="relative">
             <div @click="dropdownPerfilAbierto = !dropdownPerfilAbierto" class="flex items-center gap-3 pl-6 border-l border-slate-200 cursor-pointer hover:bg-slate-50 p-2 rounded-xl transition-colors">
               <div v-if="fotoUsuario" class="h-10 w-10 rounded-full flex items-center justify-center overflow-hidden ring-2 ring-slate-100">
@@ -620,10 +621,10 @@ onMounted(async () => {
   }
   
   try {
-    const m = await axios.get(`http://localhost:3007/api/menu/${rolID.value}`)
+    const m = await axios.get(`http://localhost:3007/api/menu/${rolID.value}?usuario_id=${localStorage.getItem('usuarioID')}`)
     menuUsuario.value = m.data
     
-    const p = await axios.get(`http://localhost:3007/api/dashboard-permisos/${rolID.value}`)
+    const p = await axios.get(`http://localhost:3007/api/dashboard-permisos/${rolID.value}?usuario_id=${localStorage.getItem('usuarioID')}`)
     isDashboardAdmin.value = p.data === 'ALL'
     allowedDashboard.value = p.data === 'ALL' ? [] : (p.data || [])
   } catch (err) {
@@ -662,6 +663,21 @@ onMounted(async () => {
   } catch (err) {
     console.error("Error cargando listas del dashboard", err)
   }
+
+  // Socket.io for realtime dashboard stats update
+  const { io } = await import('socket.io-client');
+  const socket = io('http://localhost:3007');
+  socket.on('nuevo_ticket', async () => {
+    try {
+      const uId = localStorage.getItem('usuarioID') || '';
+      const uNombre = localStorage.getItem('usuarioNombre') || '';
+      const uRol = localStorage.getItem('usuarioRol') || '';
+      const s = await axios.get(`http://localhost:3007/api/stats/resumen?usuario_id=${uId}&nombre=${encodeURIComponent(uNombre)}&rol_id=${uRol}`);
+      stats.value = s.data;
+    } catch (err) {
+      console.error("Error recargando estadisticas resumen (socket)", err);
+    }
+  });
 })
 
 const logout = () => { localStorage.clear(); navigateTo('/login') }

@@ -146,8 +146,9 @@ class _NuevoContratoScreenState extends ConsumerState<NuevoContratoScreen> {
                 children: [
                   Expanded(
                     child: DropdownButtonFormField<String>(
+                      isExpanded: true,
                       decoration: _inputDecoration('Tipo de Contrato', Icons.description_outlined),
-                      items: ['Permanente', 'Temporal', 'Servicios Profesionales'].map((t) => DropdownMenuItem(value: t, child: Text(t))).toList(),
+                      items: ['Permanente', 'Temporal', 'Servicios Profesionales'].map((t) => DropdownMenuItem(value: t, child: Text(t, overflow: TextOverflow.ellipsis))).toList(),
                       onChanged: (v) => setState(() => _tipoContrato = v),
                       validator: (v) => v == null ? 'Seleccione un tipo' : null,
                     ),
@@ -155,6 +156,7 @@ class _NuevoContratoScreenState extends ConsumerState<NuevoContratoScreen> {
                   const SizedBox(width: 16),
                   Expanded(
                     child: DropdownButtonFormField<String>(
+                      isExpanded: true,
                       decoration: _inputDecoration('Estado', Icons.toggle_on_outlined),
                       items: ['Activo', 'Finalizado', 'Renovado'].map((t) => DropdownMenuItem(value: t, child: Text(t))).toList(),
                       onChanged: (v) => setState(() => _estado = v),

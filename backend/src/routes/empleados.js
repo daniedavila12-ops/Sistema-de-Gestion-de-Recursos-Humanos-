@@ -53,6 +53,18 @@ router.post('/crear', (req, res) => {
             console.error('❌ Error SQL:', err);
             return res.status(500).json({ mensaje: "Error en la base de datos", detalle: err.sqlMessage });
         }
+
+        const io = req.app.get('io');
+        if (io) io.emit('nueva_notificacion');
+
+        db.query('SELECT id FROM usuarios WHERE rol_id IN (1, 2)', (err, users) => {
+            if (!err && users && users.length > 0) {
+                const notifQuery = 'INSERT INTO notificaciones (usuario_id, titulo, mensaje, tipo) VALUES ?';
+                const notifValues = users.map(u => [u.id, 'Nuevo Empleado', `Se ha registrado al empleado: ${d.nombre} ${d.apellido}`, 'info']);
+                db.query(notifQuery, [notifValues]);
+            }
+        });
+
         // IMPORTANTE: Devolvemos un objeto JSON claro
         res.status(200).json({ 
             success: true,
@@ -138,6 +150,18 @@ router.put('/:id/desactivar', (req, res) => {
     const sql = "UPDATE empleados SET estado = 0 WHERE id = ?";
     db.query(sql, [id], (err, result) => {
         if (err) return res.status(500).json({ mensaje: "Error al desactivar", detalle: err.sqlMessage });
+
+        const io = req.app.get('io');
+        if (io) io.emit('nueva_notificacion');
+
+        db.query('SELECT id FROM usuarios WHERE rol_id IN (1, 2)', (err, users) => {
+            if (!err && users && users.length > 0) {
+                const notifQuery = 'INSERT INTO notificaciones (usuario_id, titulo, mensaje, tipo) VALUES ?';
+                const notifValues = users.map(u => [u.id, 'Empleado Inactivo', `Se ha desactivado al empleado con ID: ${id}`, 'warning']);
+                db.query(notifQuery, [notifValues]);
+            }
+        });
+
         res.json({ success: true, mensaje: "Empleado desactivado correctamente" });
     });
 });

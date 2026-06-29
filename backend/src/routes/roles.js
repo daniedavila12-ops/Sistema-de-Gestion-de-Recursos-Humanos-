@@ -89,53 +89,69 @@ router.put('/:id/permisos', (req, res) => {
         return res.status(400).json({ mensaje: "Formato de permisos inválido" });
     }
 
-    // Usaremos transacciones para actualizar múltiples registros
-    db.beginTransaction((err) => {
+    db.getConnection((err, connection) => {
         if (err) return res.status(500).json(err);
 
-        // Primero borramos los permisos existentes de este rol para re-insertarlos
-        db.query("DELETE FROM rol_modulo WHERE rol_id = ?", [rol_id], (err, result) => {
+        // Usaremos transacciones para actualizar múltiples registros
+        connection.beginTransaction((err) => {
             if (err) {
-                return db.rollback(() => {
-                    res.status(500).json({ mensaje: "Error al limpiar permisos anteriores", detalle: err.sqlMessage });
-                });
+                connection.release();
+                return res.status(500).json(err);
             }
 
-            if (permisos.length === 0) {
-                // Si enviaron array vacío, solo querían borrar todo
-                db.commit((err) => {
-                    if (err) return db.rollback(() => res.status(500).json(err));
-                    return res.status(200).json({ success: true, mensaje: "Permisos actualizados correctamente" });
-                });
-                return;
-            }
-
-            // Preparar insert múltiple
-            const values = permisos.map(p => [
-                rol_id, 
-                p.modulo_id, 
-                p.puedeVer ? 1 : 0, 
-                p.puedeCrear ? 1 : 0, 
-                p.puedeEditar ? 1 : 0, 
-                p.puedeEliminar ? 1 : 0
-            ]);
-
-            const insertSql = "INSERT INTO rol_modulo (rol_id, modulo_id, puedeVer, puedeCrear, puedeEditar, puedeEliminar) VALUES ?";
-            
-            db.query(insertSql, [values], (err, result) => {
+            // Primero borramos los permisos existentes de este rol para re-insertarlos
+            connection.query("DELETE FROM rol_modulo WHERE rol_id = ?", [rol_id], (err, result) => {
                 if (err) {
-                    return db.rollback(() => {
-                        res.status(500).json({ mensaje: "Error al guardar nuevos permisos", detalle: err.sqlMessage });
+                    return connection.rollback(() => {
+                        connection.release();
+                        res.status(500).json({ mensaje: "Error al limpiar permisos anteriores", detalle: err.sqlMessage });
                     });
                 }
 
-                db.commit((err) => {
+                if (permisos.length === 0) {
+                    // Si enviaron array vacío, solo querían borrar todo
+                    return connection.commit((err) => {
+                        if (err) {
+                            return connection.rollback(() => {
+                                connection.release();
+                                res.status(500).json(err);
+                            });
+                        }
+                        connection.release();
+                        return res.status(200).json({ success: true, mensaje: "Permisos actualizados correctamente" });
+                    });
+                }
+
+                // Preparar insert múltiple
+                const values = permisos.map(p => [
+                    rol_id, 
+                    p.modulo_id, 
+                    p.puedeVer ? 1 : 0, 
+                    p.puedeCrear ? 1 : 0, 
+                    p.puedeEditar ? 1 : 0, 
+                    p.puedeEliminar ? 1 : 0
+                ]);
+
+                const insertSql = "INSERT INTO rol_modulo (rol_id, modulo_id, puedeVer, puedeCrear, puedeEditar, puedeEliminar) VALUES ?";
+                
+                connection.query(insertSql, [values], (err, result) => {
                     if (err) {
-                        return db.rollback(() => {
-                            res.status(500).json({ mensaje: "Error al hacer commit de permisos", detalle: err.sqlMessage });
+                        return connection.rollback(() => {
+                            connection.release();
+                            res.status(500).json({ mensaje: "Error al guardar nuevos permisos", detalle: err.sqlMessage });
                         });
                     }
-                    res.status(200).json({ success: true, mensaje: "Permisos actualizados correctamente" });
+
+                    connection.commit((err) => {
+                        if (err) {
+                            return connection.rollback(() => {
+                                connection.release();
+                                res.status(500).json({ mensaje: "Error al hacer commit de permisos", detalle: err.sqlMessage });
+                            });
+                        }
+                        connection.release();
+                        res.status(200).json({ success: true, mensaje: "Permisos actualizados correctamente" });
+                    });
                 });
             });
         });

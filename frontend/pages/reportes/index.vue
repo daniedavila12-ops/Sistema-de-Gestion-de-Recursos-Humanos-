@@ -76,10 +76,6 @@
           <p class="text-slate-500 mt-1 font-medium text-sm">Dashboard Analítico e Integrado en Tiempo Real</p>
         </div>
         <div class="w-full md:w-auto flex flex-col md:flex-row items-center gap-4">
-          <button @click="imprimirReporte" class="w-full md:w-auto bg-slate-800 text-white px-5 py-2.5 rounded-lg font-bold uppercase text-xs hover:bg-slate-900 transition-all shadow-sm flex items-center justify-center gap-2 no-print">
-            <span>🖨️</span> Exportar a PDF
-          </button>
-          
           <div class="relative w-full md:w-auto flex justify-end">
             <div @click="dropdownPerfilAbierto = !dropdownPerfilAbierto" class="flex items-center gap-3 pl-6 border-l border-slate-200 cursor-pointer hover:bg-slate-50 p-2 rounded-xl transition-colors no-print">
               <div v-if="fotoUsuario" class="h-10 w-10 rounded-full flex items-center justify-center overflow-hidden ring-2 ring-slate-100">
@@ -133,19 +129,33 @@
         <button @click="activeTab = 'empleados'" :class="['px-6 py-3 font-bold text-xs uppercase tracking-widest whitespace-nowrap border-b-2 transition-colors', activeTab === 'empleados' ? 'border-blue-500 text-blue-600' : 'border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300']">
           👥 Plantilla & Empleados
         </button>
-        <button @click="activeTab = 'tickets'" :class="['px-6 py-3 font-bold text-xs uppercase tracking-widest whitespace-nowrap border-b-2 transition-colors', activeTab === 'tickets' ? 'border-blue-500 text-blue-600' : 'border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300']">
+        <button @click="activeTab = 'incidencias'" :class="['px-6 py-3 font-bold text-xs uppercase tracking-widest whitespace-nowrap border-b-2 transition-colors', activeTab === 'incidencias' ? 'border-rose-500 text-rose-600' : 'border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300']">
+          🚨 Incidencias Laborales
+        </button>
+        <button @click="activeTab = 'tiempos'" :class="['px-6 py-3 font-bold text-xs uppercase tracking-widest whitespace-nowrap border-b-2 transition-colors', activeTab === 'tiempos' ? 'border-emerald-500 text-emerald-600' : 'border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300']">
+          ⏳ Control de Tiempos
+        </button>
+        <button @click="activeTab = 'legales'" :class="['px-6 py-3 font-bold text-xs uppercase tracking-widest whitespace-nowrap border-b-2 transition-colors', activeTab === 'legales' ? 'border-indigo-500 text-indigo-600' : 'border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300']">
+          ⚖️ Docs & Legales
+        </button>
+        <button @click="activeTab = 'tickets'" :class="['px-6 py-3 font-bold text-xs uppercase tracking-widest whitespace-nowrap border-b-2 transition-colors', activeTab === 'tickets' ? 'border-amber-500 text-amber-600' : 'border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300']">
           🎫 Soporte & Tickets
-        </button>
-        <button @click="activeTab = 'proyecciones'" :class="['px-6 py-3 font-bold text-xs uppercase tracking-widest whitespace-nowrap border-b-2 transition-colors', activeTab === 'proyecciones' ? 'border-blue-500 text-blue-600' : 'border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300']">
-          📅 Proyecciones Vacaciones
-        </button>
-        <button @click="activeTab = 'asistencia'" :class="['px-6 py-3 font-bold text-xs uppercase tracking-widest whitespace-nowrap border-b-2 transition-colors', activeTab === 'asistencia' ? 'border-blue-500 text-blue-600' : 'border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300']">
-          ⏳ Asistencia y Tiempos
         </button>
       </div>
 
       <!-- TAB: DASHBOARD -->
       <div v-if="activeTab === 'dashboard'" class="space-y-6 animate-in fade-in duration-300">
+        <!-- HEADER DASHBOARD -->
+        <div class="flex justify-between items-center bg-white p-4 rounded-2xl shadow-sm border border-slate-200">
+           <div>
+             <h2 class="text-lg font-black text-slate-800 uppercase tracking-tighter">Resumen Ejecutivo</h2>
+             <p class="text-xs text-slate-500 font-medium">Estadísticas y métricas generales de la plataforma</p>
+           </div>
+           <button @click="generarPDFDashboard" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-bold text-xs uppercase tracking-widest transition-colors shadow-sm flex items-center justify-center gap-2 whitespace-nowrap group">
+              <span class="group-hover:scale-110 transition-transform">📄</span> Crear PDF Dashboard
+           </button>
+        </div>
+
         <!-- KPIs Principales e Integrados -->
         <div v-if="loadingStats" class="bg-white rounded-2xl shadow-sm border border-slate-200 p-10 text-center text-slate-400 text-sm italic flex flex-col items-center gap-3">
           <div class="w-6 h-6 border-2 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
@@ -249,14 +259,14 @@
                  Avisos Importantes
               </h2>
               <div class="space-y-3 relative z-10">
-                <div class="flex items-center justify-between p-3 rounded-xl bg-white/10 backdrop-blur border border-white/5 hover:bg-white/20 transition-colors cursor-pointer group">
+                <div @click="activeTab = 'empleados'; empleadosVista = 'cumpleanos'" class="flex items-center justify-between p-3 rounded-xl bg-white/10 backdrop-blur border border-white/5 hover:bg-white/20 transition-colors cursor-pointer group">
                   <div class="flex items-center gap-3">
                     <div class="w-8 h-8 rounded-full bg-purple-500/20 flex items-center justify-center text-purple-300 group-hover:scale-110 transition-transform">🎂</div>
                     <span class="text-xs font-bold text-slate-200">Cumpleaños (Mes)</span>
                   </div>
                   <span class="text-sm font-black text-white bg-purple-500/40 px-2 py-0.5 rounded-lg">{{ stats.cumpleaneros || 0 }}</span>
                 </div>
-                <div class="flex items-center justify-between p-3 rounded-xl bg-white/10 backdrop-blur border border-white/5 hover:bg-white/20 transition-colors cursor-pointer group">
+                <div @click="activeTab = 'empleados'; empleadosVista = 'renovaciones'" class="flex items-center justify-between p-3 rounded-xl bg-white/10 backdrop-blur border border-white/5 hover:bg-white/20 transition-colors cursor-pointer group">
                   <div class="flex items-center gap-3">
                     <div class="w-8 h-8 rounded-full bg-orange-500/20 flex items-center justify-center text-orange-300 group-hover:scale-110 transition-transform">📄</div>
                     <span class="text-xs font-bold text-slate-200">Renovaciones</span>
@@ -269,9 +279,9 @@
         </div>
 
         <!-- NEW CHARTS SECTION: GENDER & AGE -->
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6 mb-6">
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-6 mb-6">
           <!-- Género -->
-          <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 flex flex-col h-[300px]">
+          <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 flex flex-col h-[320px]">
              <h2 class="text-sm font-black text-slate-800 uppercase tracking-widest mb-2 flex items-center gap-2">
                  <span class="w-2 h-2 rounded-full bg-pink-500"></span>
                  Distribución por Género
@@ -281,48 +291,38 @@
               </div>
           </div>
           <!-- Edad -->
-          <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 flex flex-col h-[300px]">
+          <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 flex flex-col lg:col-span-2 h-[320px]">
              <h2 class="text-sm font-black text-slate-800 uppercase tracking-widest mb-2 flex items-center gap-2">
                  <span class="w-2 h-2 rounded-full bg-orange-500"></span>
                  Distribución por Edad
               </h2>
               <div class="flex-1 relative w-full h-full flex justify-center items-center pb-4">
-                <Pie v-if="!loadingEmpleados && chartEdadData" :data="chartEdadData" :options="doughnutOptions" />
+                <PolarArea v-if="!loadingEmpleados && chartEdadData" :data="chartEdadData" :options="polarOptions" />
               </div>
           </div>
         </div>
 
-        <!-- NEW SECTION: DISTRIBUCIÓN Y PROPORCIONES (ANILLO) -->
-        <h3 class="text-md font-black text-slate-800 uppercase tracking-widest mt-8 mb-4 border-b border-slate-200 pb-2">Distribución y Proporciones</h3>
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6 mb-6">
-          <!-- Distribución de la Plantilla -->
-          <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 flex flex-col h-[300px]">
-             <h2 class="text-sm font-black text-slate-800 uppercase tracking-widest mb-2 flex items-center gap-2">
-                 <span class="w-2 h-2 rounded-full bg-blue-500"></span>
-                 Distribución de la Plantilla
-              </h2>
-              <div class="flex-1 relative w-full h-full flex justify-center items-center pb-4">
-                <Doughnut v-if="!loadingDepts && chartPlantillaProporcionData" :data="chartPlantillaProporcionData" :options="doughnutOptionsPercent" />
-              </div>
-          </div>
+        <!-- NEW SECTION: CONTRATOS Y FALTAS -->
+        <h3 class="text-md font-black text-slate-800 uppercase tracking-widest mt-8 mb-4 border-b border-slate-200 pb-2">Estado de Contratos y Ausentismo</h3>
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6 mb-6">
           <!-- Estado de Contratos -->
-          <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 flex flex-col h-[300px]">
+          <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 flex flex-col h-[320px]">
              <h2 class="text-sm font-black text-slate-800 uppercase tracking-widest mb-2 flex items-center gap-2">
                  <span class="w-2 h-2 rounded-full bg-orange-500"></span>
                  Estado de Contratos
               </h2>
               <div class="flex-1 relative w-full h-full flex justify-center items-center pb-4">
-                <Doughnut v-if="chartContratosData" :data="chartContratosData" :options="doughnutOptionsPercent" />
+                <Bar v-if="chartContratosData" :data="chartContratosData" :options="barOptions" />
               </div>
           </div>
           <!-- Tipos de Faltas -->
-          <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 flex flex-col h-[300px]">
+          <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 flex flex-col h-[320px]">
              <h2 class="text-sm font-black text-slate-800 uppercase tracking-widest mb-2 flex items-center gap-2">
                  <span class="w-2 h-2 rounded-full bg-rose-500"></span>
                  Tipos de Faltas (Mes)
               </h2>
               <div class="flex-1 relative w-full h-full flex justify-center items-center pb-4">
-                <Doughnut v-if="chartFaltasData" :data="chartFaltasData" :options="doughnutOptionsPercent" />
+                <Bar v-if="chartFaltasData" :data="chartFaltasData" :options="barOptions" />
               </div>
           </div>
         </div>
@@ -382,23 +382,30 @@
           <div class="flex flex-col md:flex-row gap-3 w-full md:w-auto">
             <div class="flex bg-slate-100 p-1 rounded-lg">
               <button @click="empleadosVista = 'general'" :class="['px-3 py-1.5 text-xs font-bold rounded-md transition-colors', empleadosVista === 'general' ? 'bg-white shadow-sm text-blue-600' : 'text-slate-500 hover:text-slate-700']">General</button>
-              <button @click="empleadosVista = 'inicio_vacaciones'" :class="['px-3 py-1.5 text-xs font-bold rounded-md transition-colors', empleadosVista === 'inicio_vacaciones' ? 'bg-white shadow-sm text-emerald-600' : 'text-slate-500 hover:text-slate-700']">Inicio Vac.</button>
-              <button @click="empleadosVista = 'fin_vacaciones'" :class="['px-3 py-1.5 text-xs font-bold rounded-md transition-colors', empleadosVista === 'fin_vacaciones' ? 'bg-white shadow-sm text-orange-600' : 'text-slate-500 hover:text-slate-700']">Fin Vac.</button>
+              <button @click="empleadosVista = 'vacaciones'" :class="['px-3 py-1.5 text-xs font-bold rounded-md transition-colors', empleadosVista === 'vacaciones' ? 'bg-white shadow-sm text-emerald-600' : 'text-slate-500 hover:text-slate-700']">Vacaciones</button>
               <button @click="empleadosVista = 'faltas'" :class="['px-3 py-1.5 text-xs font-bold rounded-md transition-colors', empleadosVista === 'faltas' ? 'bg-white shadow-sm text-red-600' : 'text-slate-500 hover:text-slate-700']">Faltas</button>
+              <button @click="empleadosVista = 'cumpleanos'" :class="['px-3 py-1.5 text-xs font-bold rounded-md transition-colors', empleadosVista === 'cumpleanos' ? 'bg-white shadow-sm text-purple-600' : 'text-slate-500 hover:text-slate-700']">Cumpleaños</button>
+              <button @click="empleadosVista = 'renovaciones'" :class="['px-3 py-1.5 text-xs font-bold rounded-md transition-colors', empleadosVista === 'renovaciones' ? 'bg-white shadow-sm text-orange-600' : 'text-slate-500 hover:text-slate-700']">Renovaciones</button>
             </div>
-            <input v-model="empleadosFiltro" type="text" placeholder="Buscar por nombre o código..." class="p-2 border border-slate-200 rounded-lg text-sm bg-slate-50 w-full md:w-48 focus:border-blue-500 outline-none">
+            <input v-model="searchQuery" type="text" placeholder="Buscar por nombre o código..." class="p-2 border border-slate-200 rounded-lg text-sm bg-slate-50 w-full md:w-48 focus:border-blue-500 outline-none">
             <select v-model="empleadosEstado" class="p-2 border border-slate-200 rounded-lg text-sm bg-slate-50 focus:border-blue-500 outline-none">
               <option value="todos">Todos los Estados</option>
               <option value="1">Activos</option>
               <option value="0">Inactivos</option>
             </select>
+            <button @click="generarPDFDirectorio" class="px-4 py-2 bg-slate-800 hover:bg-slate-900 text-white rounded-lg font-bold text-xs uppercase tracking-widest transition-colors shadow-sm flex items-center justify-center gap-2">
+              <span>📄</span> Crear PDF Directorio Analítico
+            </button>
             <button @click="exportarCSV(empleadosFiltrados, 'Reporte_Empleados')" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg font-bold text-xs uppercase tracking-widest transition-colors shadow-sm flex items-center justify-center gap-2">
               <span>📊</span> CSV
             </button>
           </div>
         </div>
 
-        <div v-if="loadingEmpleados" class="text-center py-10 text-slate-400 italic">Cargando datos de empleados...</div>
+        <div v-if="loadingEmpleados" class="flex flex-col items-center justify-center py-16">
+          <div class="animate-spin rounded-full h-10 w-10 border-b-2 border-blue-600 mb-4"></div>
+          <span class="text-slate-500 font-medium text-sm">Cargando directorio analítico...</span>
+        </div>
         <div v-else class="overflow-x-auto">
           <table class="w-full text-left border-collapse">
             <thead>
@@ -410,9 +417,10 @@
                 <th class="p-3 text-[10px] font-black text-slate-500 uppercase tracking-widest">Departamento</th>
                 <th v-if="empleadosVista === 'general'" class="p-3 text-[10px] font-black text-slate-500 uppercase tracking-widest text-center">Estado</th>
                 
-                <th v-if="empleadosVista === 'inicio_vacaciones'" class="p-3 text-[10px] font-black text-emerald-600 uppercase tracking-widest text-center">Fecha Inicio Vacaciones</th>
-                <th v-if="empleadosVista === 'fin_vacaciones'" class="p-3 text-[10px] font-black text-orange-600 uppercase tracking-widest text-center">Fecha Fin Vacaciones</th>
+                <th v-if="empleadosVista === 'vacaciones'" class="p-3 text-[10px] font-black text-emerald-600 uppercase tracking-widest text-center">Fechas de Vacaciones</th>
                 <th v-if="empleadosVista === 'faltas'" class="p-3 text-[10px] font-black text-red-600 uppercase tracking-widest text-center">Total Faltas</th>
+                <th v-if="empleadosVista === 'cumpleanos'" class="p-3 text-[10px] font-black text-purple-600 uppercase tracking-widest text-center">Fecha de Nacimiento</th>
+                <th v-if="empleadosVista === 'renovaciones'" class="p-3 text-[10px] font-black text-orange-600 uppercase tracking-widest text-center">Vencimiento Contrato</th>
               </tr>
             </thead>
             <tbody>
@@ -428,12 +436,11 @@
                   </span>
                 </td>
 
-                <td v-if="empleadosVista === 'inicio_vacaciones'" class="p-3 text-center text-sm font-black text-slate-700">
-                  <span v-if="emp.proxima_vacacion_inicio" class="bg-emerald-50 text-emerald-700 px-3 py-1 rounded-full border border-emerald-100">{{ new Date(emp.proxima_vacacion_inicio).toLocaleDateString('es-HN', {timeZone: 'UTC'}) }}</span>
-                  <span v-else class="text-slate-400 italic font-medium text-xs">Sin programar</span>
-                </td>
-                <td v-if="empleadosVista === 'fin_vacaciones'" class="p-3 text-center text-sm font-black text-slate-700">
-                  <span v-if="emp.proxima_vacacion_fin" class="bg-orange-50 text-orange-700 px-3 py-1 rounded-full border border-orange-100">{{ new Date(emp.proxima_vacacion_fin).toLocaleDateString('es-HN', {timeZone: 'UTC'}) }}</span>
+                <td v-if="empleadosVista === 'vacaciones'" class="p-3 text-center text-sm font-black text-slate-700">
+                  <div v-if="emp.proxima_vacacion_inicio || emp.proxima_vacacion_fin" class="flex flex-col gap-1 items-center justify-center">
+                    <span v-if="emp.proxima_vacacion_inicio" class="bg-emerald-50 text-emerald-700 px-2 py-0.5 rounded-full border border-emerald-100 text-[10px]">Inicio: {{ new Date(emp.proxima_vacacion_inicio).toLocaleDateString('es-HN', {timeZone: 'UTC'}) }}</span>
+                    <span v-if="emp.proxima_vacacion_fin" class="bg-orange-50 text-orange-700 px-2 py-0.5 rounded-full border border-orange-100 text-[10px]">Fin: {{ new Date(emp.proxima_vacacion_fin).toLocaleDateString('es-HN', {timeZone: 'UTC'}) }}</span>
+                  </div>
                   <span v-else class="text-slate-400 italic font-medium text-xs">Sin programar</span>
                 </td>
                 <td v-if="empleadosVista === 'faltas'" class="p-3 text-center text-sm font-black">
@@ -441,9 +448,161 @@
                     {{ emp.total_faltas || 0 }} faltas
                   </span>
                 </td>
+                <td v-if="empleadosVista === 'cumpleanos'" class="p-3 text-center text-sm font-black text-slate-700">
+                  <span class="bg-purple-50 text-purple-700 px-3 py-1 rounded-full border border-purple-100">
+                    🎂 {{ emp.fecha_nacimiento ? new Date(emp.fecha_nacimiento).toLocaleDateString('es-HN', { day: 'numeric', month: 'long', timeZone: 'UTC' }) : 'N/A' }}
+                  </span>
+                </td>
+                <td v-if="empleadosVista === 'renovaciones'" class="p-3 text-center text-sm font-black text-slate-700">
+                  <span class="bg-orange-50 text-orange-700 px-3 py-1 rounded-full border border-orange-100">
+                    📄 {{ emp.contrato_vencimiento ? new Date(emp.contrato_vencimiento).toLocaleDateString('es-HN', { day: 'numeric', month: 'long', timeZone: 'UTC' }) : 'N/A' }}
+                  </span>
+                </td>
               </tr>
               <tr v-if="empleadosFiltrados.length === 0">
-                <td colspan="7" class="p-6 text-center text-slate-400 italic">No se encontraron empleados con los filtros aplicados.</td>
+                <td colspan="7" class="p-8">
+                  <div class="flex flex-col items-center justify-center text-center">
+                    <div class="w-16 h-16 bg-slate-50 rounded-full flex items-center justify-center mb-3">
+                      <span class="text-3xl">🔍</span>
+                    </div>
+                    <h3 class="text-slate-800 font-black text-lg mb-1">Sin Resultados</h3>
+                    <p class="text-slate-500 text-sm max-w-md">No se encontraron empleados que coincidan con "{{ searchQuery }}" o los filtros actuales.</p>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- TAB: INCIDENCIAS LABORALES -->
+      <div v-if="activeTab === 'incidencias'" class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 animate-in fade-in duration-300">
+        <div class="flex flex-col md:flex-row justify-between items-center mb-6 gap-4 border-b border-slate-100 pb-4">
+          <h2 class="text-lg font-black text-slate-800 uppercase tracking-tighter text-rose-600">🚨 Incidencias Laborales</h2>
+          <div class="flex flex-col md:flex-row gap-3 w-full md:w-auto items-center">
+            <input v-model="searchQuery" type="text" placeholder="Buscar empleado o categoría..." class="p-2 border border-slate-200 rounded-lg text-sm bg-slate-50 w-full md:w-48 focus:border-blue-500 outline-none">
+            <button @click="generarPDFIncidencias" class="px-4 py-2 bg-slate-800 hover:bg-slate-900 text-white rounded-lg font-bold text-xs uppercase tracking-widest transition-colors shadow-sm flex items-center justify-center gap-2">
+              <span>📄</span> Crear PDF Incidencias
+            </button>
+            <button @click="exportarCSV(incidenciasFiltradas, 'Reporte_Incidencias')" class="px-4 py-2 bg-rose-600 hover:bg-rose-700 text-white rounded-lg font-bold text-xs uppercase tracking-widest transition-colors shadow-sm flex items-center justify-center gap-2">
+              <span>📊</span> CSV
+            </button>
+          </div>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+          <div class="bg-slate-50 p-5 rounded-2xl border border-slate-100 h-[300px] flex flex-col items-center">
+             <h3 class="text-sm font-black text-slate-800 uppercase tracking-widest mb-4">Gravedad de Incidencias</h3>
+             <div class="flex-1 w-full relative">
+               <Doughnut v-if="!loadingIncidencias && chartGravedadIncidenciasData" :data="chartGravedadIncidenciasData" :options="doughnutOptions" />
+             </div>
+          </div>
+          <div class="bg-slate-50 p-5 rounded-2xl border border-slate-100 h-[300px] flex flex-col items-center">
+             <h3 class="text-sm font-black text-slate-800 uppercase tracking-widest mb-4">Estado de Resolución</h3>
+             <div class="flex-1 w-full relative">
+               <Pie v-if="!loadingIncidencias && chartEstadoIncidenciasData" :data="chartEstadoIncidenciasData" :options="doughnutOptionsPercent" />
+             </div>
+          </div>
+        </div>
+        <div v-if="loadingIncidencias" class="flex flex-col items-center justify-center py-16">
+          <div class="animate-spin rounded-full h-10 w-10 border-b-2 border-rose-600 mb-4"></div>
+          <span class="text-slate-500 font-medium text-sm">Cargando incidencias laborales...</span>
+        </div>
+        <div v-else class="overflow-x-auto">
+          <table class="w-full text-left border-collapse">
+            <thead>
+              <tr class="bg-slate-50 border-b border-slate-200">
+                <th class="p-3 text-[10px] font-black text-slate-500 uppercase tracking-widest">Código</th>
+                <th class="p-3 text-[10px] font-black text-slate-500 uppercase tracking-widest">Empleado</th>
+                <th class="p-3 text-[10px] font-black text-slate-500 uppercase tracking-widest">Fecha</th>
+                <th class="p-3 text-[10px] font-black text-slate-500 uppercase tracking-widest">Categoría</th>
+                <th class="p-3 text-[10px] font-black text-slate-500 uppercase tracking-widest text-center">Gravedad</th>
+                <th class="p-3 text-[10px] font-black text-slate-500 uppercase tracking-widest text-center">Estado</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="inc in incidenciasFiltradas" :key="inc.id" class="border-b border-slate-100 hover:bg-slate-50 transition-colors">
+                <td class="p-3 text-xs font-bold text-slate-500">INC-{{ inc.id }}</td>
+                <td class="p-3 text-sm font-bold text-slate-800">{{ inc.empleado_nombre || 'Desconocido' }}</td>
+                <td class="p-3 text-xs text-slate-600">{{ inc.fecha_creacion ? new Date(inc.fecha_creacion).toLocaleDateString() : 'N/A' }}</td>
+                <td class="p-3 text-xs text-slate-700">{{ inc.categoria }}</td>
+                <td class="p-3 text-center">
+                  <span :class="{'bg-red-100 text-red-700': inc.prioridad === 'Alta' || inc.prioridad === 'Urgente', 'bg-orange-100 text-orange-700': inc.prioridad === 'Media', 'bg-yellow-100 text-yellow-700': inc.prioridad === 'Baja'}" class="px-2 py-1 rounded text-[10px] font-bold uppercase tracking-widest">{{ inc.prioridad || 'Media' }}</span>
+                </td>
+                <td class="p-3 text-center">
+                  <span :class="{'bg-emerald-100 text-emerald-700': inc.estado === 'Cerrado' || inc.estado === 'Resuelto', 'bg-blue-100 text-blue-700': inc.estado !== 'Cerrado' && inc.estado !== 'Resuelto'}" class="px-2 py-1 rounded text-[10px] font-bold uppercase tracking-widest">{{ inc.estado }}</span>
+                </td>
+              </tr>
+              <tr v-if="incidenciasFiltradas.length === 0">
+                <td colspan="6" class="p-8">
+                  <div class="flex flex-col items-center justify-center text-center">
+                    <div class="w-16 h-16 bg-slate-50 rounded-full flex items-center justify-center mb-3">
+                      <span class="text-3xl">📭</span>
+                    </div>
+                    <h3 class="text-slate-800 font-black text-lg mb-1">Sin Incidencias</h3>
+                    <p class="text-slate-500 text-sm max-w-md">No se encontraron incidencias que coincidan con "{{ searchQuery }}".</p>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- TAB: DOCS LEGALES -->
+      <div v-if="activeTab === 'legales'" class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 animate-in fade-in duration-300">
+        <div class="flex flex-col md:flex-row justify-between items-center mb-6 gap-4 border-b border-slate-100 pb-4">
+          <h2 class="text-lg font-black text-slate-800 uppercase tracking-tighter text-indigo-600">⚖️ Documentación Legal y Vencimientos</h2>
+          <div class="flex flex-col md:flex-row gap-3 w-full md:w-auto items-center">
+            <input v-model="searchQuery" type="text" placeholder="Buscar documento o empleado..." class="p-2 border border-slate-200 rounded-lg text-sm bg-slate-50 w-full md:w-48 focus:border-blue-500 outline-none">
+            <select v-model="legalesFiltroEstado" class="p-2 border border-slate-200 rounded-lg text-sm bg-slate-50 focus:border-blue-500 outline-none">
+              <option value="todos">Todos</option>
+              <option value="renovar">Por Renovar / Vencer</option>
+            </select>
+            <button @click="generarPDFLegales" class="px-4 py-2 bg-slate-800 hover:bg-slate-900 text-white rounded-lg font-bold text-xs uppercase tracking-widest transition-colors shadow-sm flex items-center justify-center gap-2 whitespace-nowrap">
+              <span>📄</span> Crear PDF Legales
+            </button>
+            <button @click="exportarCSV(legalesFiltrados, 'Reporte_Docs_Legales')" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-bold text-xs uppercase tracking-widest transition-colors shadow-sm flex items-center justify-center gap-2">
+              <span>📊</span> CSV
+            </button>
+          </div>
+        </div>
+        <div v-if="loadingLegales" class="flex flex-col items-center justify-center py-16">
+          <div class="animate-spin rounded-full h-10 w-10 border-b-2 border-indigo-600 mb-4"></div>
+          <span class="text-slate-500 font-medium text-sm">Cargando documentos legales...</span>
+        </div>
+        <div v-else class="overflow-x-auto">
+          <table class="w-full text-left border-collapse">
+            <thead>
+              <tr class="bg-slate-50 border-b border-slate-200">
+                <th class="p-3 text-[10px] font-black text-slate-500 uppercase tracking-widest">Documento</th>
+                <th class="p-3 text-[10px] font-black text-slate-500 uppercase tracking-widest">Categoría</th>
+                <th class="p-3 text-[10px] font-black text-slate-500 uppercase tracking-widest">Empleado Asociado</th>
+                <th class="p-3 text-[10px] font-black text-slate-500 uppercase tracking-widest">Fecha Expiración</th>
+                <th class="p-3 text-[10px] font-black text-slate-500 uppercase tracking-widest text-center">Estado</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="doc in legalesFiltrados" :key="doc.id" class="border-b border-slate-100 hover:bg-slate-50 transition-colors">
+                <td class="p-3 text-sm font-bold text-slate-800">{{ doc.titulo }}</td>
+                <td class="p-3 text-xs text-slate-600">{{ doc.categoria_nombre }}</td>
+                <td class="p-3 text-xs text-slate-700">{{ doc.empleado_nombre ? doc.empleado_nombre + ' ' + (doc.empleado_apellido||'') : 'General' }}</td>
+                <td class="p-3 text-xs text-slate-800 font-bold">{{ doc.fecha_expiracion ? new Date(doc.fecha_expiracion).toLocaleDateString() : 'N/A' }}</td>
+                <td class="p-3 text-center">
+                  <span v-if="doc.dias_restantes !== null && doc.dias_restantes < 0" class="bg-red-100 text-red-700 px-2 py-1 rounded text-[10px] font-bold uppercase tracking-widest">Vencido</span>
+                  <span v-else-if="doc.dias_restantes !== null && doc.dias_restantes <= 30" class="bg-orange-100 text-orange-700 px-2 py-1 rounded text-[10px] font-bold uppercase tracking-widest">Por Vencer</span>
+                  <span v-else class="bg-emerald-100 text-emerald-700 px-2 py-1 rounded text-[10px] font-bold uppercase tracking-widest">Vigente</span>
+                </td>
+              </tr>
+              <tr v-if="legalesFiltrados.length === 0">
+                <td colspan="5" class="p-8">
+                  <div class="flex flex-col items-center justify-center text-center">
+                    <div class="w-16 h-16 bg-slate-50 rounded-full flex items-center justify-center mb-3">
+                      <span class="text-3xl">📂</span>
+                    </div>
+                    <h3 class="text-slate-800 font-black text-lg mb-1">Sin Documentos</h3>
+                    <p class="text-slate-500 text-sm max-w-md">No se encontraron documentos legales que coincidan con "{{ searchQuery }}".</p>
+                  </div>
+                </td>
               </tr>
             </tbody>
           </table>
@@ -454,9 +613,12 @@
       <div v-if="activeTab === 'tickets'" class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
         <div class="flex flex-col md:flex-row justify-between items-center mb-6 gap-4 border-b border-slate-100 pb-4">
           <h2 class="text-lg font-black text-slate-800 uppercase tracking-tighter">Análisis de Soporte</h2>
-          <div class="flex flex-col md:flex-row gap-3 w-full md:w-auto">
+          <div class="flex flex-col md:flex-row gap-3 w-full md:w-auto items-center">
+            <input v-model="searchQuery" type="text" placeholder="Buscar ticket, usuario..." class="p-2 border border-slate-200 rounded-lg text-sm bg-slate-50 w-full md:w-48 focus:border-blue-500 outline-none">
             <select v-model="ticketsFiltroEstado" class="p-2 border border-slate-200 rounded-lg text-sm bg-slate-50 focus:border-blue-500 outline-none">
               <option value="todos">Todos los Estados</option>
+              <option value="pendientes_progreso">Pendientes / Progreso</option>
+              <option value="resueltos_cerrados">Resueltos / Cerrados</option>
               <option value="Pendiente">Pendientes</option>
               <option value="En Progreso">En Progreso</option>
               <option value="Resuelto">Resueltos</option>
@@ -469,29 +631,60 @@
               <option value="Alta">Alta</option>
               <option value="Urgente">Urgente</option>
             </select>
+            <button @click="generarPDFTickets" class="px-4 py-2 bg-slate-800 hover:bg-slate-900 text-white rounded-lg font-bold text-xs uppercase tracking-widest transition-colors shadow-sm flex items-center justify-center gap-2 whitespace-nowrap">
+              <span>📄</span> Crear PDF Tickets
+            </button>
             <button @click="exportarCSV(ticketsFiltrados, 'Reporte_Tickets')" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg font-bold text-xs uppercase tracking-widest transition-colors shadow-sm flex items-center justify-center gap-2">
               <span>📊</span> CSV
             </button>
           </div>
         </div>
 
-        <!-- KPIs de Tickets Internos -->
-        <div class="grid grid-cols-3 gap-4 mb-6">
-          <div class="bg-slate-50 p-4 rounded-xl border border-slate-100 text-center">
-            <p class="text-[10px] font-black text-slate-500 uppercase tracking-widest">Total Tickets</p>
-            <p class="text-2xl font-black text-slate-800 mt-1">{{ ticketsFiltrados.length }}</p>
+        <!-- Resumen General -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+          <div @click="ticketsFiltroEstado = 'todos'" class="cursor-pointer bg-gradient-to-br from-slate-800 to-slate-900 p-5 rounded-2xl shadow-sm text-white flex items-center justify-between transition-transform hover:scale-[1.02]">
+            <div>
+              <p class="text-[10px] font-black uppercase tracking-widest text-slate-400">Total Tickets</p>
+              <p class="text-3xl font-black mt-1">{{ tickets.length }}</p>
+            </div>
+            <div class="w-12 h-12 bg-white/10 rounded-full flex items-center justify-center text-2xl">📋</div>
           </div>
-          <div class="bg-yellow-50 p-4 rounded-xl border border-yellow-100 text-center">
-            <p class="text-[10px] font-black text-yellow-700 uppercase tracking-widest">Pendientes / Progreso</p>
-            <p class="text-2xl font-black text-yellow-600 mt-1">{{ ticketsFiltrados.filter(t => t.estado === 'Pendiente' || t.estado === 'En Progreso').length }}</p>
+          <div @click="ticketsFiltroEstado = 'pendientes_progreso'" class="cursor-pointer bg-gradient-to-br from-yellow-400 to-orange-500 p-5 rounded-2xl shadow-sm text-white flex items-center justify-between transition-transform hover:scale-[1.02]">
+            <div>
+              <p class="text-[10px] font-black uppercase tracking-widest text-yellow-100">Pendientes / Progreso</p>
+              <p class="text-3xl font-black mt-1">{{ tickets.filter(t => t.estado === 'Pendiente' || t.estado === 'En Progreso').length }}</p>
+            </div>
+            <div class="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center text-2xl">⏳</div>
           </div>
-          <div class="bg-emerald-50 p-4 rounded-xl border border-emerald-100 text-center">
-            <p class="text-[10px] font-black text-emerald-700 uppercase tracking-widest">Resueltos / Cerrados</p>
-            <p class="text-2xl font-black text-emerald-600 mt-1">{{ ticketsFiltrados.filter(t => t.estado === 'Resuelto' || t.estado === 'Cerrado').length }}</p>
+          <div @click="ticketsFiltroEstado = 'resueltos_cerrados'" class="cursor-pointer bg-gradient-to-br from-emerald-500 to-teal-600 p-5 rounded-2xl shadow-sm text-white flex items-center justify-between transition-transform hover:scale-[1.02]">
+            <div>
+              <p class="text-[10px] font-black uppercase tracking-widest text-emerald-100">Resueltos / Cerrados</p>
+              <p class="text-3xl font-black mt-1">{{ tickets.filter(t => t.estado === 'Resuelto' || t.estado === 'Cerrado').length }}</p>
+            </div>
+            <div class="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center text-2xl">✅</div>
           </div>
         </div>
 
-        <div v-if="loadingTickets" class="text-center py-10 text-slate-400 italic">Cargando datos de tickets...</div>
+        <!-- Gráficos de Tickets -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+          <div class="bg-slate-50 p-5 rounded-2xl border border-slate-100 h-[300px] flex flex-col items-center">
+             <h3 class="text-sm font-black text-slate-800 uppercase tracking-widest mb-4">Tickets por Estado</h3>
+             <div class="flex-1 w-full relative">
+               <Doughnut v-if="!loadingTickets && chartEstadoTicketsData" :data="chartEstadoTicketsData" :options="doughnutOptions" />
+             </div>
+          </div>
+          <div class="bg-slate-50 p-5 rounded-2xl border border-slate-100 h-[300px] flex flex-col items-center">
+             <h3 class="text-sm font-black text-slate-800 uppercase tracking-widest mb-4">Tickets por Prioridad</h3>
+             <div class="flex-1 w-full relative">
+               <Doughnut v-if="!loadingTickets && chartPrioridadTicketsData" :data="chartPrioridadTicketsData" :options="doughnutOptions" />
+             </div>
+          </div>
+        </div>
+
+        <div v-if="loadingTickets" class="flex flex-col items-center justify-center py-16">
+          <div class="animate-spin rounded-full h-10 w-10 border-b-2 border-emerald-600 mb-4"></div>
+          <span class="text-slate-500 font-medium text-sm">Cargando tickets...</span>
+        </div>
         <div v-else class="overflow-x-auto">
           <table class="w-full text-left border-collapse">
             <thead>
@@ -518,19 +711,48 @@
                     {{ ticket.estado }}
                   </span>
                 </td>
-                <td class="p-3 text-xs text-slate-600">{{ ticket.creadoPorNombre || 'Desconocido' }}</td>
+                <td class="p-3 text-xs">
+                  <div class="flex items-center gap-2">
+                    <div class="w-6 h-6 rounded-full bg-slate-200 flex items-center justify-center text-[10px] font-bold text-slate-600">
+                      {{ (ticket.creadoPorNombre || ticket.empleado_nombre || '?').charAt(0).toUpperCase() }}
+                    </div>
+                    <span class="text-slate-700 font-bold">{{ ticket.creadoPorNombre || (ticket.empleado_nombre ? `${ticket.empleado_nombre} ${ticket.empleado_apellido || ''}`.trim() : 'Desconocido') }}</span>
+                  </div>
+                </td>
                 <td class="p-3 text-xs text-slate-500">{{ new Date(ticket.fecha_creacion).toLocaleDateString() }}</td>
               </tr>
               <tr v-if="ticketsFiltrados.length === 0">
-                <td colspan="6" class="p-6 text-center text-slate-400 italic">No se encontraron tickets con los filtros aplicados.</td>
+                <td colspan="6" class="p-8">
+                  <div class="flex flex-col items-center justify-center text-center">
+                    <div class="w-16 h-16 bg-slate-50 rounded-full flex items-center justify-center mb-3">
+                      <span class="text-3xl">🎫</span>
+                    </div>
+                    <h3 class="text-slate-800 font-black text-lg mb-1">Sin Tickets</h3>
+                    <p class="text-slate-500 text-sm max-w-md">No se encontraron tickets con los filtros actuales o la búsqueda "{{ searchQuery }}".</p>
+                  </div>
+                </td>
               </tr>
             </tbody>
           </table>
         </div>
       </div>
 
-      <!-- TAB: PROYECCIONES VACACIONES -->
-      <div v-if="activeTab === 'proyecciones'" class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
+      <!-- TAB: CONTROL DE TIEMPOS -->
+      <div v-if="activeTab === 'tiempos'" class="space-y-6 animate-in fade-in duration-300">
+        
+        <!-- ENCABEZADO Y PDF CONTROL DE TIEMPOS -->
+        <div class="flex flex-col md:flex-row justify-between items-center bg-white p-6 rounded-2xl shadow-sm border border-slate-200 gap-4">
+           <div>
+             <h2 class="text-xl font-black text-slate-800 uppercase tracking-tighter text-emerald-600">⏳ Reporte de Control de Tiempos</h2>
+             <p class="text-xs text-slate-500 font-medium mt-1">Genera un reporte consolidado con proyecciones, ausentismo y saldos de vacaciones.</p>
+           </div>
+           <button @click="generarPDFControlTiempos" class="px-5 py-2.5 bg-slate-800 hover:bg-slate-900 text-white rounded-lg font-bold text-xs uppercase tracking-widest transition-colors shadow-sm flex items-center justify-center gap-2 whitespace-nowrap">
+              <span>📄</span> Crear PDF Control de Tiempos
+           </button>
+        </div>
+
+        <!-- Proyecciones Vacaciones -->
+        <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
         <div class="flex flex-col md:flex-row justify-between items-center mb-6 gap-4 border-b border-slate-100 pb-4">
           <h2 class="text-lg font-black text-slate-800 uppercase tracking-tighter">Proyecciones de Vacaciones</h2>
           <div class="flex flex-col md:flex-row gap-3 w-full md:w-auto">
@@ -540,7 +762,10 @@
           </div>
         </div>
 
-        <div v-if="loadingProyecciones" class="text-center py-10 text-slate-400 italic">Cargando proyecciones de vacaciones...</div>
+        <div v-if="loadingProyecciones" class="flex flex-col items-center justify-center py-16">
+          <div class="animate-spin rounded-full h-10 w-10 border-b-2 border-emerald-600 mb-4"></div>
+          <span class="text-slate-500 font-medium text-sm">Cargando proyecciones de vacaciones...</span>
+        </div>
         <div v-else class="overflow-x-auto">
           <table class="w-full text-left border-collapse">
             <thead>
@@ -570,15 +795,21 @@
                 <td class="p-3 text-xs text-slate-600">{{ vac.diasVacaciones }}</td>
               </tr>
               <tr v-if="proyeccionesVacaciones.length === 0">
-                <td colspan="6" class="p-6 text-center text-slate-400 italic">No hay vacaciones próximas programadas.</td>
+                <td colspan="6" class="p-8">
+                  <div class="flex flex-col items-center justify-center text-center">
+                    <div class="w-16 h-16 bg-slate-50 rounded-full flex items-center justify-center mb-3">
+                      <span class="text-3xl">✈️</span>
+                    </div>
+                    <h3 class="text-slate-800 font-black text-lg mb-1">Sin Proyecciones</h3>
+                    <p class="text-slate-500 text-sm max-w-md">No hay vacaciones próximas programadas en el sistema.</p>
+                  </div>
+                </td>
               </tr>
             </tbody>
           </table>
         </div>
       </div>
 
-      <!-- TAB: ASISTENCIA Y TIEMPOS -->
-      <div v-if="activeTab === 'asistencia'" class="space-y-6">
         <!-- Índice de Ausentismo -->
         <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
           <div class="flex flex-col md:flex-row justify-between items-center mb-6 gap-4 border-b border-slate-100 pb-4">
@@ -589,7 +820,10 @@
               <span>📊</span> CSV
             </button>
           </div>
-          <div v-if="loadingAusentismo" class="text-center py-10 text-slate-400 italic">Cargando ausentismo...</div>
+          <div v-if="loadingAusentismo" class="flex flex-col items-center justify-center py-16">
+          <div class="animate-spin rounded-full h-10 w-10 border-b-2 border-rose-600 mb-4"></div>
+          <span class="text-slate-500 font-medium text-sm">Cargando ausentismo...</span>
+        </div>
           <div v-else class="overflow-x-auto">
             <table class="w-full text-left border-collapse">
               <thead>
@@ -612,7 +846,15 @@
                   </td>
                 </tr>
                 <tr v-if="ausentismoDatos.length === 0">
-                  <td colspan="5" class="p-6 text-center text-slate-400 italic">No hay datos de ausentismo.</td>
+                  <td colspan="5" class="p-8">
+                    <div class="flex flex-col items-center justify-center text-center">
+                      <div class="w-16 h-16 bg-slate-50 rounded-full flex items-center justify-center mb-3">
+                        <span class="text-3xl">⚠️</span>
+                      </div>
+                      <h3 class="text-slate-800 font-black text-lg mb-1">Sin Datos de Ausentismo</h3>
+                      <p class="text-slate-500 text-sm max-w-md">No hay registros de ausentismo o faltas para el mes actual.</p>
+                    </div>
+                  </td>
                 </tr>
               </tbody>
             </table>
@@ -626,13 +868,16 @@
               <span class="text-blue-500">🏖️</span> Saldos de Vacaciones
             </h2>
             <div class="flex flex-col md:flex-row gap-3 w-full md:w-auto">
-              <input v-model="saldosFiltro" type="text" placeholder="Buscar empleado..." class="p-2 border border-slate-200 rounded-lg text-sm bg-slate-50 w-full md:w-64 focus:border-blue-500 outline-none">
+              <input v-model="searchQuery" type="text" placeholder="Buscar empleado..." class="p-2 border border-slate-200 rounded-lg text-sm bg-slate-50 w-full md:w-64 focus:border-blue-500 outline-none">
               <button @click="exportarCSV(saldosFiltrados, 'Saldos_Vacaciones')" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg font-bold text-xs uppercase tracking-widest transition-colors shadow-sm flex items-center justify-center gap-2">
                 <span>📊</span> CSV
               </button>
             </div>
           </div>
-          <div v-if="loadingSaldos" class="text-center py-10 text-slate-400 italic">Cargando saldos...</div>
+          <div v-if="loadingSaldos" class="flex flex-col items-center justify-center py-16">
+          <div class="animate-spin rounded-full h-10 w-10 border-b-2 border-blue-600 mb-4"></div>
+          <span class="text-slate-500 font-medium text-sm">Cargando saldos...</span>
+        </div>
           <div v-else class="overflow-x-auto">
             <table class="w-full text-left border-collapse">
               <thead>
@@ -660,7 +905,15 @@
                   </td>
                 </tr>
                 <tr v-if="saldosFiltrados.length === 0">
-                  <td colspan="6" class="p-6 text-center text-slate-400 italic">No hay datos de saldos de vacaciones con los filtros aplicados.</td>
+                  <td colspan="6" class="p-8">
+                    <div class="flex flex-col items-center justify-center text-center">
+                      <div class="w-16 h-16 bg-slate-50 rounded-full flex items-center justify-center mb-3">
+                        <span class="text-3xl">🏖️</span>
+                      </div>
+                      <h3 class="text-slate-800 font-black text-lg mb-1">Sin Saldos</h3>
+                      <p class="text-slate-500 text-sm max-w-md">No se encontraron saldos de vacaciones que coincidan con "{{ searchQuery }}".</p>
+                    </div>
+                  </td>
                 </tr>
               </tbody>
             </table>
@@ -730,10 +983,13 @@
 import { ref, onMounted, onUnmounted, computed } from 'vue'
 import axios from 'axios'
 import { useRouter } from 'vue-router'
-import { Chart as ChartJS, ArcElement, Tooltip, Legend, CategoryScale, LinearScale, BarElement, Title, PointElement, LineElement } from 'chart.js'
-import { Doughnut, Bar, Pie, Line } from 'vue-chartjs'
+import { Chart as ChartJS, ArcElement, Tooltip, Legend, CategoryScale, LinearScale, BarElement, Title, PointElement, LineElement, RadialLinearScale } from 'chart.js'
+import { Doughnut, Bar, Pie, Line, PolarArea } from 'vue-chartjs'
+import jsPDF from 'jspdf'
+import autoTable from 'jspdf-autotable'
+import Swal from 'sweetalert2'
 
-ChartJS.register(ArcElement, CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend, PointElement, LineElement)
+ChartJS.register(ArcElement, CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend, PointElement, LineElement, RadialLinearScale)
 
 const router = useRouter()
 const rolID = ref(null)
@@ -742,6 +998,7 @@ const menuUsuario = ref([])
 const usuarioActual = ref('')
 const mobileMenuOpen = ref(false)
 const activeTab = ref('dashboard')
+const searchQuery = ref('')
 let pollingInterval = null;
 
 // Lógica Modal Perfil
@@ -844,32 +1101,29 @@ const doughnutOptionsPercent = {
 }
 const barOptions = { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false }, tooltip: { callbacks: { label: (context) => ` ${context.raw} Empleados` } } }, scales: { y: { beginAtZero: true, ticks: { stepSize: 1, font: { size: 10 } } }, x: { ticks: { font: { size: 10 } } } } }
 
+const polarOptions = {
+  responsive: true,
+  maintainAspectRatio: false,
+  plugins: {
+    legend: { position: 'right', labels: { boxWidth: 12, font: { size: 10, family: "'Inter', sans-serif" } } }
+  }
+}
+
 const chartEstadoData = computed(() => ({
   labels: ['Activos', 'Inactivos'],
   datasets: [{ backgroundColor: ['#10b981', '#ef4444'], borderWidth: 0, data: [stats.value.activos || 0, stats.value.inactivos || 0] }]
 }))
 
-const chartPlantillaProporcionData = computed(() => {
-  return {
-    labels: deptStats.value.map(d => d.departamento),
-    datasets: [{ 
-      backgroundColor: ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899', '#14b8a6', '#6366f1', '#f43f5e', '#84cc16'], 
-      borderWidth: 0, 
-      data: deptStats.value.map(d => d.cantidad) 
-    }]
-  }
-})
-
 const estadoContratos = ref({ activos: 0, por_vencer: 0, vencidos: 0 })
 const chartContratosData = computed(() => ({
   labels: ['Activos', 'Por Vencer (30d)', 'Vencidos'],
-  datasets: [{ backgroundColor: ['#10b981', '#f59e0b', '#ef4444'], borderWidth: 0, data: [estadoContratos.value.activos || 0, estadoContratos.value.por_vencer || 0, estadoContratos.value.vencidos || 0] }]
+  datasets: [{ label: 'Contratos', backgroundColor: ['#10b981', '#f59e0b', '#ef4444'], borderRadius: 4, data: [estadoContratos.value.activos || 0, estadoContratos.value.por_vencer || 0, estadoContratos.value.vencidos || 0] }]
 }))
 
 const tiposFaltas = ref({ justificadas: 0, injustificadas: 0 })
 const chartFaltasData = computed(() => ({
-  labels: ['Justificadas (Médicas/Permisos)', 'Injustificadas'],
-  datasets: [{ backgroundColor: ['#10b981', '#ef4444'], borderWidth: 0, data: [tiposFaltas.value.justificadas || 0, tiposFaltas.value.injustificadas || 0] }]
+  labels: ['Justificadas', 'Injustificadas'],
+  datasets: [{ label: 'Faltas', backgroundColor: ['#10b981', '#ef4444'], borderRadius: 4, data: [tiposFaltas.value.justificadas || 0, tiposFaltas.value.injustificadas || 0] }]
 }))
 
 const chartGeneroData = computed(() => {
@@ -879,8 +1133,9 @@ const chartGeneroData = computed(() => {
   let otro = 0;
   
   data.forEach(e => {
-    if (e.genero === 'Masculino') masculino++;
-    else if (e.genero === 'Femenino') femenino++;
+    const gen = (e.genero || '').toLowerCase().trim();
+    if (gen === 'masculino' || gen === 'm') masculino++;
+    else if (gen === 'femenino' || gen === 'f') femenino++;
     else otro++;
   });
   
@@ -926,8 +1181,9 @@ const chartEdadData = computed(() => {
   return {
     labels: ['18-25', '26-35', '36-45', '46+', 'Desconocido'],
     datasets: [{
+      label: 'Empleados',
       backgroundColor: ['#f59e0b', '#10b981', '#6366f1', '#8b5cf6', '#cbd5e1'],
-      borderWidth: 0,
+      borderRadius: 4,
       data: [r18_25, r26_35, r36_45, r46_plus, desconocido]
     }]
   };
@@ -1161,8 +1417,18 @@ const empleadosFiltrados = computed(() => {
   if (empleadosEstado.value !== 'todos') {
     list = list.filter(e => e.estado == empleadosEstado.value)
   }
-  if (empleadosFiltro.value.trim() !== '') {
-    const q = empleadosFiltro.value.toLowerCase()
+  if (empleadosVista.value === 'cumpleanos') {
+    const currentMonth = new Date().getMonth();
+    list = list.filter(e => {
+      if (!e.fecha_nacimiento) return false;
+      return new Date(e.fecha_nacimiento).getMonth() === currentMonth;
+    });
+  }
+  if (empleadosVista.value === 'renovaciones') {
+    list = list.filter(e => e.contrato_vencimiento);
+  }
+  if (searchQuery.value.trim() !== '') {
+    const q = searchQuery.value.toLowerCase()
     list = list.filter(e => 
       (e.nombre && e.nombre.toLowerCase().includes(q)) || 
       (e.apellido && e.apellido.toLowerCase().includes(q)) ||
@@ -1193,12 +1459,57 @@ const cargarTickets = async (isPolling = false) => {
 const ticketsFiltrados = computed(() => {
   let list = tickets.value
   if (ticketsFiltroEstado.value !== 'todos') {
-    list = list.filter(t => t.estado === ticketsFiltroEstado.value)
+    if (ticketsFiltroEstado.value === 'pendientes_progreso') {
+      list = list.filter(t => t.estado === 'Pendiente' || t.estado === 'En Progreso')
+    } else if (ticketsFiltroEstado.value === 'resueltos_cerrados') {
+      list = list.filter(t => t.estado === 'Resuelto' || t.estado === 'Cerrado')
+    } else {
+      list = list.filter(t => t.estado === ticketsFiltroEstado.value)
+    }
   }
   if (ticketsFiltroPrioridad.value !== 'todos') {
     list = list.filter(t => t.prioridad === ticketsFiltroPrioridad.value)
   }
+  if (searchQuery.value.trim() !== '') {
+    const q = searchQuery.value.toLowerCase()
+    list = list.filter(t => 
+      (t.asunto && t.asunto.toLowerCase().includes(q)) || 
+      (t.creadoPorNombre && t.creadoPorNombre.toLowerCase().includes(q)) ||
+      (t.asignado_usuario_nombre && t.asignado_usuario_nombre.toLowerCase().includes(q)) ||
+      (t.empleado_nombre && t.empleado_nombre.toLowerCase().includes(q))
+    )
+  }
   return list
+})
+
+const chartEstadoTicketsData = computed(() => {
+  if (ticketsFiltrados.value.length === 0) return null;
+  let pendiente = 0, progreso = 0, resuelto = 0, cerrado = 0;
+  ticketsFiltrados.value.forEach(t => {
+    if (t.estado === 'Pendiente') pendiente++;
+    else if (t.estado === 'En Progreso') progreso++;
+    else if (t.estado === 'Resuelto') resuelto++;
+    else if (t.estado === 'Cerrado') cerrado++;
+  });
+  return {
+    labels: ['Pendiente', 'En Progreso', 'Resuelto', 'Cerrado'],
+    datasets: [{ backgroundColor: ['#fde047', '#3b82f6', '#10b981', '#64748b'], borderWidth: 0, data: [pendiente, progreso, resuelto, cerrado] }]
+  }
+})
+
+const chartPrioridadTicketsData = computed(() => {
+  if (ticketsFiltrados.value.length === 0) return null;
+  let baja = 0, media = 0, alta = 0, urgente = 0;
+  ticketsFiltrados.value.forEach(t => {
+    if (t.prioridad === 'Baja') baja++;
+    else if (t.prioridad === 'Media') media++;
+    else if (t.prioridad === 'Alta') alta++;
+    else if (t.prioridad === 'Urgente') urgente++;
+  });
+  return {
+    labels: ['Baja', 'Media', 'Alta', 'Urgente'],
+    datasets: [{ backgroundColor: ['#fde047', '#3b82f6', '#f97316', '#ef4444'], borderWidth: 0, data: [baja, media, alta, urgente] }]
+  }
 })
 
 // --- PROYECCIONES VACACIONES ---
@@ -1249,8 +1560,8 @@ const cargarSaldos = async (isPolling = false) => {
 }
 
 const saldosFiltrados = computed(() => {
-  if (!saldosFiltro.value.trim()) return saldosDatos.value
-  const q = saldosFiltro.value.toLowerCase()
+  if (!searchQuery.value.trim()) return saldosDatos.value
+  const q = searchQuery.value.toLowerCase()
   return saldosDatos.value.filter(s => 
     s.nombre.toLowerCase().includes(q) || 
     (s.codigo && s.codigo.toLowerCase().includes(q))
@@ -1271,7 +1582,726 @@ const getBadgeClass = (val) => {
   return map[val] || 'bg-gray-100 text-gray-700'
 }
 
+// --- INCIDENCIAS LABORALES ---
+const incidenciasDatos = ref([])
+const loadingIncidencias = ref(false)
+
+const cargarIncidencias = async (isPolling = false) => {
+  try {
+    if (!isPolling) loadingIncidencias.value = true
+    const res = await axios.get('http://localhost:3007/api/reportes-incidencia/lista')
+    incidenciasDatos.value = res.data
+  } catch (e) {
+    console.error('Error cargando incidencias:', e)
+  } finally {
+    loadingIncidencias.value = false
+  }
+}
+
+const incidenciasFiltradas = computed(() => {
+  if (searchQuery.value.trim() === '') return incidenciasDatos.value
+  const q = searchQuery.value.toLowerCase()
+  return incidenciasDatos.value.filter(i => 
+    (i.empleado_nombre && i.empleado_nombre.toLowerCase().includes(q)) ||
+    (i.categoria && i.categoria.toLowerCase().includes(q)) ||
+    (i.id && String(i.id).includes(q))
+  )
+})
+
+const chartGravedadIncidenciasData = computed(() => {
+  if (incidenciasDatos.value.length === 0) return null;
+  let baja = 0, media = 0, alta = 0, urgente = 0;
+  incidenciasDatos.value.forEach(i => {
+    if (i.prioridad === 'Alta') alta++;
+    else if (i.prioridad === 'Media') media++;
+    else if (i.prioridad === 'Baja') baja++;
+    else if (i.prioridad === 'Urgente') urgente++;
+  });
+  return {
+    labels: ['Baja', 'Media', 'Alta', 'Urgente'],
+    datasets: [{ backgroundColor: ['#fde047', '#fb923c', '#ef4444', '#b91c1c'], borderWidth: 0, data: [baja, media, alta, urgente] }]
+  }
+})
+
+const chartEstadoIncidenciasData = computed(() => {
+  if (incidenciasDatos.value.length === 0) return null;
+  let abierto = 0, cerrado = 0, proceso = 0;
+  incidenciasDatos.value.forEach(i => {
+    if (i.estado === 'Cerrado' || i.estado === 'Resuelto') cerrado++;
+    else if (i.estado === 'En Progreso') proceso++;
+    else abierto++;
+  });
+  return {
+    labels: ['Abierto', 'En Progreso', 'Cerrado/Resuelto'],
+    datasets: [{ backgroundColor: ['#ef4444', '#f59e0b', '#10b981'], borderWidth: 0, data: [abierto, proceso, cerrado] }]
+  }
+})
+
+// --- DOCS LEGALES ---
+const legalesDatos = ref([])
+const loadingLegales = ref(false)
+const legalesFiltroEstado = ref('todos')
+
+const cargarLegales = async (isPolling = false) => {
+  try {
+    if (!isPolling) loadingLegales.value = true
+    const res = await axios.get('http://localhost:3007/api/documentos-legales')
+    legalesDatos.value = res.data
+  } catch (e) {
+    console.error('Error cargando documentos legales:', e)
+  } finally {
+    loadingLegales.value = false
+  }
+}
+
+const legalesFiltrados = computed(() => {
+  let list = legalesDatos.value;
+  if (legalesFiltroEstado.value === 'renovar') {
+    list = list.filter(l => l.dias_restantes !== null && l.dias_restantes <= 30);
+  }
+  if (searchQuery.value.trim() !== '') {
+    const q = searchQuery.value.toLowerCase()
+    list = list.filter(l => 
+      (l.titulo && l.titulo.toLowerCase().includes(q)) ||
+      (l.empleado_nombre && l.empleado_nombre.toLowerCase().includes(q)) ||
+      (l.empleado_apellido && l.empleado_apellido.toLowerCase().includes(q))
+    )
+  }
+  return list;
+})
+
 // --- UTILIDADES ---
+const generarPDFDirectorio = async () => {
+  if (empleadosFiltrados.value.length === 0) {
+    Swal.fire('Aviso', 'No hay empleados para exportar en este filtro.', 'warning');
+    return;
+  }
+
+  try {
+    const doc = new jsPDF();
+    
+    let tituloReporte = 'DIRECTORIO ANALÍTICO DE EMPLEADOS';
+    let headers = [];
+    let tableData = [];
+
+    if (empleadosVista.value === 'general') {
+      headers = ['Código', 'Nombre Completo', 'Identidad', 'Departamento', 'Puesto', 'Estado'];
+      tableData = empleadosFiltrados.value.map(emp => [
+        emp.codigo_empleado || 'N/A',
+        `${emp.nombre} ${emp.apellido}`.trim(),
+        emp.numero_identidad || 'N/A',
+        emp.departamento || getNombreDepartamento(emp.departamento_id) || 'N/A',
+        emp.puesto || 'N/A',
+        emp.estado == 1 ? 'Activo' : 'Inactivo'
+      ]);
+    } else if (empleadosVista.value === 'vacaciones') {
+      tituloReporte = 'REPORTE DE VACACIONES';
+      headers = ['Código', 'Empleado', 'Departamento', 'Fechas de Vacaciones'];
+      tableData = empleadosFiltrados.value.map(emp => {
+        let fechasStr = 'Sin programar';
+        if (emp.proxima_vacacion_inicio || emp.proxima_vacacion_fin) {
+          const inicio = emp.proxima_vacacion_inicio ? new Date(emp.proxima_vacacion_inicio).toLocaleDateString('es-HN', {timeZone: 'UTC'}) : 'N/A';
+          const fin = emp.proxima_vacacion_fin ? new Date(emp.proxima_vacacion_fin).toLocaleDateString('es-HN', {timeZone: 'UTC'}) : 'N/A';
+          fechasStr = `Inicio: ${inicio}\nFin: ${fin}`;
+        }
+        return [
+          emp.codigo_empleado || 'N/A',
+          `${emp.nombre} ${emp.apellido}`.trim(),
+          emp.departamento || getNombreDepartamento(emp.departamento_id) || 'N/A',
+          fechasStr
+        ];
+      });
+    } else if (empleadosVista.value === 'faltas') {
+      tituloReporte = 'REPORTE DE FALTAS DE EMPLEADOS';
+      headers = ['Código', 'Empleado', 'Departamento', 'Total Faltas'];
+      tableData = empleadosFiltrados.value.map(emp => [
+        emp.codigo_empleado || 'N/A',
+        `${emp.nombre} ${emp.apellido}`.trim(),
+        emp.departamento || getNombreDepartamento(emp.departamento_id) || 'N/A',
+        emp.total_faltas ? `${emp.total_faltas} faltas` : '0 faltas'
+      ]);
+    } else if (empleadosVista.value === 'cumpleanos') {
+      tituloReporte = 'REPORTE DE CUMPLEAÑOS DEL MES';
+      headers = ['Código', 'Empleado', 'Departamento', 'Fecha de Nacimiento'];
+      tableData = empleadosFiltrados.value.map(emp => [
+        emp.codigo_empleado || 'N/A',
+        `${emp.nombre} ${emp.apellido}`.trim(),
+        emp.departamento || getNombreDepartamento(emp.departamento_id) || 'N/A',
+        emp.fecha_nacimiento ? new Date(emp.fecha_nacimiento).toLocaleDateString('es-HN', { day: 'numeric', month: 'long', timeZone: 'UTC' }) : 'N/A'
+      ]);
+    } else if (empleadosVista.value === 'renovaciones') {
+      tituloReporte = 'REPORTE DE RENOVACIONES DE CONTRATOS';
+      headers = ['Código', 'Empleado', 'Departamento', 'Vencimiento Contrato'];
+      tableData = empleadosFiltrados.value.map(emp => [
+        emp.codigo_empleado || 'N/A',
+        `${emp.nombre} ${emp.apellido}`.trim(),
+        emp.departamento || getNombreDepartamento(emp.departamento_id) || 'N/A',
+        emp.contrato_vencimiento ? new Date(emp.contrato_vencimiento).toLocaleDateString('es-HN', { day: 'numeric', month: 'long', timeZone: 'UTC' }) : 'N/A'
+      ]);
+    }
+
+    // Encabezado
+    doc.setFontSize(16);
+    doc.setTextColor(15, 23, 42); // Slate 900
+    doc.setFont('helvetica', 'bold');
+    doc.text(tituloReporte, 14, 20);
+    
+    doc.setFontSize(10);
+    doc.setTextColor(100, 116, 139); // Slate 500
+    doc.setFont('helvetica', 'normal');
+    doc.text(`Generado el: ${new Date().toLocaleString('es-HN')}`, 14, 28);
+    doc.text(`Total de registros mostrados: ${empleadosFiltrados.value.length}`, 14, 33);
+    
+    // Cargar Logo Superior Derecho
+    const imgLogo = new Image();
+    imgLogo.crossOrigin = "Anonymous";
+    imgLogo.src = 'http://localhost:3007/uploads/Logo/Logo.png';
+    await new Promise((resolve) => {
+      imgLogo.onload = resolve;
+      imgLogo.onerror = resolve;
+    });
+    try { doc.addImage(imgLogo, 'PNG', 160, 10, 35, 15); } catch(e) {}
+    
+    // Línea divisoria
+    doc.setDrawColor(226, 232, 240); // Slate 200
+    doc.setLineWidth(0.5);
+    doc.line(14, 38, 196, 38);
+
+    autoTable(doc, {
+      startY: 45,
+      head: [headers],
+      body: tableData,
+      theme: 'grid',
+      headStyles: { fillColor: [30, 41, 59], textColor: [255, 255, 255], fontStyle: 'bold' },
+      alternateRowStyles: { fillColor: [248, 250, 252] },
+      styles: { fontSize: 8, cellPadding: 3 },
+    });
+
+    // Pie de página (Numeración)
+    const totalPages = doc.internal.getNumberOfPages();
+    for (let i = 1; i <= totalPages; i++) {
+      doc.setPage(i);
+      const pageHeight = doc.internal.pageSize.height;
+      doc.setFontSize(8);
+      doc.setTextColor(148, 163, 184); // Slate 400
+      doc.text(`Página ${i} de ${totalPages} - INNOVA RRHH`, 196, pageHeight - 10, { align: 'right' });
+    }
+
+    doc.save('Directorio_Analitico_Empleados.pdf');
+  } catch (error) {
+    console.error("Error al generar PDF de Directorio:", error);
+    Swal.fire('Error', 'No se pudo generar el PDF', 'error');
+  }
+}
+
+const generarPDFIncidencias = async () => {
+  if (incidenciasDatos.value.length === 0) {
+    Swal.fire('Aviso', 'No hay incidencias para exportar.', 'warning');
+    return;
+  }
+
+  try {
+    const doc = new jsPDF();
+    
+    let tituloReporte = 'REPORTE DE INCIDENCIAS LABORALES';
+    let headers = ['Código', 'Empleado', 'Fecha', 'Categoría', 'Prioridad', 'Estado'];
+    let tableData = incidenciasDatos.value.map(inc => [
+      `INC-${inc.id}`,
+      inc.empleado_nombre || 'Desconocido',
+      inc.fecha_creacion ? new Date(inc.fecha_creacion).toLocaleDateString() : 'N/A',
+      inc.categoria || 'N/A',
+      inc.prioridad || 'Media',
+      inc.estado || 'Pendiente'
+    ]);
+
+    // Encabezado
+    doc.setFontSize(16);
+    doc.setTextColor(15, 23, 42); // Slate 900
+    doc.setFont('helvetica', 'bold');
+    doc.text(tituloReporte, 14, 20);
+    
+    doc.setFontSize(10);
+    doc.setTextColor(100, 116, 139); // Slate 500
+    doc.setFont('helvetica', 'normal');
+    doc.text(`Generado el: ${new Date().toLocaleString('es-HN')}`, 14, 28);
+    doc.text(`Total de registros: ${incidenciasDatos.value.length}`, 14, 33);
+    
+    // Cargar Logo Superior Derecho
+    const imgLogo = new Image();
+    imgLogo.crossOrigin = "Anonymous";
+    imgLogo.src = 'http://localhost:3007/uploads/Logo/Logo.png';
+    await new Promise((resolve) => {
+      imgLogo.onload = resolve;
+      imgLogo.onerror = resolve;
+    });
+    try { doc.addImage(imgLogo, 'PNG', 160, 10, 35, 15); } catch(e) {}
+    
+    // Línea divisoria
+    doc.setDrawColor(226, 232, 240); // Slate 200
+    doc.setLineWidth(0.5);
+    doc.line(14, 38, 196, 38);
+
+    autoTable(doc, {
+      startY: 45,
+      head: [headers],
+      body: tableData,
+      theme: 'grid',
+      headStyles: { fillColor: [225, 29, 72], textColor: [255, 255, 255], fontStyle: 'bold' }, // Rose 600
+      alternateRowStyles: { fillColor: [255, 241, 242] }, // Rose 50
+      styles: { fontSize: 8, cellPadding: 3 },
+    });
+
+    // Pie de página (Numeración)
+    const totalPages = doc.internal.getNumberOfPages();
+    for (let i = 1; i <= totalPages; i++) {
+      doc.setPage(i);
+      const pageHeight = doc.internal.pageSize.height;
+      doc.setFontSize(8);
+      doc.setTextColor(148, 163, 184); // Slate 400
+      doc.text(`Página ${i} de ${totalPages} - INNOVA RRHH`, 196, pageHeight - 10, { align: 'right' });
+    }
+
+    doc.save('Reporte_Incidencias_Laborales.pdf');
+  } catch (error) {
+    console.error("Error al generar PDF de Incidencias:", error);
+    Swal.fire('Error', 'No se pudo generar el PDF', 'error');
+  }
+}
+
+const generarPDFLegales = async () => {
+  if (legalesDatos.value.length === 0) {
+    Swal.fire('Aviso', 'No hay documentos legales para exportar.', 'warning');
+    return;
+  }
+
+  try {
+    const doc = new jsPDF();
+    const pageHeight = doc.internal.pageSize.height;
+    
+    // Encabezado
+    doc.setFontSize(16);
+    doc.setTextColor(15, 23, 42); // Slate 900
+    doc.setFont('helvetica', 'bold');
+    doc.text('REPORTE DE DOCUMENTACIÓN LEGAL', 14, 20);
+    
+    doc.setFontSize(10);
+    doc.setTextColor(100, 116, 139); // Slate 500
+    doc.setFont('helvetica', 'normal');
+    doc.text(`Generado el: ${new Date().toLocaleString('es-HN')}`, 14, 28);
+    doc.text(`Total de registros: ${legalesDatos.value.length}`, 14, 33);
+    
+    // Cargar Logo
+    const imgLogo = new Image();
+    imgLogo.crossOrigin = "Anonymous";
+    imgLogo.src = 'http://localhost:3007/uploads/Logo/Logo.png';
+    await new Promise((resolve) => {
+      imgLogo.onload = resolve;
+      imgLogo.onerror = resolve;
+    });
+    try { doc.addImage(imgLogo, 'PNG', 160, 10, 35, 15); } catch(e) {}
+    
+    // Línea divisoria
+    doc.setDrawColor(226, 232, 240); // Slate 200
+    doc.setLineWidth(0.5);
+    doc.line(14, 38, 196, 38);
+
+    let startY = 45;
+
+    let headers = ['Documento', 'Categoría', 'Empleado', 'Expiración', 'Estado'];
+    let tableData = legalesDatos.value.map(doc => {
+      let estado = 'Vigente';
+      if (doc.dias_restantes !== null && doc.dias_restantes < 0) estado = 'Vencido';
+      else if (doc.dias_restantes !== null && doc.dias_restantes <= 30) estado = 'Por Vencer';
+      
+      return [
+        doc.titulo || 'N/A',
+        doc.categoria_nombre || 'N/A',
+        doc.empleado_nombre ? `${doc.empleado_nombre} ${doc.empleado_apellido || ''}`.trim() : 'General',
+        doc.fecha_expiracion ? new Date(doc.fecha_expiracion).toLocaleDateString() : 'N/A',
+        estado
+      ];
+    });
+
+    autoTable(doc, {
+      startY: startY,
+      head: [headers],
+      body: tableData,
+      theme: 'grid',
+      headStyles: { fillColor: [79, 70, 229], textColor: [255, 255, 255], fontStyle: 'bold' }, // Indigo 600
+      alternateRowStyles: { fillColor: [238, 242, 255] }, // Indigo 50
+      styles: { fontSize: 8, cellPadding: 3 },
+    });
+
+    // Paginación
+    const totalPages = doc.internal.getNumberOfPages();
+    for (let i = 1; i <= totalPages; i++) {
+      doc.setPage(i);
+      doc.setFontSize(8);
+      doc.setTextColor(148, 163, 184); // Slate 400
+      doc.text(`Página ${i} de ${totalPages} - INNOVA RRHH`, 196, pageHeight - 10, { align: 'right' });
+    }
+
+    doc.save('Reporte_Docs_Legales.pdf');
+  } catch (error) {
+    console.error("Error al generar PDF de Legales:", error);
+    Swal.fire('Error', 'No se pudo generar el PDF', 'error');
+  }
+}
+
+const generarPDFTickets = async () => {
+  if (ticketsFiltrados.value.length === 0) {
+    Swal.fire('Aviso', 'No hay tickets para exportar con los filtros actuales.', 'warning');
+    return;
+  }
+
+  try {
+    const doc = new jsPDF();
+    const pageHeight = doc.internal.pageSize.height;
+    
+    // Encabezado
+    doc.setFontSize(16);
+    doc.setTextColor(15, 23, 42);
+    doc.setFont('helvetica', 'bold');
+    doc.text('REPORTE DE SOPORTE Y TICKETS', 14, 20);
+    
+    doc.setFontSize(10);
+    doc.setTextColor(100, 116, 139);
+    doc.setFont('helvetica', 'normal');
+    doc.text(`Generado el: ${new Date().toLocaleString('es-HN')}`, 14, 28);
+    doc.text(`Total de registros: ${ticketsFiltrados.value.length}`, 14, 33);
+    
+    // Cargar Logo
+    const imgLogo = new Image();
+    imgLogo.crossOrigin = "Anonymous";
+    imgLogo.src = 'http://localhost:3007/uploads/Logo/Logo.png';
+    await new Promise((resolve) => {
+      imgLogo.onload = resolve;
+      imgLogo.onerror = resolve;
+    });
+    try { doc.addImage(imgLogo, 'PNG', 160, 10, 35, 15); } catch(e) {}
+    
+    // Línea divisoria
+    doc.setDrawColor(226, 232, 240);
+    doc.setLineWidth(0.5);
+    doc.line(14, 38, 196, 38);
+
+    let startY = 45;
+
+    let headers = ['ID', 'Asunto', 'Prioridad', 'Estado', 'Creado Por', 'Asignado', 'Respuestas', 'Fecha'];
+    let tableData = ticketsFiltrados.value.map(ticket => {
+      let asignado = ticket.asignado_usuario_nombre || ticket.asignado_empleado_nombre || 'Sin asignar';
+      let creador = ticket.creadoPorNombre || (ticket.empleado_nombre ? `${ticket.empleado_nombre} ${ticket.empleado_apellido || ''}`.trim() : 'Desconocido');
+      return [
+        `#${ticket.id}`,
+        ticket.asunto || 'N/A',
+        ticket.prioridad || 'N/A',
+        ticket.estado || 'N/A',
+        creador,
+        asignado,
+        ticket.respuestas_count ? `${ticket.respuestas_count}` : '0',
+        ticket.fecha_creacion ? new Date(ticket.fecha_creacion).toLocaleDateString() : 'N/A'
+      ];
+    });
+
+    autoTable(doc, {
+      startY: startY,
+      head: [headers],
+      body: tableData,
+      theme: 'grid',
+      headStyles: { fillColor: [5, 150, 105], textColor: [255, 255, 255], fontStyle: 'bold' }, // Emerald 600
+      alternateRowStyles: { fillColor: [236, 253, 245] }, // Emerald 50
+      styles: { fontSize: 8, cellPadding: 3 },
+    });
+
+    // Paginación
+    const totalPages = doc.internal.getNumberOfPages();
+    for (let i = 1; i <= totalPages; i++) {
+      doc.setPage(i);
+      doc.setFontSize(8);
+      doc.setTextColor(148, 163, 184); // Slate 400
+      doc.text(`Página ${i} de ${totalPages} - INNOVA RRHH`, 196, pageHeight - 10, { align: 'right' });
+    }
+
+    doc.save('Reporte_Tickets.pdf');
+  } catch (error) {
+    console.error("Error al generar PDF de Tickets:", error);
+    Swal.fire('Error', 'No se pudo generar el PDF', 'error');
+  }
+}
+
+const generarPDFDashboard = async () => {
+  try {
+    const doc = new jsPDF();
+    const pageHeight = doc.internal.pageSize.height;
+    
+    // Función para añadir Logo
+    const loadLogo = () => {
+      return new Promise((resolve) => {
+        const img = new Image();
+        img.crossOrigin = "Anonymous";
+        img.src = 'http://localhost:3007/uploads/Logo/Logo.png';
+        img.onload = () => resolve(img);
+        img.onerror = () => resolve(null);
+      });
+    };
+
+    const logoImg = await loadLogo();
+    if (logoImg) {
+      doc.addImage(logoImg, 'PNG', 14, 15, 25, 25);
+    }
+    
+    // Encabezado
+    doc.setFontSize(16);
+    doc.setTextColor(15, 23, 42); // Slate 900
+    doc.setFont('helvetica', 'bold');
+    doc.text('REPORTE: DASHBOARD GENERAL', logoImg ? 45 : 14, 25);
+    
+    doc.setFontSize(10);
+    doc.setTextColor(100, 116, 139); // Slate 500
+    doc.setFont('helvetica', 'normal');
+    doc.text(`Generado el: ${new Date().toLocaleString('es-HN')}`, logoImg ? 45 : 14, 32);
+
+    // Línea divisoria
+    doc.setDrawColor(226, 232, 240);
+    doc.setLineWidth(0.5);
+    doc.line(14, 45, 196, 45);
+
+    let startY = 55;
+
+    // Título de Métricas
+    doc.setFontSize(12);
+    doc.setTextColor(37, 99, 235); // Blue 600
+    doc.setFont('helvetica', 'bold');
+    doc.text('Métricas Clave de RRHH', 14, startY);
+    startY += 8;
+
+    // Preparar datos para AutoTable
+    const kpiData = [
+      ['Total de Empleados Registrados', stats.value.total || 0],
+      ['Empleados Activos', stats.value.activos || 0],
+      ['Empleados Inactivos', stats.value.inactivos || 0],
+      ['Personal de Vacaciones', stats.value.de_vacaciones || 0],
+      ['Faltas Acumuladas (Mes Actual)', stats.value.faltas_mes || 0],
+      ['Documentos Legales Registrados', stats.value.doc_legales || 0],
+      ['Contratos por Vencer (30 días)', stats.value.vencimientos || 0],
+      ['Tickets de Soporte Pendientes', stats.value.tickets || 0]
+    ];
+
+    autoTable(doc, {
+      startY: startY,
+      head: [['Métrica / Indicador', 'Valor Registrado']],
+      body: kpiData,
+      theme: 'grid',
+      headStyles: { fillColor: [37, 99, 235], textColor: [255, 255, 255], fontStyle: 'bold' }, // Blue 600
+      alternateRowStyles: { fillColor: [239, 246, 255] }, // Blue 50
+      styles: { fontSize: 10, cellPadding: 5 },
+      columnStyles: {
+        0: { fontStyle: 'bold' },
+        1: { halign: 'center', fontStyle: 'bold', textColor: [15, 23, 42] }
+      }
+    });
+
+    startY = doc.lastAutoTable.finalY + 15;
+
+    // Distribución por Departamento
+    doc.setFontSize(12);
+    doc.setTextColor(37, 99, 235); // Blue 600
+    doc.setFont('helvetica', 'bold');
+    doc.text('Distribución por Departamento', 14, startY);
+    startY += 8;
+
+    const deptsData = deptStats.value.map(d => [d.departamento, d.cantidad]);
+
+    autoTable(doc, {
+      startY: startY,
+      head: [['Departamento', 'Cantidad de Empleados']],
+      body: deptsData,
+      theme: 'grid',
+      headStyles: { fillColor: [15, 23, 42], textColor: [255, 255, 255], fontStyle: 'bold' }, // Slate 900
+      alternateRowStyles: { fillColor: [248, 250, 252] }, // Slate 50
+      styles: { fontSize: 9, cellPadding: 4 },
+      columnStyles: {
+        1: { halign: 'center' }
+      }
+    });
+
+    startY = doc.lastAutoTable.finalY + 15;
+    if (startY > pageHeight - 40) { doc.addPage(); startY = 20; }
+
+    // Resumen de Incidencias Laborales
+    doc.setFontSize(12);
+    doc.setTextColor(37, 99, 235); // Blue 600
+    doc.setFont('helvetica', 'bold');
+    doc.text('Últimas Incidencias Laborales Registradas', 14, startY);
+    startY += 8;
+
+    let tableDataInc = incidenciasDatos.value.slice(0, 15).map(inc => [
+      `INC-${inc.id}`,
+      inc.empleado_nombre || 'Desconocido',
+      inc.fecha_creacion ? new Date(inc.fecha_creacion).toLocaleDateString('es-HN') : 'N/A',
+      inc.categoria || 'N/A',
+      inc.prioridad || 'Media',
+      inc.estado || 'Pendiente'
+    ]);
+    if (tableDataInc.length === 0) tableDataInc = [['No hay incidencias registradas.', '', '', '', '', '']];
+
+    autoTable(doc, {
+      startY: startY,
+      head: [['Código', 'Empleado', 'Fecha', 'Categoría', 'Prioridad', 'Estado']],
+      body: tableDataInc,
+      theme: 'grid',
+      headStyles: { fillColor: [225, 29, 72], textColor: [255, 255, 255], fontStyle: 'bold' }, // Rose 600
+      alternateRowStyles: { fillColor: [255, 241, 242] }, // Rose 50
+      styles: { fontSize: 8, cellPadding: 3 }
+    });
+
+    // Paginación
+    const totalPages = doc.internal.getNumberOfPages();
+    for (let i = 1; i <= totalPages; i++) {
+      doc.setPage(i);
+      doc.setFontSize(8);
+      doc.setTextColor(148, 163, 184); // Slate 400
+      doc.text(`Página ${i} de ${totalPages} - INNOVA RRHH`, 196, pageHeight - 10, { align: 'right' });
+    }
+
+    doc.save('Reporte_Ejecutivo_Dashboard.pdf');
+  } catch (error) {
+    console.error("Error al generar PDF de Dashboard:", error);
+    Swal.fire('Error', 'No se pudo generar el PDF del Dashboard', 'error');
+  }
+}
+
+const generarPDFControlTiempos = async () => {
+  try {
+    const doc = new jsPDF();
+    const pageHeight = doc.internal.pageSize.height;
+    
+    // Encabezado
+    doc.setFontSize(16);
+    doc.setTextColor(15, 23, 42); // Slate 900
+    doc.setFont('helvetica', 'bold');
+    doc.text('REPORTE CONSOLIDADO: CONTROL DE TIEMPOS', 14, 20);
+    
+    doc.setFontSize(10);
+    doc.setTextColor(100, 116, 139); // Slate 500
+    doc.setFont('helvetica', 'normal');
+    doc.text(`Generado el: ${new Date().toLocaleString('es-HN')}`, 14, 28);
+    
+    // Cargar Logo
+    const imgLogo = new Image();
+    imgLogo.crossOrigin = "Anonymous";
+    imgLogo.src = 'http://localhost:3007/uploads/Logo/Logo.png';
+    await new Promise((resolve) => {
+      imgLogo.onload = resolve;
+      imgLogo.onerror = resolve;
+    });
+    try { doc.addImage(imgLogo, 'PNG', 160, 10, 35, 15); } catch(e) {}
+    
+    // Línea divisoria
+    doc.setDrawColor(226, 232, 240); // Slate 200
+    doc.setLineWidth(0.5);
+    doc.line(14, 38, 196, 38);
+
+    let startY = 45;
+
+    // 1. Proyecciones Vacaciones
+    doc.setFontSize(12);
+    doc.setTextColor(15, 23, 42);
+    doc.setFont('helvetica', 'bold');
+    doc.text('1. Proyecciones de Vacaciones', 14, startY);
+    startY += 5;
+
+    let dataProy = proyeccionesVacaciones.value.map(v => [
+      `${v.nombre} ${v.apellido}`,
+      v.departamento || 'N/A',
+      v.tipoSolicitud || 'N/A',
+      v.fechaInicio ? new Date(v.fechaInicio).toLocaleDateString('es-HN', {timeZone: 'UTC'}) : 'N/A',
+      v.fechaRegreso ? new Date(v.fechaRegreso).toLocaleDateString('es-HN', {timeZone: 'UTC'}) : 'N/A'
+    ]);
+    if (dataProy.length === 0) dataProy = [['No hay proyecciones.', '', '', '', '']];
+
+    autoTable(doc, {
+      startY: startY,
+      head: [['Empleado', 'Departamento', 'Tipo', 'Inicio', 'Regreso']],
+      body: dataProy,
+      theme: 'grid',
+      headStyles: { fillColor: [16, 185, 129], textColor: [255, 255, 255], fontStyle: 'bold' },
+      styles: { fontSize: 8, cellPadding: 3 },
+    });
+    
+    startY = doc.lastAutoTable.finalY + 15;
+    if (startY > pageHeight - 40) { doc.addPage(); startY = 20; }
+
+    // 2. Índice de Ausentismo
+    doc.setFontSize(12);
+    doc.setTextColor(15, 23, 42);
+    doc.setFont('helvetica', 'bold');
+    doc.text('2. Índice de Ausentismo (Mes Actual)', 14, startY);
+    startY += 5;
+
+    let dataAus = ausentismoDatos.value.map(d => [
+      d.departamento || 'N/A',
+      d.total_empleados || 0,
+      d.total_faltas || 0,
+      d.dias_laborables_totales || 0,
+      `${d.indice_ausentismo}%`
+    ]);
+    if (dataAus.length === 0) dataAus = [['No hay datos.', '', '', '', '']];
+
+    autoTable(doc, {
+      startY: startY,
+      head: [['Departamento', 'Empleados', 'Faltas', 'Días Laborables', 'Índice (%)']],
+      body: dataAus,
+      theme: 'grid',
+      headStyles: { fillColor: [225, 29, 72], textColor: [255, 255, 255], fontStyle: 'bold' },
+      styles: { fontSize: 8, cellPadding: 3 },
+    });
+
+    startY = doc.lastAutoTable.finalY + 15;
+    if (startY > pageHeight - 40) { doc.addPage(); startY = 20; }
+
+    // 3. Saldos de Vacaciones
+    doc.setFontSize(12);
+    doc.setTextColor(15, 23, 42);
+    doc.setFont('helvetica', 'bold');
+    doc.text('3. Saldos de Vacaciones', 14, startY);
+    startY += 5;
+
+    let dataSaldos = saldosDatos.value.map(s => [
+      s.nombre || 'N/A',
+      s.departamento || 'N/A',
+      s.dias_acumulados || 0,
+      s.dias_gozados || 0,
+      s.dias_pagados || 0,
+      s.saldo_pendiente || 0
+    ]);
+    if (dataSaldos.length === 0) dataSaldos = [['No hay datos.', '', '', '', '', '']];
+
+    autoTable(doc, {
+      startY: startY,
+      head: [['Empleado', 'Departamento', 'Acumulados', 'Gozados', 'Pagados', 'Pendiente']],
+      body: dataSaldos,
+      theme: 'grid',
+      headStyles: { fillColor: [59, 130, 246], textColor: [255, 255, 255], fontStyle: 'bold' },
+      styles: { fontSize: 8, cellPadding: 3 },
+    });
+
+    // Paginación
+    const totalPages = doc.internal.getNumberOfPages();
+    for (let i = 1; i <= totalPages; i++) {
+      doc.setPage(i);
+      doc.setFontSize(8);
+      doc.setTextColor(148, 163, 184); // Slate 400
+      doc.text(`Página ${i} de ${totalPages} - INNOVA RRHH`, 196, pageHeight - 10, { align: 'right' });
+    }
+
+    doc.save('Reporte_Control_Tiempos.pdf');
+  } catch (error) {
+    console.error("Error al generar PDF de Control de Tiempos:", error);
+    Swal.fire('Error', 'No se pudo generar el PDF', 'error');
+  }
+}
+
 const exportarCSV = (dataList, filename) => {
   if (!dataList || dataList.length === 0) {
     alert("No hay datos para exportar")
@@ -1353,6 +2383,8 @@ onMounted(async () => {
   cargarProyecciones(false)
   cargarAusentismo(false)
   cargarSaldos(false)
+  cargarIncidencias(false)
+  cargarLegales(false)
 
   // Iniciar Polling en tiempo real (cada 15 segundos)
   pollingInterval = setInterval(() => {
@@ -1367,6 +2399,8 @@ onMounted(async () => {
     cargarProyecciones(true)
     cargarAusentismo(true)
     cargarSaldos(true)
+    cargarIncidencias(true)
+    cargarLegales(true)
   }, 15000)
 })
 

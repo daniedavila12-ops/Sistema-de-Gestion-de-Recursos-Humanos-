@@ -97,4 +97,111 @@ router.put('/:id/estado', (req, res) => {
     });
 });
 
+// Obtener permisos de un usuario (lista de módulos y permisos combinados)
+router.get('/:id/permisos', (req, res) => {
+    const db = req.app.get('db');
+    const { id } = req.params; // usuario_id
+
+    db.query("SELECT rol_id FROM usuarios WHERE id = ?", [id], (err, users) => {
+        if (err) return res.status(500).json(err);
+        if (users.length === 0) return res.status(404).json({ mensaje: "Usuario no encontrado" });
+        
+        const rol_id = users[0].rol_id;
+
+        const sql = `
+            SELECT 
+                m.id AS modulo_id,
+                m.nombre AS modulo_nombre,
+                IFNULL(um.puedeVer, IFNULL(rm.puedeVer, 0)) AS puedeVer,
+                IFNULL(um.puedeCrear, IFNULL(rm.puedeCrear, 0)) AS puedeCrear,
+                IFNULL(um.puedeEditar, IFNULL(rm.puedeEditar, 0)) AS puedeEditar,
+                IFNULL(um.puedeEliminar, IFNULL(rm.puedeEliminar, 0)) AS puedeEliminar
+            FROM modulos m
+            LEFT JOIN rol_modulo rm ON m.id = rm.modulo_id AND rm.rol_id = ?
+            LEFT JOIN usuario_modulo um ON m.id = um.modulo_id AND um.usuario_id = ?
+            ORDER BY m.id ASC
+        `;
+        
+        db.query(sql, [rol_id, id], (err, results) => {
+            if (err) return res.status(500).json(err);
+            res.json(results);
+        });
+    });
+});
+
+// Actualizar o insertar permisos para un usuario
+router.put('/:id/permisos', (req, res) => {
+    const db = req.app.get('db');
+    const usuario_id = req.params.id;
+    const { permisos } = req.body; 
+
+    if (!Array.isArray(permisos)) {
+        return res.status(400).json({ mensaje: "Formato de permisos inválido" });
+    }
+
+    db.getConnection((err, connection) => {
+        if (err) return res.status(500).json(err);
+
+        connection.beginTransaction((err) => {
+            if (err) {
+                connection.release();
+                return res.status(500).json(err);
+            }
+
+            connection.query("DELETE FROM usuario_modulo WHERE usuario_id = ?", [usuario_id], (err, result) => {
+                if (err) {
+                    return connection.rollback(() => {
+                        connection.release();
+                        res.status(500).json({ mensaje: "Error al limpiar permisos anteriores", detalle: err.sqlMessage });
+                    });
+                }
+
+                if (permisos.length === 0) {
+                    return connection.commit((err) => {
+                        if (err) {
+                            return connection.rollback(() => {
+                                connection.release();
+                                res.status(500).json(err);
+                            });
+                        }
+                        connection.release();
+                        return res.status(200).json({ success: true, mensaje: "Permisos individuales eliminados correctamente" });
+                    });
+                }
+
+                const values = permisos.map(p => [
+                    usuario_id, 
+                    p.modulo_id, 
+                    p.puedeVer ? 1 : 0, 
+                    p.puedeCrear ? 1 : 0, 
+                    p.puedeEditar ? 1 : 0, 
+                    p.puedeEliminar ? 1 : 0
+                ]);
+
+                const insertSql = "INSERT INTO usuario_modulo (usuario_id, modulo_id, puedeVer, puedeCrear, puedeEditar, puedeEliminar) VALUES ?";
+                
+                connection.query(insertSql, [values], (err, result) => {
+                    if (err) {
+                        return connection.rollback(() => {
+                            connection.release();
+                            res.status(500).json({ mensaje: "Error al guardar nuevos permisos", detalle: err.sqlMessage });
+                        });
+                    }
+
+                    connection.commit((err) => {
+                        if (err) {
+                            return connection.rollback(() => {
+                                connection.release();
+                                res.status(500).json({ mensaje: "Error al hacer commit de permisos", detalle: err.sqlMessage });
+                            });
+                        }
+                        connection.release();
+                        res.status(200).json({ success: true, mensaje: "Permisos del usuario actualizados correctamente" });
+                    });
+                });
+            });
+        });
+    });
+});
+
 module.exports = router;

@@ -38,7 +38,16 @@ router.post('/crear', upload.single('archivo'), (req, res) => {
                     return res.status(500).json({ error: "Error al crear el reporte", detalle: err.message });
                 }
                 const io = req.app.get('io');
-                io.emit('reportes_actualizados');
+                if (io) io.emit('reportes_actualizados');
+                
+                db.query('SELECT id FROM usuarios WHERE rol_id IN (1, 2)', (err, users) => {
+                    if (!err && users && users.length > 0) {
+                        const notifQuery = 'INSERT INTO notificaciones (usuario_id, titulo, mensaje, tipo) VALUES ?';
+                        const notifValues = users.map(u => [u.id, 'Nuevo Incidente Pendiente', `Se ha recibido un nuevo incidente: ${tema || categoria}`, 'warning']);
+                        db.query(notifQuery, [notifValues]);
+                    }
+                });
+
                 res.json({ mensaje: "Reporte enviado con éxito", reporteId: result.insertId });
             });
         });
@@ -50,7 +59,16 @@ router.post('/crear', upload.single('archivo'), (req, res) => {
                 return res.status(500).json({ error: "Error al crear el reporte", detalle: err.message });
             }
             const io = req.app.get('io');
-            io.emit('reportes_actualizados');
+            if (io) io.emit('reportes_actualizados');
+            
+            db.query('SELECT id FROM usuarios WHERE rol_id IN (1, 2)', (err, users) => {
+                if (!err && users && users.length > 0) {
+                    const notifQuery = 'INSERT INTO notificaciones (usuario_id, titulo, mensaje, tipo) VALUES ?';
+                    const notifValues = users.map(u => [u.id, 'Nuevo Incidente Pendiente', `Se ha recibido un nuevo incidente: ${tema || categoria}`, 'warning']);
+                    db.query(notifQuery, [notifValues]);
+                }
+            });
+
             res.json({ mensaje: "Reporte enviado con éxito", reporteId: result.insertId });
         });
     }
@@ -112,7 +130,15 @@ router.put('/:id/asignar', (req, res) => {
     db.query('UPDATE reportes_incidencias SET asignado_usuario_id = ?, estado = "En Proceso" WHERE id = ?', [usuario_id, reporteId], (err) => {
         if (err) return res.status(500).json({ error: err.message });
         const io = req.app.get('io');
-        io.emit('reportes_actualizados');
+        
+        // Notificar al usuario asignado
+        if (usuario_id) {
+            if (io) io.emit('nueva_notificacion');
+            const notifQuery = 'INSERT INTO notificaciones (usuario_id, titulo, mensaje, tipo) VALUES (?, ?, ?, ?)';
+            db.query(notifQuery, [usuario_id, 'Incidente Asignado', `Se te ha asignado el Reporte de Incidencia #${reporteId}`, 'info']);
+        }
+
+        if (io) io.emit('reportes_actualizados');
         res.json({ mensaje: 'Reporte asignado con éxito' });
     });
 });
@@ -125,7 +151,16 @@ router.put('/:id/estado', (req, res) => {
     db.query('UPDATE reportes_incidencias SET estado = ? WHERE id = ?', [estado, reporteId], (err) => {
         if (err) return res.status(500).json({ error: err.message });
         const io = req.app.get('io');
-        io.emit('reportes_actualizados');
+        if (io) io.emit('reportes_actualizados');
+
+        db.query('SELECT jefe_reporta FROM reportes_incidencias WHERE id = ?', [reporteId], (err, repRes) => {
+            if (!err && repRes && repRes.length > 0 && repRes[0].jefe_reporta) {
+                if (io) io.emit('nueva_notificacion');
+                const notifQuery = 'INSERT INTO notificaciones (usuario_id, titulo, mensaje, tipo) VALUES (?, ?, ?, ?)';
+                db.query(notifQuery, [repRes[0].jefe_reporta, 'Estado del Incidente Actualizado', `El Incidente #${reporteId} ha cambiado su estado a: ${estado}`, estado === 'Resuelto' ? 'success' : 'info']);
+            }
+        });
+
         res.json({ mensaje: 'Estado actualizado' });
     });
 });
@@ -161,8 +196,59 @@ router.post('/:id/respuestas', upload.single('archivo'), (req, res) => {
     db.execute(query, [reporteId, usuario_id || null, empleado_id || null, mensaje, archivo], (err, result) => {
         if (err) return res.status(500).json({ error: err.message });
         const io = req.app.get('io');
-        io.emit('reportes_actualizados');
-        res.json({ mensaje: 'Respuesta enviada', respuestaId: result.insertId, archivo: archivo });
+        if (io) {
+            io.emit('reportes_actualizados');
+        }
+
+        // Verificar estado del incidente y asignado antes de notificar
+        db.query('SELECT estado, asignado_usuario_id, jefe_reporta FROM reportes_incidencias WHERE id = ?', [reporteId], (err, repRes) => {
+            const estado = repRes && repRes.length > 0 ? repRes[0].estado : null;
+            const asignado = repRes && repRes.length > 0 ? repRes[0].asignado_usuario_id : null;
+            const creador = repRes && repRes.length > 0 ? repRes[0].jefe_reporta : null;
+            const estadosCerrados = ['Resuelto', 'Cancelado', 'Desestimado'];
+            
+            if (!estadosCerrados.includes(estado)) {
+                if (io) io.emit('nueva_notificacion');
+                
+                let autorQuery = '';
+                let autorParams = [];
+                if (usuario_id) {
+                    autorQuery = 'SELECT nombre FROM usuarios WHERE id = ?';
+                    autorParams = [usuario_id];
+                } else if (empleado_id) {
+                    autorQuery = 'SELECT CONCAT(nombre, " ", apellido) as nombre FROM empleados WHERE id = ?';
+                    autorParams = [empleado_id];
+                }
+
+                const notificar = (autorNombre) => {
+                    db.query('SELECT id FROM usuarios WHERE rol_id IN (1, 2) OR id = ? OR id = ?', [asignado, creador], (err, users) => {
+                        if (!err && users && users.length > 0) {
+                            // Filtrar al autor del mensaje para no notificarle sus propias respuestas
+                            const notifyUsers = users.filter(u => String(u.id) !== String(usuario_id));
+                            if (notifyUsers.length > 0) {
+                                const notifQuery = 'INSERT INTO notificaciones (usuario_id, titulo, mensaje, tipo) VALUES ?';
+                                const notifValues = notifyUsers.map(u => [u.id, 'Respuesta en Incidente', `${autorNombre} añadió una respuesta al Incidente #${reporteId}`, 'info']);
+                                db.query(notifQuery, [notifValues]);
+                            }
+                        }
+                    });
+                };
+
+                if (autorQuery) {
+                    db.query(autorQuery, autorParams, (err, autorRes) => {
+                        let autorNombre = 'Alguien';
+                        if (!err && autorRes && autorRes.length > 0) {
+                            autorNombre = autorRes[0].nombre;
+                        }
+                        notificar(autorNombre);
+                    });
+                } else {
+                    notificar('Alguien');
+                }
+            }
+            
+            res.json({ mensaje: 'Respuesta enviada', respuestaId: result.insertId, archivo: archivo });
+        });
     });
 });
 

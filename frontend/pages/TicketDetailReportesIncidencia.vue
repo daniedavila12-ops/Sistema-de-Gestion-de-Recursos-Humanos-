@@ -11,6 +11,9 @@
         <button @click="generarPDF" class="px-4 py-2 bg-slate-800 text-white rounded-lg text-xs font-black uppercase tracking-widest shadow-md hover:bg-slate-900 transition-colors flex items-center gap-2">
           <span>📄</span> Crear PDF
         </button>
+        <button @click="generarPDFResoluciones" class="px-4 py-2 bg-indigo-600 text-white rounded-lg text-xs font-black uppercase tracking-widest shadow-md hover:bg-indigo-700 transition-colors flex items-center gap-2">
+          <span>💬</span> PDF Resoluciones
+        </button>
         <button @click="imprimirReporte" class="px-4 py-2 bg-blue-600 text-white rounded-lg text-xs font-black uppercase tracking-widest shadow-md hover:bg-blue-700 transition-colors flex items-center gap-2">
           <span>🖨️</span> Imprimir Reporte
         </button>
@@ -246,6 +249,8 @@ import { ref, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import axios from 'axios'
 import Swal from 'sweetalert2'
+import jsPDF from 'jspdf'
+import autoTable from 'jspdf-autotable'
 
 const route = useRoute()
 const router = useRouter()
@@ -277,75 +282,313 @@ const imprimirReporte = () => {
   window.print()
 }
 
-const generarPDF = () => {
+const generarPDF = async () => {
   if (!reporte.value) return;
 
-  const doc = new jsPDF();
-  
-  // Encabezado
-  doc.setFontSize(22);
-  doc.setTextColor(220, 38, 38);
-  doc.setFont('helvetica', 'bold');
-  doc.text(`REPORTE DE INCIDENCIA`, 14, 20);
-  
-  doc.setFontSize(11);
-  doc.setTextColor(100, 116, 139);
-  doc.setFont('helvetica', 'normal');
-  doc.text(`N° de Ticket: ${reporte.value.id}`, 14, 28);
-  doc.text(`Generado el: ${new Date().toLocaleString('es-HN')}`, 14, 33);
-  doc.text(`Estado: ${reporte.value.estado.toUpperCase()}`, 14, 38);
-  
-  // Línea divisoria
-  doc.setDrawColor(220, 38, 38);
-  doc.setLineWidth(0.5);
-  doc.line(14, 42, 196, 42);
+  try {
+    const doc = new jsPDF();
+    
+    // Encabezado
+    doc.setFontSize(22);
+    doc.setTextColor(220, 38, 38);
+    doc.setFont('helvetica', 'bold');
+    doc.text(`REPORTE DE INCIDENCIA`, 14, 20);
+    
+    doc.setFontSize(11);
+    doc.setTextColor(100, 116, 139);
+    doc.setFont('helvetica', 'normal');
+    doc.text(`N° de Ticket: ${reporte.value.id}`, 14, 28);
+    doc.text(`Generado el: ${new Date().toLocaleString('es-HN')}`, 14, 33);
+    doc.text(`Estado: ${(reporte.value.estado || '').toUpperCase()}`, 14, 38);
+    
+    // Línea divisoria
+    doc.setDrawColor(220, 38, 38);
+    doc.setLineWidth(0.5);
+    doc.line(14, 42, 196, 42);
 
-  // Información del Reporte
-  doc.autoTable({
-    startY: 48,
-    head: [['Información General', '']],
-    body: [
-      ['Tema / Asunto', reporte.value.tema],
-      ['Categoría', reporte.value.categoria],
-      ['Reportado Por', reporte.value.jefe_reporta],
-      ['Fecha del Reporte', new Date(reporte.value.fecha_creacion).toLocaleString('es-HN')],
-    ],
-    theme: 'grid',
-    headStyles: { fillColor: [241, 245, 249], textColor: [15, 23, 42] },
-    columnStyles: { 0: { fontStyle: 'bold', cellWidth: 50 } }
-  });
+    // Información del Reporte
+    autoTable(doc, {
+      startY: 48,
+      head: [['Información General', '']],
+      body: [
+        ['Tema / Asunto', reporte.value.tema || 'N/A'],
+        ['Categoría', reporte.value.categoria || 'N/A'],
+        ['Reportado Por', reporte.value.jefe_reporta || 'N/A'],
+        ['Fecha del Reporte', new Date(reporte.value.fecha_creacion).toLocaleString('es-HN')],
+      ],
+      theme: 'grid',
+      headStyles: { fillColor: [241, 245, 249], textColor: [15, 23, 42] },
+      columnStyles: { 0: { fontStyle: 'bold', cellWidth: 50 } }
+    });
 
-  // Información del Empleado
-  doc.autoTable({
-    startY: doc.lastAutoTable.finalY + 10,
-    head: [['Datos del Empleado Reportado', '']],
-    body: [
-      ['Nombre', `${reporte.value.empleado_nombre} ${reporte.value.empleado_apellido}`],
-      ['Identidad', reporte.value.identidad],
-      ['Departamento', reporte.value.departamento_nombre || 'No asignado']
-    ],
-    theme: 'grid',
-    headStyles: { fillColor: [241, 245, 249], textColor: [15, 23, 42] },
-    columnStyles: { 0: { fontStyle: 'bold', cellWidth: 50 } }
-  });
+    // Información del Empleado
+    autoTable(doc, {
+      startY: doc.lastAutoTable.finalY + 10,
+      head: [['Datos del Empleado Reportado', '']],
+      body: [
+        ['Nombre', `${reporte.value.empleado_nombre || ''} ${reporte.value.empleado_apellido || ''}`.trim() || 'N/A'],
+        ['Identidad', reporte.value.identidad || 'N/A'],
+        ['Departamento', reporte.value.departamento_nombre || 'No asignado']
+      ],
+      theme: 'grid',
+      headStyles: { fillColor: [241, 245, 249], textColor: [15, 23, 42] },
+      columnStyles: { 0: { fontStyle: 'bold', cellWidth: 50 } }
+    });
 
-  // Descripción
-  const startYDesc = doc.lastAutoTable.finalY + 15;
-  doc.setFontSize(12);
-  doc.setTextColor(15, 23, 42);
-  doc.setFont('helvetica', 'bold');
-  doc.text('Descripción del Incidente:', 14, startYDesc);
-  
-  doc.setFontSize(10);
-  doc.setFont('helvetica', 'normal');
-  doc.setTextColor(51, 65, 85);
-  
-  // Ajuste de texto para evitar salir del margen derecho
-  const splitDesc = doc.splitTextToSize(reporte.value.descripcion || 'Sin descripción.', 180);
-  doc.text(splitDesc, 14, startYDesc + 7);
+    // Descripción
+    const startYDesc = doc.lastAutoTable.finalY + 15;
+    doc.setFontSize(12);
+    doc.setTextColor(15, 23, 42);
+    doc.setFont('helvetica', 'bold');
+    doc.text('Descripción del Incidente:', 14, startYDesc);
+    
+    doc.setFontSize(10);
+    doc.setFont('helvetica', 'normal');
+    doc.setTextColor(51, 65, 85);
+    
+    // Cargar la imagen del logo antes de generar el documento
+    const img = new Image();
+    img.crossOrigin = "Anonymous";
+    img.src = 'http://localhost:3007/uploads/Logo/Logo.png';
+    await new Promise((resolve) => {
+      img.onload = resolve;
+      img.onerror = resolve; // Continuar aunque falle la carga del logo
+    });
 
-  // Guardar archivo
-  doc.save(`Reporte_Incidencia_${reporte.value.id}.pdf`);
+    // Agregar Logo (esquina superior derecha)
+    // x = 160, y = 15, ancho = 35, alto = 15 (ajustar según el logo)
+    try {
+      doc.addImage(img, 'PNG', 160, 15, 35, 15);
+    } catch (e) {
+      console.warn("No se pudo agregar el logo al PDF", e);
+    }
+    
+    // Ajuste de texto para evitar salir del margen derecho
+    const splitDesc = doc.splitTextToSize(reporte.value.descripcion || 'Sin descripción.', 180);
+    doc.text(splitDesc, 14, startYDesc + 7);
+
+    // --- PIE DE PÁGINA (Firma) en todas las hojas ---
+    const totalPages = doc.internal.getNumberOfPages();
+    for (let i = 1; i <= totalPages; i++) {
+      doc.setPage(i);
+      const pageHeight = doc.internal.pageSize.height;
+      const footerY = pageHeight - 30; // Posición fija al fondo de cada hoja
+      
+      doc.setDrawColor(0);
+      doc.setLineWidth(0.5);
+      doc.line(65, footerY, 145, footerY); // Línea de la firma
+      
+      doc.setFontSize(10);
+      doc.setTextColor(0, 0, 0);
+      doc.setFont('helvetica', 'normal');
+      doc.text('Firma de Jefe inmediato / supervisor', 105, footerY + 5, { align: 'center' });
+      
+      // Opcional: Numeración de página
+      doc.setFontSize(8);
+      doc.setTextColor(100, 116, 139);
+      doc.text(`Página ${i} de ${totalPages}`, 196, pageHeight - 10, { align: 'right' });
+    }
+
+    // Guardar archivo
+    doc.save(`Reporte_Incidencia_${reporte.value.id}.pdf`);
+  } catch (error) {
+    console.error("Error al generar PDF:", error);
+    Swal.fire('Error', 'No se pudo generar el PDF: ' + error.message, 'error');
+  }
+}
+
+const generarPDFResoluciones = async () => {
+  if (!reporte.value) return;
+
+  try {
+    const doc = new jsPDF();
+    
+    // Encabezado
+    doc.setFontSize(14); // Reducido para que no pegue con el logo
+    doc.setTextColor(220, 38, 38);
+    doc.setFont('helvetica', 'bold');
+    doc.text(`REPORTE DE INCIDENCIA - RESOLUCIONES`, 14, 20);
+    
+    doc.setFontSize(11);
+    doc.setTextColor(100, 116, 139);
+    doc.setFont('helvetica', 'normal');
+    doc.text(`N° de Ticket: ${reporte.value.id}`, 14, 28);
+    doc.text(`Generado el: ${new Date().toLocaleString('es-HN')}`, 14, 33);
+    doc.text(`Estado: ${(reporte.value.estado || '').toUpperCase()}`, 14, 38);
+    
+    // Cargar Logo Superior Derecho
+    const imgLogo = new Image();
+    imgLogo.crossOrigin = "Anonymous";
+    imgLogo.src = 'http://localhost:3007/uploads/Logo/Logo.png';
+    await new Promise((resolve) => {
+      imgLogo.onload = resolve;
+      imgLogo.onerror = resolve;
+    });
+    try { doc.addImage(imgLogo, 'PNG', 160, 15, 35, 15); } catch(e) {}
+    
+    // Línea divisoria
+    doc.setDrawColor(220, 38, 38);
+    doc.setLineWidth(0.5);
+    doc.line(14, 42, 196, 42);
+
+    // --- Información General ---
+    autoTable(doc, {
+      startY: 48,
+      head: [['Información General', '']],
+      body: [
+        ['Tema / Asunto', reporte.value.tema || 'N/A'],
+        ['Categoría', reporte.value.categoria || 'N/A'],
+        ['Reportado Por', reporte.value.jefe_reporta || 'N/A'],
+        ['Fecha del Reporte', new Date(reporte.value.fecha_creacion).toLocaleString('es-HN')],
+      ],
+      theme: 'grid',
+      headStyles: { fillColor: [241, 245, 249], textColor: [15, 23, 42] },
+      columnStyles: { 0: { fontStyle: 'bold', cellWidth: 50 } }
+    });
+
+    // --- Información del Empleado ---
+    autoTable(doc, {
+      startY: doc.lastAutoTable.finalY + 8,
+      head: [['Datos del Empleado Reportado', '']],
+      body: [
+        ['Nombre', `${reporte.value.empleado_nombre || ''} ${reporte.value.empleado_apellido || ''}`.trim() || 'N/A'],
+        ['Identidad', reporte.value.identidad || 'N/A'],
+        ['Departamento', reporte.value.departamento_nombre || 'No asignado']
+      ],
+      theme: 'grid',
+      headStyles: { fillColor: [241, 245, 249], textColor: [15, 23, 42] },
+      columnStyles: { 0: { fontStyle: 'bold', cellWidth: 50 } }
+    });
+
+    let currentY = doc.lastAutoTable.finalY + 12;
+
+    // --- Descripción del Incidente ---
+    doc.setFontSize(12);
+    doc.setTextColor(15, 23, 42);
+    doc.setFont('helvetica', 'bold');
+    doc.text('Descripción del Incidente:', 14, currentY);
+    
+    doc.setFontSize(10);
+    doc.setFont('helvetica', 'normal');
+    doc.setTextColor(51, 65, 85);
+    
+    const splitDesc = doc.splitTextToSize(reporte.value.descripcion || 'Sin descripción.', 180);
+    doc.text(splitDesc, 14, currentY + 7);
+    
+    currentY += 10 + (splitDesc.length * 5);
+
+    // --- Evidencia Adjunta del Reporte Inicial ---
+    if (reporte.value.archivo) {
+      if (currentY > 230) { doc.addPage(); currentY = 20; }
+      
+      doc.setFontSize(12);
+      doc.setTextColor(15, 23, 42);
+      doc.setFont('helvetica', 'bold');
+      doc.text('Evidencia Adjunta del Incidente:', 14, currentY);
+      currentY += 8;
+      
+      if (isImage(reporte.value.archivo)) {
+        try {
+          const imgEvi = new Image();
+          imgEvi.crossOrigin = "Anonymous";
+          imgEvi.src = `http://localhost:3007${reporte.value.archivo}`;
+          await new Promise((resolve) => {
+            imgEvi.onload = resolve;
+            imgEvi.onerror = resolve;
+          });
+          
+          doc.addImage(imgEvi, 'JPEG', 14, currentY, 80, 80);
+          currentY += 85;
+        } catch (e) {
+          doc.setFontSize(10);
+          doc.setFont('helvetica', 'normal');
+          doc.text(`[Imagen no disponible en PDF] Archivo: ${reporte.value.archivo}`, 14, currentY);
+          currentY += 10;
+        }
+      } else {
+        doc.setFontSize(10);
+        doc.setFont('helvetica', 'normal');
+        doc.setTextColor(51, 65, 85);
+        doc.text(`Archivo de documento adjunto: ${reporte.value.archivo}`, 14, currentY);
+        currentY += 10;
+      }
+    } else {
+      doc.setFontSize(10);
+      doc.setFont('helvetica', 'italic');
+      doc.setTextColor(100, 116, 139);
+      doc.text('No hay evidencia adjunta al reporte inicial.', 14, currentY);
+      currentY += 12;
+    }
+
+    // --- Conversación y Resoluciones ---
+    if (currentY > 250) { doc.addPage(); currentY = 20; }
+    
+    doc.setFontSize(14);
+    doc.setTextColor(15, 23, 42);
+    doc.setFont('helvetica', 'bold');
+    doc.text('Conversación y Resoluciones:', 14, currentY);
+    currentY += 6;
+
+    if (respuestas.value && respuestas.value.length > 0) {
+      const rows = respuestas.value.map(res => {
+        const nombre = res.usuario_nombre || (res.empleado_nombre + ' ' + res.empleado_apellido);
+        const fecha = new Date(res.fecha_creacion).toLocaleString('es-HN');
+        let msg = res.mensaje;
+        if (res.archivo) {
+          msg += `\n\n[📎 Archivo Adjunto: ${res.archivo}]`;
+        }
+        return [
+          `${nombre}\n${fecha}`,
+          msg
+        ];
+      });
+
+      autoTable(doc, {
+        startY: currentY,
+        head: [['Usuario / Fecha', 'Mensaje']],
+        body: rows,
+        theme: 'grid',
+        headStyles: { fillColor: [241, 245, 249], textColor: [15, 23, 42] },
+        columnStyles: { 0: { fontStyle: 'bold', cellWidth: 50 } },
+        styles: { overflow: 'linebreak' }
+      });
+      currentY = doc.lastAutoTable.finalY + 20;
+    } else {
+      currentY += 4;
+      doc.setFontSize(10);
+      doc.setFont('helvetica', 'italic');
+      doc.setTextColor(100, 116, 139);
+      doc.text('No hay respuestas registradas aún.', 14, currentY);
+      currentY += 20;
+    }
+
+    // --- PIE DE PÁGINA (Firma) en todas las hojas ---
+    const totalPagesRes = doc.internal.getNumberOfPages();
+    for (let i = 1; i <= totalPagesRes; i++) {
+      doc.setPage(i);
+      const pageHeight = doc.internal.pageSize.height;
+      const footerY = pageHeight - 30; // Posición fija al fondo de cada hoja
+      
+      doc.setDrawColor(0);
+      doc.setLineWidth(0.5);
+      doc.line(65, footerY, 145, footerY); // Línea de la firma
+      
+      doc.setFontSize(10);
+      doc.setTextColor(0, 0, 0);
+      doc.setFont('helvetica', 'normal');
+      doc.text('Firma de Jefe inmediato / supervisor', 105, footerY + 5, { align: 'center' });
+      
+      // Opcional: Numeración de página
+      doc.setFontSize(8);
+      doc.setTextColor(100, 116, 139);
+      doc.text(`Página ${i} de ${totalPagesRes}`, 196, pageHeight - 10, { align: 'right' });
+    }
+
+    doc.save(`Resoluciones_Incidencia_${reporte.value.id}.pdf`);
+  } catch (error) {
+    console.error("Error al generar PDF de resoluciones:", error);
+    Swal.fire('Error', 'No se pudo generar el PDF de Resoluciones: ' + error.message, 'error');
+  }
 }
 
 const cargarDetalles = async () => {
@@ -356,6 +599,13 @@ const cargarDetalles = async () => {
     reporte.value = res.data
     estadoActual.value = res.data.estado
     await cargarRespuestas()
+
+    if (route.hash === '#resoluciones-section') {
+      setTimeout(() => {
+        const el = document.getElementById('resoluciones-section');
+        if (el) el.scrollIntoView({ behavior: 'smooth' });
+      }, 500);
+    }
   } catch (error) {
     console.error("Error al cargar reporte:", error)
     Swal.fire('Error', 'No se pudo cargar el reporte', 'error')

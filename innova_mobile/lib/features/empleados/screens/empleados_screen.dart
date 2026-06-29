@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../providers/empleado_provider.dart';
+import 'package:innova_mobile/core/constants/api_constants.dart';
 
 class EmpleadosScreen extends ConsumerStatefulWidget {
   const EmpleadosScreen({super.key});
@@ -140,7 +141,7 @@ class _EmpleadosScreenState extends ConsumerState<EmpleadosScreen> {
                         leading: CircleAvatar(
                           backgroundColor: Colors.blue.shade50,
                           backgroundImage: emp.foto != null
-                              ? NetworkImage('http://10.0.2.2:3007${emp.foto}')
+                              ? NetworkImage('${ApiConstants.baseUrl}${emp.foto}')
                               : null,
                           child: emp.foto == null
                               ? Text(

@@ -5,8 +5,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:http/http.dart' as http;
 import 'package:file_picker/file_picker.dart';
 import 'contrato_model.dart';
+import 'package:innova_mobile/core/constants/api_constants.dart';
 
-const String _apiUrl = 'http://10.0.2.2:3007/api';
+const String _apiUrl = '${ApiConstants.baseUrl}/api';
 
 // Provider para obtener los contratos de un empleado específico
 final contratosProvider = FutureProvider.family<List<Contrato>, int>((ref, empleadoId) async {

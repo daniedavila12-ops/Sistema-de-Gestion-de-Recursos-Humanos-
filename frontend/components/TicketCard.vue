@@ -1,5 +1,6 @@
 <template>
-  <div class="bg-white border border-slate-100 rounded-2xl p-4 shadow-sm hover:shadow-md transition-shadow flex flex-col gap-3">
+  <div class="bg-white rounded-3xl p-5 shadow-sm hover:shadow-xl transition-all duration-300 hover:-translate-y-1 flex flex-col gap-4 border border-slate-100 group relative overflow-hidden">
+    <div class="absolute left-0 top-0 bottom-0 w-1 bg-blue-600 opacity-0 group-hover:opacity-100 transition-opacity"></div>
     <!-- Fila 1 -->
     <div class="flex items-center justify-between">
       <div class="flex items-center gap-3">

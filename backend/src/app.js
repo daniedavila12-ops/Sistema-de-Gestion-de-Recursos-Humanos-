@@ -22,6 +22,8 @@ const bibliotecaRoutes = require('./routes/biblioteca');
 const documentosLegalesRoutes = require('./routes/documentos-legales');
 const categoriasLegalesRoutes = require('./routes/categorias-legales');
 const reportesIncidenciaRoutes = require('./routes/reportes-incidencia');
+const notificacionesRoutes = require('./routes/notificaciones');
+const initCronJobs = require('./cron');
 
 const app = express();
 const server = http.createServer(app);
@@ -44,7 +46,6 @@ io.on('connection', (socket) => {
 
 // --- CONFIGURACIÓN DE MIDDLEWARES ---
 app.use(express.json()); 
-app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
 
 // Configuración de CORS para el puerto del Frontend (3001)
 app.use(cors({
@@ -52,6 +53,8 @@ app.use(cors({
     methods: ['GET', 'POST', 'PUT', 'DELETE'],
     credentials: true
 }));
+
+app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
 
 // --- CONEXIÓN A LA BASE DE DATOS ---
 const db = mysql.createPool({
@@ -78,6 +81,9 @@ db.getConnection((err, connection) => {
 // Compartir la conexión con los archivos de rutas
 app.set('db', db);
 
+// Inicializar tareas programadas (cron)
+initCronJobs(app);
+
 // --- DEFINICIÓN DE RUTAS API ---
 
 app.use('/api/auth', authRoutes);
@@ -95,6 +101,7 @@ app.use('/api/documentos-legales', documentosLegalesRoutes);
 app.use('/api/categorias-legales', categoriasLegalesRoutes);
 app.use('/api/reportes-incidencia', reportesIncidenciaRoutes);
 app.use('/api/logs', logsRoutes);
+app.use('/api/notificaciones', notificacionesRoutes);
 
 // 1. OBTENER TODOS LOS MÓDULOS
 app.get('/api/modulos', (req, res) => {
@@ -107,26 +114,49 @@ app.get('/api/modulos', (req, res) => {
 // 2. OBTENER MENÚ DINÁMICO (Rutas corregidas)
 app.get('/api/menu/:rol_id', (req, res) => {
     const { rol_id } = req.params;
+    const { usuario_id } = req.query;
     
-    // Consultar permisos activos del rol
-    const sql = `
-        SELECT m.nombre 
-        FROM modulos m 
-        JOIN rol_modulo rm ON m.id = rm.modulo_id 
-        WHERE rm.rol_id = ? AND rm.puedeVer = 1
-    `;
+    let sql = '';
+    let params = [];
+
+    if (usuario_id) {
+        sql = `
+            SELECT m.nombre, um.puedeVer as userPuedeVer, rm.puedeVer as rolPuedeVer
+            FROM modulos m 
+            LEFT JOIN rol_modulo rm ON m.id = rm.modulo_id AND rm.rol_id = ?
+            LEFT JOIN usuario_modulo um ON m.id = um.modulo_id AND um.usuario_id = ?
+        `;
+        params = [rol_id, usuario_id];
+    } else {
+        // Consultar permisos activos del rol
+        sql = `
+            SELECT m.nombre, NULL as userPuedeVer, rm.puedeVer as rolPuedeVer
+            FROM modulos m 
+            LEFT JOIN rol_modulo rm ON m.id = rm.modulo_id AND rm.rol_id = ?
+        `;
+        params = [rol_id];
+    }
     
-    db.query(sql, [rol_id], (err, results) => {
+    db.query(sql, params, (err, results) => {
         if (err) {
             console.error('Error al obtener menú:', err);
             return res.status(500).json(err);
         }
         
-        // Mapear nombres de módulos permitidos
-        const allowed = results.map(r => r.nombre);
-        // Si es admin (rol_id == 1), permitimos todo por defecto
         const isAdmin = (rol_id == 1);
-        const hasAccess = (moduleName) => isAdmin || allowed.includes(moduleName);
+        const allowed = [];
+
+        results.forEach(r => {
+            if (r.userPuedeVer !== null) {
+                // Configuración individual estricta
+                if (r.userPuedeVer === 1) allowed.push(r.nombre);
+            } else {
+                // Sin configuración individual: manda rol o si es admin
+                if (isAdmin || r.rolPuedeVer === 1) allowed.push(r.nombre);
+            }
+        });
+
+        const hasAccess = (moduleName) => allowed.includes(moduleName);
 
         // MENÚ BASE
         let menu = [
@@ -188,31 +218,70 @@ app.get('/api/menu/:rol_id', (req, res) => {
 
 app.get('/api/dashboard-permisos/:rol_id', (req, res) => {
     const { rol_id } = req.params;
+    const { usuario_id } = req.query;
     
-    const sql = `
-        SELECT m.nombre 
-        FROM modulos m 
-        JOIN rol_modulo rm ON m.id = rm.modulo_id 
-        WHERE rm.rol_id = ? AND rm.puedeVer = 1
-    `;
+    let sql = '';
+    let params = [];
+
+    if (usuario_id) {
+        sql = `
+            SELECT m.nombre, um.puedeVer as userPuedeVer, rm.puedeVer as rolPuedeVer
+            FROM modulos m 
+            LEFT JOIN rol_modulo rm ON m.id = rm.modulo_id AND rm.rol_id = ?
+            LEFT JOIN usuario_modulo um ON m.id = um.modulo_id AND um.usuario_id = ?
+        `;
+        params = [rol_id, usuario_id];
+    } else {
+        sql = `
+            SELECT m.nombre, NULL as userPuedeVer, rm.puedeVer as rolPuedeVer
+            FROM modulos m 
+            LEFT JOIN rol_modulo rm ON m.id = rm.modulo_id AND rm.rol_id = ?
+        `;
+        params = [rol_id];
+    }
     
-    db.query(sql, [rol_id], (err, results) => {
+    db.query(sql, params, (err, results) => {
         if (err) return res.status(500).json(err);
-        const allowed = results.map(r => r.nombre);
+        
         const isAdmin = (rol_id == 1);
-        res.json(isAdmin ? 'ALL' : allowed);
+        const allowed = [];
+
+        results.forEach(r => {
+            if (r.userPuedeVer !== null) {
+                if (r.userPuedeVer === 1) allowed.push(r.nombre);
+            } else {
+                if (isAdmin || r.rolPuedeVer === 1) allowed.push(r.nombre);
+            }
+        });
+
+        // Si es admin Y no tiene restricciones individuales, podría retornar 'ALL'
+        // pero retornar allowed es más seguro y real a lo configurado
+        res.json(allowed);
     });
 });
 
 // 2. ESTADÍSTICAS PARA LAS TARJETAS DEL DASHBOARD
 app.get('/api/stats/resumen', (req, res) => {
-    const { usuario_id, nombre, rol_id } = req.query;
+    const { usuario_id, nombre, rol_id, fechaInicio, fechaFin } = req.query;
 
-    let incidenciasQuery = `SELECT COUNT(*) FROM reportes_incidencias WHERE estado = 'Pendiente'`;
-    let ticketsQuery = `SELECT COUNT(*) FROM tickets WHERE estado = 'Pendiente'`;
+    let incidenciasQuery = `SELECT COUNT(*) FROM reportes_incidencias WHERE estado IN ('Pendiente', 'En Proceso')`;
+    let ticketsQuery = `SELECT COUNT(*) FROM tickets WHERE estado IN ('Pendiente', 'En Proceso')`;
+    let faltasQuery = `SELECT COUNT(*) FROM faltas WHERE 1=1`;
+
+    if (fechaInicio && fechaFin) {
+        const fi = db.escape(fechaInicio);
+        const ff = db.escape(fechaFin);
+        incidenciasQuery += ` AND fecha_creacion BETWEEN ${fi} AND ${ff}`;
+        ticketsQuery += ` AND fecha_creacion BETWEEN ${fi} AND ${ff}`;
+        faltasQuery += ` AND fecha BETWEEN ${fi} AND ${ff}`;
+    } else {
+        faltasQuery += ` AND MONTH(fecha) = MONTH(CURRENT_DATE) AND YEAR(fecha) = YEAR(CURRENT_DATE)`;
+    }
 
     const escapedId = db.escape(usuario_id || null);
-    ticketsQuery += ` AND asignado_usuario_id = ${escapedId}`;
+    if (String(rol_id) !== '1') {
+        ticketsQuery += ` AND asignado_usuario_id = ${escapedId}`;
+    }
 
     if (rol_id && String(rol_id) !== '1' && String(rol_id) !== '2') {
         const escapedNombre = db.escape(nombre || '');
@@ -230,7 +299,7 @@ app.get('/api/stats/resumen', (req, res) => {
             (SELECT COUNT(*) FROM empleados WHERE MONTH(fecha_nacimiento) = MONTH(CURRENT_DATE)) as cumpleaneros,
             (SELECT COUNT(*) FROM contratos c1 WHERE c1.id IN (SELECT max_id FROM (SELECT MAX(id) AS max_id FROM contratos GROUP BY empleado_id) AS sub) AND c1.fechaFinal BETWEEN CURRENT_DATE AND DATE_ADD(CURRENT_DATE, INTERVAL 30 DAY)) as vencimientos,
             (SELECT COUNT(*) FROM vacaciones WHERE CURRENT_DATE BETWEEN fechaInicio AND fechaFinal) as de_vacaciones,
-            (SELECT COUNT(*) FROM faltas WHERE MONTH(fecha) = MONTH(CURRENT_DATE) AND YEAR(fecha) = YEAR(CURRENT_DATE)) as faltas_mes,
+            (${faltasQuery}) as faltas_mes,
             (SELECT COUNT(*) FROM documentos_legales) as doc_legales
         FROM DUAL;
     `;
@@ -420,12 +489,19 @@ app.get('/api/stats/contratos-estado', (req, res) => {
 });
 
 app.get('/api/stats/tipos-faltas', (req, res) => {
+    const { fechaInicio, fechaFin } = req.query;
+    let whereClause = `WHERE MONTH(fecha) = MONTH(CURRENT_DATE) AND YEAR(fecha) = YEAR(CURRENT_DATE)`;
+    
+    if (fechaInicio && fechaFin) {
+        whereClause = `WHERE fecha BETWEEN ${db.escape(fechaInicio)} AND ${db.escape(fechaFin)}`;
+    }
+
     const sql = `
         SELECT 
             SUM(CASE WHEN documento IS NOT NULL OR motivo LIKE '%medic%' OR motivo LIKE '%permiso%' OR motivo LIKE '%justificad%' THEN 1 ELSE 0 END) as justificadas,
             SUM(CASE WHEN documento IS NULL AND motivo NOT LIKE '%medic%' AND motivo NOT LIKE '%permiso%' AND motivo NOT LIKE '%justificad%' THEN 1 ELSE 0 END) as injustificadas
         FROM faltas
-        WHERE MONTH(fecha) = MONTH(CURRENT_DATE) AND YEAR(fecha) = YEAR(CURRENT_DATE);
+        ${whereClause};
     `;
     db.query(sql, (err, results) => {
         if (err) return res.status(500).json({ error: err.message });
@@ -434,10 +510,17 @@ app.get('/api/stats/tipos-faltas', (req, res) => {
 });
 
 app.get('/api/stats/tendencia-ausentismo', (req, res) => {
+    const { fechaInicio, fechaFin } = req.query;
+    let whereClause = `WHERE YEAR(fecha) = YEAR(CURRENT_DATE)`;
+    
+    if (fechaInicio && fechaFin) {
+        whereClause = `WHERE fecha BETWEEN ${db.escape(fechaInicio)} AND ${db.escape(fechaFin)}`;
+    }
+
     const sql = `
         SELECT MONTH(fecha) as mes, COUNT(*) as cantidad
         FROM faltas
-        WHERE YEAR(fecha) = YEAR(CURRENT_DATE)
+        ${whereClause}
         GROUP BY MONTH(fecha)
         ORDER BY MONTH(fecha);
     `;
@@ -448,12 +531,19 @@ app.get('/api/stats/tendencia-ausentismo', (req, res) => {
 });
 
 app.get('/api/stats/tendencia-tickets', (req, res) => {
+    const { fechaInicio, fechaFin } = req.query;
+    let whereClause = `WHERE fecha_creacion >= DATE_SUB(CURRENT_DATE, INTERVAL 30 DAY)`;
+    
+    if (fechaInicio && fechaFin) {
+        whereClause = `WHERE fecha_creacion BETWEEN ${db.escape(fechaInicio)} AND ${db.escape(fechaFin)}`;
+    }
+
     const sql = `
         SELECT DATE(fecha_creacion) as fecha,
                COUNT(*) as creados,
                SUM(CASE WHEN estado = 'Resuelto' OR estado = 'Cerrado' THEN 1 ELSE 0 END) as resueltos
         FROM tickets
-        WHERE fecha_creacion >= DATE_SUB(CURRENT_DATE, INTERVAL 30 DAY)
+        ${whereClause}
         GROUP BY DATE(fecha_creacion)
         ORDER BY DATE(fecha_creacion);
     `;
@@ -471,10 +561,13 @@ app.get('/api/stats/empleados-detalles', (req, res) => {
             e.apellido, 
             e.codigo_empleado,
             e.estado,
+            e.genero,
+            e.fecha_nacimiento,
             d.nombre as departamento,
             (SELECT v.fechaInicio FROM vacaciones v WHERE v.empleado_id = e.id AND v.fechaFinal >= CURDATE() ORDER BY v.fechaInicio ASC LIMIT 1) as proxima_vacacion_inicio,
             (SELECT v.fechaRegreso FROM vacaciones v WHERE v.empleado_id = e.id AND v.fechaFinal >= CURDATE() ORDER BY v.fechaRegreso ASC LIMIT 1) as proxima_vacacion_fin,
-            (SELECT COUNT(*) FROM faltas f WHERE f.empleado_id = e.id) as total_faltas
+            (SELECT COUNT(*) FROM faltas f WHERE f.empleado_id = e.id) as total_faltas,
+            (SELECT MAX(c.fechaFinal) FROM contratos c WHERE c.empleado_id = e.id AND c.fechaFinal BETWEEN CURDATE() AND DATE_ADD(CURDATE(), INTERVAL 30 DAY)) as contrato_vencimiento
         FROM empleados e
         LEFT JOIN departamentos d ON e.departamento_id = d.id
     `;

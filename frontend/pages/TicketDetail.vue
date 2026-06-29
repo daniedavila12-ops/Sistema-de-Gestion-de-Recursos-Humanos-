@@ -45,6 +45,12 @@
               }">
               {{ ticket.status }}
             </span>
+            
+            <!-- Botón PDF -->
+            <button @click="generarPDFTicket" class="ml-auto flex items-center gap-2 px-4 py-2 bg-gray-800 hover:bg-gray-900 text-white rounded-lg text-sm font-bold transition-colors">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+              CREAR PDF REPORTE
+            </button>
           </div>
 
           <!-- Cuerpo del Mensaje -->
@@ -285,7 +291,6 @@
               <option value="none">Sin asignación</option>
               <option value="me">Asignado a mí</option>
               <option value="usuario">A un Usuario</option>
-              <option value="empleado">A un Empleado</option>
             </select>
           </div>
           
@@ -294,14 +299,6 @@
             <select v-model="selectedAssignee" class="w-full p-3 border border-gray-300 rounded-lg text-sm bg-white focus:ring-2 focus:ring-purple-500 outline-none">
               <option value="">Seleccione...</option>
               <option v-for="u in usersList" :key="u.id" :value="u.id">{{ u.nombre }}</option>
-            </select>
-          </div>
-
-          <div v-if="assignType === 'empleado'">
-            <label class="block text-xs font-bold text-gray-500 uppercase mb-2">Seleccionar Empleado</label>
-            <select v-model="selectedAssignee" class="w-full p-3 border border-gray-300 rounded-lg text-sm bg-white focus:ring-2 focus:ring-purple-500 outline-none">
-              <option value="">Seleccione...</option>
-              <option v-for="e in employeesList" :key="e.id" :value="e.id">{{ e.nombre }} {{ e.apellido }}</option>
             </select>
           </div>
 
@@ -319,6 +316,8 @@
 import { ref, onMounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import axios from 'axios';
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
 
 const route = useRoute();
 const router = useRouter();
@@ -534,10 +533,6 @@ const saveAssignment = async () => {
     if (!selectedAssignee.value) return alert("Seleccione un usuario");
     payload.tipo = 'usuario';
     payload.id_asignado = selectedAssignee.value;
-  } else if (assignType.value === 'empleado') {
-    if (!selectedAssignee.value) return alert("Seleccione un empleado");
-    payload.tipo = 'empleado';
-    payload.id_asignado = selectedAssignee.value;
   }
   
   try {
@@ -579,6 +574,140 @@ const updatePriority = async () => {
 
 const goBack = () => {
   router.push('/tickets');
+};
+
+const generarPDFTicket = async () => {
+  if (!ticket.value) return;
+
+  try {
+    const doc = new jsPDF();
+    
+    // --- CABECERA ---
+    doc.setFontSize(18);
+    doc.setTextColor(220, 38, 38);
+    doc.setFont('helvetica', 'bold');
+    doc.text('REPORTE DE INCIDENCIA DE TICKET', 14, 20);
+
+    doc.setFontSize(11);
+    doc.setTextColor(100, 116, 139);
+    doc.setFont('helvetica', 'normal');
+    doc.text(`N° de Ticket: ${ticket.value.rawId}`, 14, 28);
+    doc.text(`Generado el: ${ticket.value.dateCreated}`, 14, 34);
+    doc.text(`Estado: ${ticket.value.status.toUpperCase()}`, 14, 40);
+
+    // Intentar cargar logo
+    try {
+      const logoUrl = 'http://localhost:3007/uploads/Logo/Logo.png';
+      const img = new Image();
+      img.crossOrigin = "Anonymous";
+      img.src = logoUrl;
+      await new Promise((resolve) => {
+        img.onload = resolve;
+        img.onerror = resolve;
+      });
+      if (img.complete && img.naturalWidth > 0) {
+        doc.addImage(img, 'PNG', 150, 15, 45, 18);
+      }
+    } catch (e) {
+      console.log('Error cargando logo', e);
+    }
+
+    doc.setDrawColor(220, 38, 38);
+    doc.setLineWidth(0.5);
+    doc.line(14, 45, 196, 45);
+
+    // --- INFORMACIÓN GENERAL ---
+    let currentY = 55;
+    autoTable(doc, {
+      startY: currentY,
+      head: [['Información General', '']],
+      body: [
+        ['Tema / Asunto', ticket.value.title || 'Sin tema'],
+        ['Categoría', ticket.value.category || 'Sin categoría'],
+        ['Prioridad', ticket.value.priority || 'N/A'],
+        ['Asignado A', ticket.value.assignedTo?.name || 'Sin Asignar'],
+      ],
+      theme: 'grid',
+      headStyles: { fillColor: [241, 245, 249], textColor: [15, 23, 42], fontStyle: 'bold' },
+      styles: { cellPadding: 3, fontSize: 10, textColor: [51, 65, 85] },
+      columnStyles: { 0: { cellWidth: 50, fontStyle: 'bold' } },
+    });
+
+    // --- DATOS DEL SOLICITANTE ---
+    currentY = doc.lastAutoTable.finalY + 10;
+    autoTable(doc, {
+      startY: currentY,
+      head: [['Datos del Solicitante', '']],
+      body: [
+        ['Nombre', ticket.value.requester?.name || 'N/A'],
+        ['Teléfono', ticket.value.requester?.phone || 'N/A'],
+      ],
+      theme: 'grid',
+      headStyles: { fillColor: [241, 245, 249], textColor: [15, 23, 42], fontStyle: 'bold' },
+      styles: { cellPadding: 3, fontSize: 10, textColor: [51, 65, 85] },
+      columnStyles: { 0: { cellWidth: 50, fontStyle: 'bold' } },
+    });
+
+    // --- DESCRIPCIÓN ---
+    currentY = doc.lastAutoTable.finalY + 15;
+    doc.setFontSize(12);
+    doc.setTextColor(15, 23, 42);
+    doc.setFont('helvetica', 'bold');
+    doc.text('Descripción del Ticket:', 14, currentY);
+
+    doc.setFontSize(10);
+    doc.setTextColor(51, 65, 85);
+    doc.setFont('helvetica', 'normal');
+    const splitDesc = doc.splitTextToSize(ticket.value.description || 'Sin descripción.', 180);
+    doc.text(splitDesc, 14, currentY + 7);
+    currentY += 10 + (splitDesc.length * 5);
+
+    // --- RESPUESTAS / CONVERSACIÓN ---
+    if (respuestas.value && respuestas.value.length > 0) {
+      currentY += 10;
+      const respData = respuestas.value.map(r => [
+        `${r.nombre}\n${r.fecha}`, 
+        r.archivo ? `${r.mensaje}\n\n[📎 Archivo Adjunto]` : r.mensaje
+      ]);
+      
+      autoTable(doc, {
+        startY: currentY,
+        head: [['Usuario / Fecha', 'Mensaje']],
+        body: respData,
+        theme: 'grid',
+        headStyles: { fillColor: [241, 245, 249], textColor: [15, 23, 42], fontStyle: 'bold' },
+        styles: { cellPadding: 4, fontSize: 10, textColor: [51, 65, 85] },
+        columnStyles: { 0: { cellWidth: 40, fontStyle: 'bold' } },
+      });
+      currentY = doc.lastAutoTable.finalY;
+    }
+
+    // --- FIRMA EN TODAS LAS HOJAS ---
+    const totalPages = doc.internal.getNumberOfPages();
+    for (let i = 1; i <= totalPages; i++) {
+      doc.setPage(i);
+      const pageHeight = doc.internal.pageSize.height;
+      const footerY = pageHeight - 30; 
+      
+      doc.setDrawColor(0);
+      doc.setLineWidth(0.5);
+      doc.line(65, footerY, 145, footerY); 
+      
+      doc.setFontSize(10);
+      doc.setTextColor(0, 0, 0);
+      doc.setFont('helvetica', 'normal');
+      doc.text('Firma de Jefe inmediato / supervisor', 105, footerY + 5, { align: 'center' });
+      
+      doc.setFontSize(8);
+      doc.setTextColor(100, 116, 139);
+      doc.text(`Página ${i} de ${totalPages}`, 196, pageHeight - 10, { align: 'right' });
+    }
+
+    doc.save(`Ticket_Soporte_${ticket.value.rawId}.pdf`);
+  } catch (error) {
+    console.error("Error al generar PDF del ticket:", error);
+    alert("Hubo un error al generar el PDF.");
+  }
 };
 
 onMounted(() => {

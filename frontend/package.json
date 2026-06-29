@@ -16,6 +16,7 @@
     "jspdf": "^4.2.1",
     "jspdf-autotable": "^5.0.8",
     "nuxt": "^4.4.2",
+    "socket.io-client": "^4.8.3",
     "sweetalert2": "^11.26.25",
     "vue": "^3.5.33",
     "vue-chartjs": "^5.3.3",

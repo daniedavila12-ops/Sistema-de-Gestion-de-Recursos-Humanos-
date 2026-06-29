@@ -28,6 +28,18 @@ router.post('/crear', (req, res) => {
         if (err) {
             return res.status(500).json({ error: "Error al crear departamento" });
         }
+
+        const io = req.app.get('io');
+        if (io) io.emit('nueva_notificacion');
+
+        db.query('SELECT id FROM usuarios WHERE rol_id IN (1, 2)', (err, users) => {
+            if (!err && users && users.length > 0) {
+                const notifQuery = 'INSERT INTO notificaciones (usuario_id, titulo, mensaje, tipo) VALUES ?';
+                const notifValues = users.map(u => [u.id, 'Nuevo Departamento', `Se ha creado el departamento: ${nombre}`, 'info']);
+                db.query(notifQuery, [notifValues]);
+            }
+        });
+
         res.json({ mensaje: "Departamento creado exitosamente", id: result.insertId });
     });
 });

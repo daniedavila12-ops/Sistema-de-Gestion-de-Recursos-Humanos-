@@ -306,6 +306,9 @@
                     <option value="">Todos</option>
                     <option v-for="p in periodosHistorialUnicos" :key="p" :value="p">{{ p }}</option>
                   </select>
+                  <button @click="generarPDFHistorial" type="button" class="px-4 py-2 bg-slate-800 hover:bg-slate-900 text-white rounded-lg font-bold text-xs uppercase tracking-widest transition-colors shadow-sm flex items-center justify-center gap-2 ml-2">
+                    <span>📄</span> PDF Historial
+                  </button>
                 </div>
               </div>
               <div v-if="vacacionesEmpleado.length === 0" class="bg-slate-50 rounded-xl border border-slate-200 p-8 text-center text-slate-400 italic shadow-sm">
@@ -342,42 +345,53 @@
                     </div>
                   </div>
                   
-                  <div class="grid grid-cols-2 md:grid-cols-9 gap-4 mt-2">
-                    <div class="p-3 flex flex-col justify-center items-center md:items-start">
-                      <p class="text-[10px] font-black text-slate-400 uppercase mb-1 text-center md:text-left">Fecha Solicitud</p>
-                      <p class="font-bold text-slate-800 text-sm">{{ v.fechaSolicitud ? new Date(v.fechaSolicitud).toLocaleDateString('es-HN', {timeZone: 'UTC'}) : 'N/A' }}</p>
+                  <div class="flex flex-col xl:flex-row gap-6 mt-4">
+                    <!-- Resumen de Días -->
+                    <div class="flex-1 bg-slate-50/80 rounded-2xl p-5 border border-slate-100 flex justify-between items-center shadow-sm">
+                      <div class="text-center flex-1">
+                        <p class="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1.5">Corresp.</p>
+                        <p class="font-black text-indigo-500 text-2xl">{{ Number(v.diasCorrespondientes || 0) }}</p>
+                      </div>
+                      <div class="w-px h-10 bg-slate-200 hidden sm:block"></div>
+                      <div class="text-center flex-1">
+                        <p class="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1.5">Disfrutados</p>
+                        <p class="font-black text-blue-600 text-2xl">{{ v.tipoSolicitud === 'Adelantadas' ? 0 : Number(v.diasVacaciones || 0) }}</p>
+                      </div>
+                      <div class="w-px h-10 bg-slate-200 hidden sm:block"></div>
+                      <div class="text-center flex-1">
+                        <p class="text-[9px] font-black text-red-400 uppercase tracking-widest mb-1.5">Adelantados</p>
+                        <p class="font-black text-red-500 text-2xl">{{ v.tipoSolicitud === 'Adelantadas' ? Number(v.diasVacaciones || 0) : 0 }}</p>
+                      </div>
+                      <div class="w-px h-10 bg-slate-200 hidden sm:block"></div>
+                      <div class="text-center flex-1">
+                        <p class="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1.5">Pagados</p>
+                        <p class="font-black text-emerald-500 text-2xl">{{ Number(v.diasPagados || 0) }}</p>
+                      </div>
+                      <div class="w-px h-10 bg-slate-200 hidden sm:block"></div>
+                      <div class="text-center flex-1">
+                        <p class="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1.5">Pendientes</p>
+                        <p class="font-black text-orange-500 text-2xl">{{ Number(v.diasPendientes || 0) }}</p>
+                      </div>
                     </div>
-                    <div class="bg-slate-50 p-3 rounded-xl border border-slate-100 text-center shadow-sm">
-                      <p class="text-[10px] font-black text-slate-400 uppercase mb-1">Días Corresp.</p>
-                      <p class="font-black text-indigo-500 text-2xl">{{ Number(v.diasCorrespondientes || 0) }}</p>
-                    </div>
-                    <div class="bg-slate-50 p-3 rounded-xl border border-slate-100 text-center shadow-sm">
-                      <p class="text-[10px] font-black text-slate-400 uppercase mb-1">Días Disfrutados</p>
-                      <p class="font-black text-blue-600 text-2xl">{{ v.tipoSolicitud === 'Adelantadas' ? 0 : Number(v.diasVacaciones || 0) }}</p>
-                    </div>
-                    <div class="bg-red-50 p-3 rounded-xl border border-red-100 text-center shadow-sm">
-                      <p class="text-[10px] font-black text-red-400 uppercase mb-1">Días Adelantados</p>
-                      <p class="font-black text-red-600 text-2xl">{{ v.tipoSolicitud === 'Adelantadas' ? Number(v.diasVacaciones || 0) : 0 }}</p>
-                    </div>
-                    <div class="bg-slate-50 p-3 rounded-xl border border-slate-100 text-center shadow-sm">
-                      <p class="text-[10px] font-black text-slate-400 uppercase mb-1">Días Pagados</p>
-                      <p class="font-black text-emerald-500 text-2xl">{{ Number(v.diasPagados || 0) }}</p>
-                    </div>
-                    <div class="bg-slate-50 p-3 rounded-xl border border-slate-100 text-center shadow-sm">
-                      <p class="text-[10px] font-black text-slate-400 uppercase mb-1">Días Pendientes</p>
-                      <p class="font-black text-orange-500 text-2xl">{{ Number(v.diasPendientes || 0) }}</p>
-                    </div>
-                    <div class="p-3 flex flex-col justify-center items-center md:items-start">
-                      <p class="text-[10px] font-black text-slate-400 uppercase mb-1">Fecha Inicio</p>
-                      <p class="font-bold text-slate-800 text-sm">{{ v.fechaInicio ? new Date(v.fechaInicio).toLocaleDateString('es-HN', {timeZone: 'UTC'}) : 'N/A' }}</p>
-                    </div>
-                    <div class="p-3 flex flex-col justify-center items-center md:items-start">
-                      <p class="text-[10px] font-black text-slate-400 uppercase mb-1">Fecha Final</p>
-                      <p class="font-bold text-slate-800 text-sm">{{ v.fechaFinal ? new Date(v.fechaFinal).toLocaleDateString('es-HN', {timeZone: 'UTC'}) : 'N/A' }}</p>
-                    </div>
-                    <div class="p-3 flex flex-col justify-center items-center md:items-start">
-                      <p class="text-[10px] font-black text-slate-400 uppercase mb-1">Fecha Regreso</p>
-                      <p class="font-bold text-slate-800 text-sm">{{ v.fechaRegreso ? new Date(v.fechaRegreso).toLocaleDateString('es-HN', {timeZone: 'UTC'}) : 'N/A' }}</p>
+
+                    <!-- Fechas -->
+                    <div class="flex-1 grid grid-cols-2 sm:grid-cols-4 gap-3">
+                      <div class="flex flex-col bg-white border border-slate-100 rounded-2xl p-4 shadow-sm hover:border-indigo-200 transition-colors">
+                        <p class="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-2 flex items-center gap-1.5"><span class="text-indigo-500">📅</span> Solicitud</p>
+                        <p class="font-bold text-slate-700 text-xs">{{ v.fechaSolicitud ? new Date(v.fechaSolicitud).toLocaleDateString('es-HN', {timeZone: 'UTC'}) : 'N/A' }}</p>
+                      </div>
+                      <div class="flex flex-col bg-white border border-slate-100 rounded-2xl p-4 shadow-sm hover:border-blue-200 transition-colors">
+                        <p class="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-2 flex items-center gap-1.5"><span class="text-blue-500">▶️</span> Inicio</p>
+                        <p class="font-bold text-slate-700 text-xs">{{ v.fechaInicio ? new Date(v.fechaInicio).toLocaleDateString('es-HN', {timeZone: 'UTC'}) : 'N/A' }}</p>
+                      </div>
+                      <div class="flex flex-col bg-white border border-slate-100 rounded-2xl p-4 shadow-sm hover:border-blue-200 transition-colors">
+                        <p class="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-2 flex items-center gap-1.5"><span class="text-slate-500">⏹️</span> Final</p>
+                        <p class="font-bold text-slate-700 text-xs">{{ v.fechaFinal ? new Date(v.fechaFinal).toLocaleDateString('es-HN', {timeZone: 'UTC'}) : 'N/A' }}</p>
+                      </div>
+                      <div class="flex flex-col bg-white border border-slate-100 rounded-2xl p-4 shadow-sm hover:border-emerald-200 transition-colors">
+                        <p class="text-[9px] font-black text-emerald-500 uppercase tracking-widest mb-2 flex items-center gap-1.5"><span class="text-emerald-500">🔙</span> Regreso</p>
+                        <p class="font-bold text-slate-800 text-xs">{{ v.fechaRegreso ? new Date(v.fechaRegreso).toLocaleDateString('es-HN', {timeZone: 'UTC'}) : 'N/A' }}</p>
+                      </div>
                     </div>
                   </div>
 
@@ -510,6 +524,8 @@
 import { ref, onMounted, watch, computed } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import axios from 'axios'
+import jsPDF from 'jspdf'
+import autoTable from 'jspdf-autotable'
 
 const router = useRouter()
 const route = useRoute()
@@ -1323,6 +1339,73 @@ const eliminarVacacion = async (id) => {
   }
 }
 
+const generarPDFHistorial = async () => {
+  if (!empleadoSeleccionado.value || vacacionesHistorialFiltrado.value.length === 0) {
+    alert('No hay registros en el historial para exportar.');
+    return;
+  }
+
+  try {
+    const doc = new jsPDF('landscape');
+    
+    // Encabezado
+    doc.setFontSize(16);
+    doc.setTextColor(15, 23, 42); // Slate 900
+    doc.setFont('helvetica', 'bold');
+    doc.text('HISTORIAL DE VACACIONES', 14, 20);
+    
+    doc.setFontSize(10);
+    doc.setTextColor(100, 116, 139); // Slate 500
+    doc.setFont('helvetica', 'normal');
+    doc.text(`Empleado: ${empleadoSeleccionado.value.nombre} ${empleadoSeleccionado.value.apellido} | Identidad: ${empleadoSeleccionado.value.identidad}`, 14, 28);
+    doc.text(`Generado el: ${new Date().toLocaleString('es-HN')}`, 14, 33);
+    
+    // Cargar Logo Superior Derecho
+    const imgLogo = new Image();
+    imgLogo.crossOrigin = "Anonymous";
+    imgLogo.src = 'http://localhost:3007/uploads/Logo/Logo.png';
+    await new Promise((resolve) => {
+      imgLogo.onload = resolve;
+      imgLogo.onerror = resolve;
+    });
+    try { doc.addImage(imgLogo, 'PNG', 240, 10, 35, 15); } catch(e) {}
+    
+    // Línea divisoria
+    doc.setDrawColor(226, 232, 240); // Slate 200
+    doc.setLineWidth(0.5);
+    doc.line(14, 38, 280, 38);
+
+    // Preparar datos para la tabla
+    const tableData = vacacionesHistorialFiltrado.value.map(v => [
+      v.periodo || 'N/A',
+      v.tipoSolicitud || 'N/A',
+      Number(v.diasCorrespondientes || 0),
+      v.tipoSolicitud === 'Adelantadas' ? 0 : Number(v.diasVacaciones || 0),
+      v.tipoSolicitud === 'Adelantadas' ? Number(v.diasVacaciones || 0) : 0,
+      Number(v.diasPagados || 0),
+      Number(v.diasPendientes || 0),
+      v.fechaInicio ? new Date(v.fechaInicio).toLocaleDateString('es-HN', {timeZone: 'UTC'}) : 'N/A',
+      v.fechaFinal ? new Date(v.fechaFinal).toLocaleDateString('es-HN', {timeZone: 'UTC'}) : 'N/A',
+      v.fechaRegreso ? new Date(v.fechaRegreso).toLocaleDateString('es-HN', {timeZone: 'UTC'}) : 'N/A',
+    ]);
+
+    autoTable(doc, {
+      startY: 45,
+      head: [['Periodo', 'Tipo Solicitud', 'D. Corresp.', 'D. Disfrutados', 'D. Adelan.', 'D. Pagados', 'D. Pendientes', 'Fecha Inicio', 'Fecha Final', 'Fecha Regreso']],
+      body: tableData,
+      theme: 'grid',
+      headStyles: { fillColor: [30, 41, 59], textColor: [255, 255, 255], fontStyle: 'bold' },
+      alternateRowStyles: { fillColor: [248, 250, 252] },
+      styles: { fontSize: 8, cellPadding: 3 },
+    });
+
+    doc.save(`Historial_Vacaciones_${empleadoSeleccionado.value.nombre}_${empleadoSeleccionado.value.apellido}.pdf`);
+  } catch (error) {
+    console.error('Error generando PDF:', error);
+    alert('Hubo un error al generar el PDF.');
+  }
+};
+
 onMounted(async () => {
   nombreUsuario.value = localStorage.getItem('usuarioNombre') || 'Gerad Cole'
   fotoUsuario.value = localStorage.getItem('usuarioFoto') || null
@@ -1338,7 +1421,7 @@ onMounted(async () => {
   await cargarTiposPermiso();
 
   try {
-    const m = await axios.get(`http://localhost:3007/api/menu/${rolID.value}`)
+    const m = await axios.get(`http://localhost:3007/api/menu/${rolID.value}?usuario_id=${localStorage.getItem('usuarioID')}`)
     menuUsuario.value = m.data
   } catch (e) {
     console.error('Error cargando menú', e)

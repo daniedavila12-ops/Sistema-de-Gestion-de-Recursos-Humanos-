@@ -82,13 +82,16 @@
             </div>
           </div>
         </div>
-        <div class="w-full">
+        <div class="w-full flex gap-4">
           <input 
             v-model="searchQuery" 
             type="text" 
             placeholder="Buscar por usuario, acción o módulo..." 
             class="w-full p-3 rounded-xl bg-slate-50 border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all placeholder:italic"
           >
+          <button @click="generarPDFAuditoria" class="bg-red-600 text-white px-6 py-3 rounded-xl font-black uppercase text-xs hover:bg-red-700 transition-all shadow-lg shadow-red-200 shrink-0 flex items-center gap-2">
+            <span>📄</span> PDF Auditoría
+          </button>
         </div>
       </header>
 
@@ -207,6 +210,8 @@
 import { ref, computed, onMounted } from 'vue'
 import axios from 'axios'
 import { useRouter } from 'vue-router'
+import jsPDF from 'jspdf'
+import autoTable from 'jspdf-autotable'
 
 const router = useRouter()
 const rolID = ref(null)
@@ -316,6 +321,93 @@ const cargarLogs = async () => {
   } finally {
     loading.value = false
   }
+}
+
+const generarPDFAuditoria = async () => {
+  if (filteredLogs.value.length === 0) {
+    alert('No hay registros para exportar');
+    return;
+  }
+
+  const doc = new jsPDF('landscape');
+  
+  const imgLogo = new Image();
+  imgLogo.crossOrigin = "Anonymous";
+  imgLogo.src = 'http://localhost:3007/uploads/Logo/Logo.png';
+  await new Promise((resolve) => {
+    imgLogo.onload = resolve;
+    imgLogo.onerror = resolve;
+  });
+  
+  try { doc.addImage(imgLogo, 'PNG', 240, 10, 35, 15); } catch(e) {}
+  
+  doc.setFontSize(18);
+  doc.setTextColor(30, 41, 59);
+  doc.setFont('helvetica', 'bold');
+  doc.text('REPORTE DE AUDITORÍA DE SISTEMA', 14, 20);
+  
+  doc.setFontSize(10);
+  doc.setTextColor(100, 116, 139);
+  doc.setFont('helvetica', 'normal');
+  doc.text(`Fecha de Generación: ${new Date().toLocaleString('es-HN')}`, 14, 28);
+  doc.text(`Generado por: ${usuarioActual.value} (${rolNombre.value})`, 14, 34);
+
+  const tableColumn = ["ID", "Fecha y Hora", "Usuario", "Módulo", "Acción", "Detalles", "IP"];
+  const tableRows = [];
+
+  filteredLogs.value.forEach(log => {
+    const logData = [
+      log.id,
+      new Date(log.fecha_creacion).toLocaleString('es-HN'),
+      log.usuario_nombre || 'Sistema',
+      log.modulo || 'General',
+      log.accion,
+      log.detalles || 'Sin detalles',
+      log.ip_address || '0.0.0.0'
+    ];
+    tableRows.push(logData);
+  });
+
+  autoTable(doc, {
+    head: [tableColumn],
+    body: tableRows,
+    startY: 42,
+    theme: 'grid',
+    styles: { fontSize: 8, cellPadding: 3, textColor: [51, 65, 85] },
+    headStyles: { fillColor: [30, 41, 59], textColor: [255, 255, 255], fontStyle: 'bold' },
+    alternateRowStyles: { fillColor: [248, 250, 252] },
+    columnStyles: {
+      0: { cellWidth: 15 },
+      1: { cellWidth: 35 },
+      2: { cellWidth: 35 },
+      3: { cellWidth: 30 },
+      4: { cellWidth: 30 },
+      5: { cellWidth: 'auto' },
+      6: { cellWidth: 25 }
+    },
+    didDrawPage: function (data) {
+      const str = "Página " + doc.internal.getNumberOfPages();
+      doc.setFontSize(8);
+      doc.setTextColor(100);
+      const pageSize = doc.internal.pageSize;
+      const pageHeight = pageSize.height ? pageSize.height : pageSize.getHeight();
+      doc.text(str, data.settings.margin.left, pageHeight - 10);
+    }
+  });
+
+  const finalY = doc.lastAutoTable.finalY || 42;
+  
+  if (finalY < doc.internal.pageSize.getHeight() - 40) {
+      doc.setFontSize(10);
+      doc.setTextColor(30, 41, 59);
+      doc.line(40, finalY + 30, 100, finalY + 30);
+      doc.text("Firma de Auditoría", 55, finalY + 35);
+      
+      doc.line(190, finalY + 30, 250, finalY + 30);
+      doc.text("Firma de Gerencia", 205, finalY + 35);
+  }
+
+  doc.save('Auditoria_Sistema_' + new Date().getTime() + '.pdf');
 }
 
 const logout = () => {

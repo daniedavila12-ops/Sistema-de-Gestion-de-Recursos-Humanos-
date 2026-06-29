@@ -5,6 +5,7 @@ import 'package:file_picker/file_picker.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../../core/api/api_client.dart';
+import 'package:innova_mobile/core/constants/api_constants.dart';
 
 class VacacionesScreen extends ConsumerStatefulWidget {
   const VacacionesScreen({super.key});
@@ -972,12 +973,15 @@ class _VacacionesScreenState extends ConsumerState<VacacionesScreen> {
                             Row(
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
-                                Row(
-                                  children: [
-                                    Container(padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4), decoration: BoxDecoration(color: Colors.blue[50], borderRadius: BorderRadius.circular(4)), child: Text('Periodo: ${v['periodo']}', style: const TextStyle(fontSize: 10, color: Colors.blue, fontWeight: FontWeight.bold))),
-                                    const SizedBox(width: 8),
-                                    Container(padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4), decoration: BoxDecoration(color: v['tipoSolicitud'] == 'Adelantadas' ? Colors.red[50] : Colors.grey[100], borderRadius: BorderRadius.circular(4)), child: Text('${v['tipoSolicitud']}', style: TextStyle(fontSize: 10, color: v['tipoSolicitud'] == 'Adelantadas' ? Colors.red : Colors.black87, fontWeight: FontWeight.bold))),
-                                  ]
+                                Expanded(
+                                  child: Wrap(
+                                    spacing: 8,
+                                    runSpacing: 4,
+                                    children: [
+                                      Container(padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4), decoration: BoxDecoration(color: Colors.blue[50], borderRadius: BorderRadius.circular(4)), child: Text('Periodo: ${v['periodo']}', style: const TextStyle(fontSize: 10, color: Colors.blue, fontWeight: FontWeight.bold))),
+                                      Container(padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4), decoration: BoxDecoration(color: v['tipoSolicitud'] == 'Adelantadas' ? Colors.red[50] : Colors.grey[100], borderRadius: BorderRadius.circular(4)), child: Text('${v['tipoSolicitud']}', style: TextStyle(fontSize: 10, color: v['tipoSolicitud'] == 'Adelantadas' ? Colors.red : Colors.black87, fontWeight: FontWeight.bold))),
+                                    ]
+                                  ),
                                 ),
                                 Row(
                                   children: [
@@ -985,7 +989,7 @@ class _VacacionesScreenState extends ConsumerState<VacacionesScreen> {
                                       IconButton(icon: const Icon(Icons.add_circle_outline, color: Colors.indigo), onPressed: () => _continuarVacaciones(v), tooltip: 'Continuar', constraints: const BoxConstraints(), padding: const EdgeInsets.all(4)),
                                     if (v['documento'] != null)
                                       IconButton(icon: const Icon(Icons.description, color: Colors.green), onPressed: () async {
-                                        final url = Uri.parse('http://10.0.2.2:3007${v['documento']}');
+                                        final url = Uri.parse('${ApiConstants.baseUrl}${v['documento']}');
                                         if (await canLaunchUrl(url)) await launchUrl(url);
                                       }, tooltip: 'Ver Documento', constraints: const BoxConstraints(), padding: const EdgeInsets.all(4)),
                                     IconButton(icon: const Icon(Icons.edit, color: Colors.blue), onPressed: () => _editarVacacion(v), constraints: const BoxConstraints(), padding: const EdgeInsets.all(4)),

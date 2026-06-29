@@ -10,6 +10,7 @@ class AppDrawer extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final authState = ref.watch(authProvider);
     return Drawer(
       child: Column(
         children: [
@@ -51,116 +52,137 @@ class AppDrawer extends ConsumerWidget {
                     context.go('/dashboard');
                   },
                 ),
-                const Padding(
-                  padding: EdgeInsets.only(left: 16, top: 16, bottom: 8),
-                  child: Text(
-                    'RECURSOS HUMANOS',
-                    style: TextStyle(
-                      fontSize: 12,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.grey,
+                if (authState.hasAccess('Empleados') ||
+                    authState.hasAccess('Vacaciones') ||
+                    authState.hasAccess('Reportes') || authState.hasAccess('Módulo de Reportes') ||
+                    authState.hasAccess('Departamentos') ||
+                    authState.hasAccess('Reportes de Incidencia') ||
+                    authState.hasAccess('Gestión de Manuales') ||
+                    authState.hasAccess('Archivero Legal') || authState.hasAccess('Documentos Legales'))
+                  const Padding(
+                    padding: EdgeInsets.only(left: 16, top: 16, bottom: 8),
+                    child: Text(
+                      'RECURSOS HUMANOS',
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.grey,
+                      ),
                     ),
                   ),
-                ),
-                _DrawerItem(
-                  icon: Icons.people,
-                  title: 'Empleados',
-                  onTap: () {
-                    Navigator.pop(context);
-                    context.go('/empleados');
-                  },
-                ),
-                _DrawerItem(
-                  icon: Icons.person_add,
-                  title: 'Nuevo Empleado',
-                  onTap: () {
-                    Navigator.pop(context);
-                    context.go('/nuevo-empleado');
-                  },
-                ),
-                _DrawerItem(
-                  icon: Icons.beach_access,
-                  title: 'Registrar Vacaciones',
-                  onTap: () {
-                    Navigator.pop(context);
-                    context.go('/vacaciones');
-                  },
-                ),
-                _DrawerItem(
-                  icon: Icons.assessment,
-                  title: 'Reportes',
-                  onTap: () {
-                    Navigator.pop(context);
-                    context.go('/reportes');
-                  },
-                ),
-                _DrawerItem(
-                  icon: Icons.business,
-                  title: 'Departamentos',
-                  onTap: () {
-                    Navigator.pop(context);
-                    context.go('/departamentos');
-                  },
-                ),
-                _DrawerItem(
-                  icon: Icons.warning,
-                  title: 'Reportes de Incidencias',
-                  onTap: () {
-                    Navigator.pop(context);
-                    context.go('/reportes-incidencias');
-                  },
-                ),
-                _DrawerItem(
-                  icon: Icons.library_books,
-                  title: 'Gestión Manuales',
-                  onTap: () {
-                    Navigator.pop(context);
-                    context.go('/manuales');
-                  },
-                ),
-                _DrawerItem(
-                  icon: Icons.gavel,
-                  title: 'Documentos Legales',
-                  onTap: () {
-                    Navigator.pop(context);
-                    context.go('/documentos-legales');
-                  },
-                ),
-                const Padding(
-                  padding: EdgeInsets.only(left: 16, top: 16, bottom: 8),
-                  child: Text(
-                    'DEPARTAMENTO DE IT',
-                    style: TextStyle(
-                      fontSize: 12,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.grey,
+                if (authState.hasAccess('Empleados'))
+                  _DrawerItem(
+                    icon: Icons.people,
+                    title: 'Empleados',
+                    onTap: () {
+                      Navigator.pop(context);
+                      context.go('/empleados');
+                    },
+                  ),
+                if (authState.hasAccess('Empleados'))
+                  _DrawerItem(
+                    icon: Icons.person_add,
+                    title: 'Nuevo Empleado',
+                    onTap: () {
+                      Navigator.pop(context);
+                      context.go('/nuevo-empleado');
+                    },
+                  ),
+                if (authState.hasAccess('Vacaciones'))
+                  _DrawerItem(
+                    icon: Icons.beach_access,
+                    title: 'Registrar Vacaciones',
+                    onTap: () {
+                      Navigator.pop(context);
+                      context.go('/vacaciones');
+                    },
+                  ),
+                if (authState.hasAccess('Reportes') || authState.hasAccess('Módulo de Reportes'))
+                  _DrawerItem(
+                    icon: Icons.assessment,
+                    title: 'Reportes',
+                    onTap: () {
+                      Navigator.pop(context);
+                      context.go('/reportes');
+                    },
+                  ),
+                if (authState.hasAccess('Departamentos'))
+                  _DrawerItem(
+                    icon: Icons.business,
+                    title: 'Departamentos',
+                    onTap: () {
+                      Navigator.pop(context);
+                      context.go('/departamentos');
+                    },
+                  ),
+                if (authState.hasAccess('Reportes de Incidencia'))
+                  _DrawerItem(
+                    icon: Icons.warning,
+                    title: 'Reportes de Incidencias',
+                    onTap: () {
+                      Navigator.pop(context);
+                      context.go('/reportes-incidencias');
+                    },
+                  ),
+                if (authState.hasAccess('Gestión de Manuales'))
+                  _DrawerItem(
+                    icon: Icons.library_books,
+                    title: 'Gestión Manuales',
+                    onTap: () {
+                      Navigator.pop(context);
+                      context.go('/gestion-manuales');
+                    },
+                  ),
+                if (authState.hasAccess('Archivero Legal') || authState.hasAccess('Documentos Legales'))
+                  _DrawerItem(
+                    icon: Icons.gavel,
+                    title: 'Documentos Legales',
+                    onTap: () {
+                      Navigator.pop(context);
+                      context.go('/documentos-legales');
+                    },
+                  ),
+                if (authState.hasAccess('Tickets') ||
+                    authState.hasAccess('Control de Usuarios') || authState.hasAccess('Roles y Permisos') || authState.hasAccess('Control Usuarios y Roles') ||
+                    authState.hasAccess('Logs de Sistema'))
+                  const Padding(
+                    padding: EdgeInsets.only(left: 16, top: 16, bottom: 8),
+                    child: Text(
+                      'DEPARTAMENTO DE IT',
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.grey,
+                      ),
                     ),
                   ),
-                ),
-                _DrawerItem(
-                  icon: Icons.confirmation_number,
-                  title: 'Tickets',
-                  onTap: () {
-                    Navigator.pop(context);
-                    context.go('/tickets');
-                  },
-                ),
-                _DrawerItem(
-                  icon: Icons.security,
-                  title: 'Control Usuarios y Roles',
-                  onTap: () {
-                    Navigator.pop(context);
-                    context.go('/usuarios-roles');
-                  },
-                ),
-                _DrawerItem(
-                  icon: Icons.list_alt,
-                  title: 'Logs de Sistema',
-                  onTap: () {
-                    Navigator.pop(context);
-                    context.go('/logs');
-                  },
-                ),
+                if (authState.hasAccess('Tickets'))
+                  _DrawerItem(
+                    icon: Icons.confirmation_number,
+                    title: 'Tickets',
+                    onTap: () {
+                      Navigator.pop(context);
+                      context.go('/tickets');
+                    },
+                  ),
+                if (authState.hasAccess('Control de Usuarios') || authState.hasAccess('Roles y Permisos') || authState.hasAccess('Control Usuarios y Roles'))
+                  _DrawerItem(
+                    icon: Icons.security,
+                    title: 'Control Usuarios y Roles',
+                    onTap: () {
+                      Navigator.pop(context);
+                      context.go('/usuarios-roles');
+                    },
+                  ),
+                if (authState.hasAccess('Logs de Sistema'))
+                  _DrawerItem(
+                    icon: Icons.list_alt,
+                    title: 'Logs de Sistema',
+                    onTap: () {
+                      Navigator.pop(context);
+                      context.go('/logs');
+                    },
+                  ),
               ],
             ),
           ),

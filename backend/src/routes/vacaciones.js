@@ -170,6 +170,18 @@ router.post('/registrar', upload.single('documento'), (req, res) => {
             console.error("❌ ERROR DETALLADO:", err);
             return res.status(500).json({ error: "Error al registrar vacaciones", detalle: err.message });
         }
+
+        const io = req.app.get('io');
+        if (io) io.emit('nueva_notificacion');
+
+        db.query('SELECT id FROM usuarios WHERE rol_id IN (1, 2)', (err, users) => {
+            if (!err && users && users.length > 0) {
+                const notifQuery = 'INSERT INTO notificaciones (usuario_id, titulo, mensaje, tipo) VALUES ?';
+                const notifValues = users.map(u => [u.id, 'Nuevas Vacaciones', `Se han registrado nuevas vacaciones/permiso para el empleado ID: ${empleado_id}`, 'info']);
+                db.query(notifQuery, [notifValues]);
+            }
+        });
+
         res.json({ mensaje: "Vacaciones registradas con éxito", id: result.insertId });
     });
 });

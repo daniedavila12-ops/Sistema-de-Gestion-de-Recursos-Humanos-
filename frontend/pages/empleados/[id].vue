@@ -303,34 +303,44 @@
                         </div>
                       </div>
                       
-                      <div class="grid grid-cols-2 md:grid-cols-7 gap-4 mt-2">
-                        <div class="bg-slate-50 p-3 rounded-xl border border-slate-100 text-center shadow-sm">
-                          <p class="text-[10px] font-black text-slate-400 uppercase mb-1">Días Disfrutados</p>
-                          <p class="font-black text-blue-600 text-2xl">{{ v.tipoSolicitud === 'Adelantadas' ? 0 : Number(v.diasVacaciones || 0) }}</p>
+                      <div class="flex flex-col xl:flex-row gap-6 mt-4">
+                        <!-- Resumen de Días -->
+                        <div class="flex-1 bg-slate-50/80 rounded-2xl p-5 border border-slate-100 flex justify-between items-center shadow-sm">
+                          <div class="text-center flex-1">
+                            <p class="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1.5">Disfrutados</p>
+                            <p class="font-black text-blue-600 text-2xl">{{ v.tipoSolicitud === 'Adelantadas' ? 0 : Number(v.diasVacaciones || 0) }}</p>
+                          </div>
+                          <div class="w-px h-10 bg-slate-200"></div>
+                          <div class="text-center flex-1">
+                            <p class="text-[9px] font-black text-red-400 uppercase tracking-widest mb-1.5">Adelantados</p>
+                            <p class="font-black text-red-500 text-2xl">{{ v.tipoSolicitud === 'Adelantadas' ? Number(v.diasVacaciones || 0) : 0 }}</p>
+                          </div>
+                          <div class="w-px h-10 bg-slate-200"></div>
+                          <div class="text-center flex-1">
+                            <p class="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1.5">Pagados</p>
+                            <p class="font-black text-emerald-500 text-2xl">{{ Number(v.diasPagados || 0) }}</p>
+                          </div>
+                          <div class="w-px h-10 bg-slate-200"></div>
+                          <div class="text-center flex-1">
+                            <p class="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1.5">Pendientes</p>
+                            <p class="font-black text-orange-500 text-2xl">{{ Number(v.diasPendientes || 0) }}</p>
+                          </div>
                         </div>
-                        <div class="bg-red-50 p-3 rounded-xl border border-red-100 text-center shadow-sm">
-                          <p class="text-[10px] font-black text-red-400 uppercase mb-1">Días Adelantados</p>
-                          <p class="font-black text-red-600 text-2xl">{{ v.tipoSolicitud === 'Adelantadas' ? Number(v.diasVacaciones || 0) : 0 }}</p>
-                        </div>
-                        <div class="bg-slate-50 p-3 rounded-xl border border-slate-100 text-center shadow-sm">
-                          <p class="text-[10px] font-black text-slate-400 uppercase mb-1">Días Pagados</p>
-                          <p class="font-black text-emerald-500 text-2xl">{{ Number(v.diasPagados || 0) }}</p>
-                        </div>
-                        <div class="bg-slate-50 p-3 rounded-xl border border-slate-100 text-center shadow-sm">
-                          <p class="text-[10px] font-black text-slate-400 uppercase mb-1">Días Pendientes</p>
-                          <p class="font-black text-orange-500 text-2xl">{{ Number(v.diasPendientes || 0) }}</p>
-                        </div>
-                        <div class="p-3 flex flex-col justify-center items-center md:items-start">
-                          <p class="text-[10px] font-black text-slate-400 uppercase mb-1">Fecha Inicio</p>
-                          <p class="font-bold text-slate-800 text-sm">{{ v.fechaInicio ? new Date(v.fechaInicio).toLocaleDateString('es-HN') : 'N/A' }}</p>
-                        </div>
-                        <div class="p-3 flex flex-col justify-center items-center md:items-start">
-                          <p class="text-[10px] font-black text-slate-400 uppercase mb-1">Fecha Final</p>
-                          <p class="font-bold text-slate-800 text-sm">{{ v.fechaFinal ? new Date(v.fechaFinal).toLocaleDateString('es-HN') : 'N/A' }}</p>
-                        </div>
-                        <div class="p-3 flex flex-col justify-center items-center md:items-start">
-                          <p class="text-[10px] font-black text-slate-400 uppercase mb-1">Fecha Regreso</p>
-                          <p class="font-bold text-slate-800 text-sm">{{ v.fechaRegreso ? new Date(v.fechaRegreso).toLocaleDateString('es-HN') : 'N/A' }}</p>
+
+                        <!-- Fechas -->
+                        <div class="flex-1 grid grid-cols-1 sm:grid-cols-3 gap-3">
+                          <div class="flex flex-col bg-white border border-slate-100 rounded-2xl p-4 shadow-sm hover:border-blue-200 transition-colors">
+                            <p class="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-2 flex items-center gap-1.5"><span class="text-blue-500">▶️</span> Fecha Inicio</p>
+                            <p class="font-bold text-slate-700 text-sm">{{ v.fechaInicio ? new Date(v.fechaInicio).toLocaleDateString('es-HN') : 'N/A' }}</p>
+                          </div>
+                          <div class="flex flex-col bg-white border border-slate-100 rounded-2xl p-4 shadow-sm hover:border-blue-200 transition-colors">
+                            <p class="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-2 flex items-center gap-1.5"><span class="text-slate-500">⏹️</span> Fecha Final</p>
+                            <p class="font-bold text-slate-700 text-sm">{{ v.fechaFinal ? new Date(v.fechaFinal).toLocaleDateString('es-HN') : 'N/A' }}</p>
+                          </div>
+                          <div class="flex flex-col bg-white border border-slate-100 rounded-2xl p-4 shadow-sm hover:border-emerald-200 transition-colors">
+                            <p class="text-[9px] font-black text-emerald-500 uppercase tracking-widest mb-2 flex items-center gap-1.5"><span class="text-emerald-500">🔙</span> Fecha Regreso</p>
+                            <p class="font-bold text-slate-800 text-sm">{{ v.fechaRegreso ? new Date(v.fechaRegreso).toLocaleDateString('es-HN') : 'N/A' }}</p>
+                          </div>
                         </div>
                       </div>
 
@@ -1455,7 +1465,7 @@ onMounted(async () => {
   }
 
   try {
-    const m = await axios.get(`http://localhost:3007/api/menu/${rolID.value}`)
+    const m = await axios.get(`http://localhost:3007/api/menu/${rolID.value}?usuario_id=${localStorage.getItem('usuarioID')}`)
     menuUsuario.value = m.data
   } catch (e) {
     console.error('Error cargando menú', e)

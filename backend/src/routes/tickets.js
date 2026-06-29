@@ -43,6 +43,15 @@ router.post('/crear', upload.single('archivo'), (req, res) => {
                     console.error("❌ ERROR DETALLADO:", err);
                     return res.status(500).json({ error: "Error al crear el ticket", detalle: err.message });
                 }
+                const io = req.app.get('io');
+                if (io) io.emit('nuevo_ticket', { mensaje: 'Nuevo ticket creado' });
+                db.query('SELECT id FROM usuarios WHERE rol_id IN (1, 2)', (err, users) => {
+                    if (!err && users && users.length > 0) {
+                        const notifQuery = 'INSERT INTO notificaciones (usuario_id, titulo, mensaje, tipo) VALUES ?';
+                        const notifValues = users.map(u => [u.id, 'Nuevo Ticket Pendiente', `Se ha recibido un nuevo ticket: ${tema || tipo}`, 'info']);
+                        db.query(notifQuery, [notifValues]);
+                    }
+                });
                 res.json({ mensaje: "Ticket enviado con éxito", ticketId: result.insertId });
             });
         });
@@ -53,6 +62,15 @@ router.post('/crear', upload.single('archivo'), (req, res) => {
                 console.error("❌ ERROR DETALLADO:", err);
                 return res.status(500).json({ error: "Error al crear el ticket", detalle: err.message });
             }
+            const io = req.app.get('io');
+            if (io) io.emit('nuevo_ticket', { mensaje: 'Nuevo ticket creado' });
+            db.query('SELECT id FROM usuarios WHERE rol_id IN (1, 2)', (err, users) => {
+                if (!err && users && users.length > 0) {
+                    const notifQuery = 'INSERT INTO notificaciones (usuario_id, titulo, mensaje, tipo) VALUES ?';
+                    const notifValues = users.map(u => [u.id, 'Nuevo Ticket Pendiente', `Se ha recibido un nuevo ticket: ${tema || tipo}`, 'info']);
+                    db.query(notifQuery, [notifValues]);
+                }
+            });
             res.json({ mensaje: "Ticket enviado con éxito", ticketId: result.insertId });
         });
     }
@@ -62,6 +80,7 @@ router.post('/crear', upload.single('archivo'), (req, res) => {
 router.get('/lista', (req, res) => {
     const query = `
         SELECT t.*, 
+               u.nombre as creadoPorNombre,
                e.foto as empleado_foto, e.nombre as empleado_nombre, e.apellido as empleado_apellido,
                u_asig.nombre as asignado_usuario_nombre,
                u_asig.foto as asignado_usuario_foto,
@@ -70,6 +89,7 @@ router.get('/lista', (req, res) => {
                e_asig.foto as asignado_empleado_foto,
                (SELECT COUNT(*) FROM ticket_respuestas tr WHERE tr.ticket_id = t.id) as respuestas_count
         FROM tickets t 
+        LEFT JOIN usuarios u ON t.usuario_id = u.id
         LEFT JOIN empleados e ON t.empleado_id = e.id 
         LEFT JOIN usuarios u_asig ON t.asignado_usuario_id = u_asig.id
         LEFT JOIN empleados e_asig ON t.asignado_empleado_id = e_asig.id
@@ -131,6 +151,16 @@ router.put('/:id/asignar', (req, res) => {
 
     db.query(query, params, (err, result) => {
         if (err) return res.status(500).json({ error: err.message });
+        
+        // Si se le asigna a un usuario (admin), enviarle notificación
+        if (tipo === 'usuario' && id_asignado) {
+            const io = req.app.get('io');
+            if (io) io.emit('nueva_notificacion');
+
+            const notifQuery = 'INSERT INTO notificaciones (usuario_id, titulo, mensaje, tipo) VALUES (?, ?, ?, ?)';
+            db.query(notifQuery, [id_asignado, 'Ticket Asignado', `Se te ha asignado el Ticket #${ticketId}`, 'info']);
+        }
+        
         res.json({ mensaje: 'Asignación actualizada con éxito' });
     });
 });
@@ -142,6 +172,16 @@ router.put('/:id/estado', (req, res) => {
     const query = 'UPDATE tickets SET estado = ? WHERE id = ?';
     db.query(query, [estado, ticketId], (err, result) => {
         if (err) return res.status(500).json({ error: err.message });
+        
+        db.query('SELECT usuario_id FROM tickets WHERE id = ?', [ticketId], (err, ticketRes) => {
+            if (!err && ticketRes && ticketRes.length > 0 && ticketRes[0].usuario_id) {
+                const io = req.app.get('io');
+                if (io) io.emit('nueva_notificacion');
+                const notifQuery = 'INSERT INTO notificaciones (usuario_id, titulo, mensaje, tipo) VALUES (?, ?, ?, ?)';
+                db.query(notifQuery, [ticketRes[0].usuario_id, 'Estado del Ticket Actualizado', `El Ticket #${ticketId} ha cambiado su estado a: ${estado}`, estado === 'Resuelto' ? 'success' : 'info']);
+            }
+        });
+
         res.json({ mensaje: 'Estado del ticket actualizado con éxito' });
     });
 });
@@ -240,7 +280,56 @@ router.post('/:id/respuestas', upload.single('archivo'), (req, res) => {
         
         const updateQuery = 'UPDATE tickets SET updated_at = CURRENT_TIMESTAMP WHERE id = ?';
         db.query(updateQuery, [ticketId], () => {
-            res.json({ mensaje: 'Respuesta añadida con éxito', respuestaId: result.insertId });
+            // Verificar estado del ticket y asignado antes de notificar
+            db.query('SELECT estado, asignado_usuario_id, usuario_id FROM tickets WHERE id = ?', [ticketId], (err, ticketRes) => {
+                const estado = ticketRes && ticketRes.length > 0 ? ticketRes[0].estado : null;
+                const asignado = ticketRes && ticketRes.length > 0 ? ticketRes[0].asignado_usuario_id : null;
+                const creador = ticketRes && ticketRes.length > 0 ? ticketRes[0].usuario_id : null;
+                const estadosCerrados = ['Resuelto', 'Cancelado', 'Desestimado'];
+                
+                if (!estadosCerrados.includes(estado)) {
+                    const io = req.app.get('io');
+                    if (io) io.emit('nueva_notificacion');
+
+                    let autorQuery = '';
+                    let autorParams = [];
+                    if (usuario_id) {
+                        autorQuery = 'SELECT nombre FROM usuarios WHERE id = ?';
+                        autorParams = [usuario_id];
+                    } else if (empleado_id) {
+                        autorQuery = 'SELECT CONCAT(nombre, " ", apellido) as nombre FROM empleados WHERE id = ?';
+                        autorParams = [empleado_id];
+                    }
+
+                    const notificar = (autorNombre) => {
+                        db.query('SELECT id FROM usuarios WHERE rol_id IN (1, 2) OR id = ? OR id = ?', [asignado, creador], (err, users) => {
+                            if (!err && users && users.length > 0) {
+                                // Filtrar al autor del mensaje para no notificarle sus propias respuestas
+                                const notifyUsers = users.filter(u => String(u.id) !== String(usuario_id));
+                                if (notifyUsers.length > 0) {
+                                    const notifQuery = 'INSERT INTO notificaciones (usuario_id, titulo, mensaje, tipo) VALUES ?';
+                                    const notifValues = notifyUsers.map(u => [u.id, 'Respuesta en Ticket', `${autorNombre} añadió una respuesta al Ticket #${ticketId}`, 'info']);
+                                    db.query(notifQuery, [notifValues]);
+                                }
+                            }
+                        });
+                    };
+
+                    if (autorQuery) {
+                        db.query(autorQuery, autorParams, (err, autorRes) => {
+                            let autorNombre = 'Alguien';
+                            if (!err && autorRes && autorRes.length > 0) {
+                                autorNombre = autorRes[0].nombre;
+                            }
+                            notificar(autorNombre);
+                        });
+                    } else {
+                        notificar('Alguien');
+                    }
+                }
+                
+                res.json({ mensaje: 'Respuesta añadida con éxito', respuestaId: result.insertId });
+            });
         });
     });
 });

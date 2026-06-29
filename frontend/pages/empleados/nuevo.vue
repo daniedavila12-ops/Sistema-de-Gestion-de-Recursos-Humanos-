@@ -1,104 +1,111 @@
 <template>
-  <div class="min-h-screen bg-slate-50 flex font-sans justify-center p-8">
-    
-    <main class="w-full max-w-5xl bg-white p-10 rounded-3xl shadow-2xl border border-slate-100">
-      <header class="mb-10 flex justify-between items-center border-b border-slate-100 pb-6">
-        <div>
-          <h1 class="text-3xl font-black text-slate-800 tracking-tight uppercase">Nuevo Empleado</h1>
-          <p class="text-slate-500 mt-1 font-medium italic">Complete la ficha de información del colaborador.</p>
-        </div>
-        <button @click="cerrarVentana" class="text-slate-400 hover:text-red-500 font-bold text-xs uppercase tracking-widest transition flex items-center gap-2 bg-slate-50 p-3 rounded-xl hover:bg-red-50">
-          <span>❌</span> Cancelar y Cerrar
+  <div class="h-screen bg-slate-50 flex flex-col font-sans overflow-hidden">
+    <!-- Header Fijo -->
+    <header class="flex-none px-8 py-5 flex justify-between items-center bg-white border-b border-slate-200 shadow-sm z-10">
+      <div>
+        <h1 class="text-2xl font-black text-slate-800 tracking-tight uppercase">Nuevo Empleado</h1>
+        <p class="text-slate-500 mt-0.5 text-xs font-medium italic">Complete la ficha de información del colaborador.</p>
+      </div>
+      <div class="flex gap-4">
+        <button @click="cerrarVentana" type="button" class="px-6 py-2.5 text-slate-500 hover:text-red-500 font-bold text-xs uppercase tracking-widest transition flex items-center gap-2 bg-slate-100 rounded-xl hover:bg-red-50">
+          <span>❌</span> Cancelar
         </button>
-      </header>
+        <button form="form-nuevo-empleado" type="submit" :disabled="loading" class="px-8 py-2.5 bg-blue-600 text-white rounded-xl font-black uppercase text-xs tracking-[0.2em] hover:bg-blue-700 shadow-lg shadow-blue-500/30 transition-all disabled:bg-slate-300 flex items-center gap-2">
+          <span>💾</span> {{ loading ? 'Guardando...' : 'Guardar Ficha' }}
+        </button>
+      </div>
+    </header>
 
-      <form @submit.prevent="guardarEmpleado" class="space-y-8">
+    <!-- Main Content -->
+    <main class="flex-1 overflow-y-auto p-6 flex justify-center items-start">
+      <form id="form-nuevo-empleado" @submit.prevent="guardarEmpleado" class="w-full max-w-7xl bg-white p-8 rounded-3xl shadow-xl border border-slate-100 flex flex-col gap-6">
         
-        <div>
-          <h2 class="text-[10px] font-black text-blue-500 uppercase tracking-[0.2em] mb-6 border-b pb-2">1. Información Personal</h2>
-          <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div v-for="field in camposPersonales" :key="field.id">
-              <label class="block text-[10px] font-black text-slate-400 uppercase mb-2 ml-1">{{ field.label }}</label>
-              <input v-model="form[field.id]" :type="field.type" :placeholder="field.placeholder" required
-                class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl text-slate-800 focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 outline-none transition-all">
+        <!-- Row 1: Personal & Laboral -->
+        <div class="flex flex-col lg:flex-row gap-6">
+          <!-- Personal -->
+          <div class="flex-[2] bg-slate-50/50 p-6 rounded-2xl border border-slate-100">
+            <h2 class="text-[10px] font-black text-blue-500 uppercase tracking-[0.2em] mb-4 border-b border-slate-200 pb-2">1. Información Personal</h2>
+            <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
+              <div v-for="field in camposPersonales" :key="field.id">
+                <label class="block text-[9px] font-black text-slate-400 uppercase mb-1.5 ml-1">{{ field.label }}</label>
+                <input v-model="form[field.id]" :type="field.type" :placeholder="field.placeholder" required
+                  class="w-full px-3 py-2.5 text-sm bg-white border border-slate-200 rounded-xl text-slate-800 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all shadow-sm">
+              </div>
+              <div>
+                <label class="block text-[9px] font-black text-slate-400 uppercase mb-1.5 ml-1">Género</label>
+                <select v-model="form.genero" class="w-full px-3 py-2.5 text-sm bg-white border border-slate-200 rounded-xl text-slate-800 outline-none focus:border-blue-500 transition-all shadow-sm">
+                  <option value="Masculino">Masculino</option>
+                  <option value="Femenino">Femenino</option>
+                </select>
+              </div>
+              <div class="xl:col-span-4 mt-1">
+                <label class="block text-[9px] font-black text-slate-400 uppercase mb-1.5 ml-1">Dirección Exacta</label>
+                <input v-model="form.direccion" type="text" required class="w-full px-3 py-2.5 text-sm bg-white border border-slate-200 rounded-xl text-slate-800 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all shadow-sm" placeholder="Ingrese la dirección completa..." />
+              </div>
             </div>
-            <div>
-              <label class="block text-[10px] font-black text-slate-400 uppercase mb-2 ml-1">Género</label>
-              <select v-model="form.genero" class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl text-slate-800 outline-none focus:border-blue-500 transition-all">
-                <option value="Masculino">Masculino</option>
-                <option value="Femenino">Femenino</option>
-              </select>
-            </div>
-            <div class="md:col-span-3">
-              <label class="block text-[10px] font-black text-slate-400 uppercase mb-2 ml-1">Dirección Exacta</label>
-              <textarea v-model="form.direccion" rows="2" class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl text-slate-800 focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 outline-none transition-all"></textarea>
+          </div>
+
+          <!-- Laboral -->
+          <div class="flex-1 bg-slate-50/50 p-6 rounded-2xl border border-slate-100">
+            <h2 class="text-[10px] font-black text-indigo-500 uppercase tracking-[0.2em] mb-4 border-b border-slate-200 pb-2">2. Información Laboral</h2>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label class="block text-[9px] font-black text-slate-400 uppercase mb-1.5 ml-1">Tipo de Contrato</label>
+                <select v-model="form.tipo_contrato" class="w-full px-3 py-2.5 text-sm bg-white border border-slate-200 rounded-xl text-slate-800 outline-none focus:border-indigo-500 transition-all shadow-sm">
+                  <option value="Permanente">Permanente</option>
+                  <option value="Temporal">Temporal</option>
+                  <option value="Servicios Profesionales">Servicios Profesionales</option>
+                </select>
+              </div>
+              <div>
+                <label class="block text-[9px] font-black text-slate-400 uppercase mb-1.5 ml-1">Departamento</label>
+                <select v-model="form.departamento_id" class="w-full px-3 py-2.5 text-sm bg-white border border-slate-200 rounded-xl text-slate-800 outline-none focus:border-indigo-500 transition-all shadow-sm" required>
+                  <option value="">Seleccione</option>
+                  <option v-for="dep in departamentos" :key="dep.id" :value="dep.id">
+                    {{ dep.nombre }}
+                  </option>
+                </select>
+              </div>
+              <div v-for="field in camposLaborales" :key="field.id" :class="field.id === 'ubicacion' ? 'sm:col-span-2' : ''">
+                <label class="block text-[9px] font-black text-slate-400 uppercase mb-1.5 ml-1">{{ field.label }}</label>
+                <input v-model="form[field.id]" :type="field.type" required
+                  class="w-full px-3 py-2.5 text-sm bg-white border border-slate-200 rounded-xl text-slate-800 focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none transition-all shadow-sm">
+              </div>
             </div>
           </div>
         </div>
 
-        <div>
-          <h2 class="text-[10px] font-black text-blue-500 uppercase tracking-[0.2em] mb-6 border-b pb-2">2. Información Laboral</h2>
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div>
-              <label class="block text-[10px] font-black text-slate-400 uppercase mb-2 ml-1">Tipo de Contrato</label>
-              <select v-model="form.tipo_contrato" class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl text-slate-800 outline-none focus:border-blue-500 transition-all">
-                <option value="Permanente">Permanente</option>
-                <option value="Temporal">Temporal</option>
-                <option value="Servicios Profesionales">Servicios Profesionales</option>
-              </select>
-            </div>
-            <div>
-              <label class="block text-[10px] font-black text-slate-400 uppercase mb-2 ml-1">Departamento</label>
-              <select v-model="form.departamento_id" class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl text-slate-800 outline-none focus:border-blue-500 transition-all">
-                <option value="">Seleccione</option>
-                <option v-for="dep in departamentos" :key="dep.id" :value="dep.id">
-                  {{ dep.nombre }}
-                </option>
-              </select>
-            </div>
-            <div v-for="field in camposLaborales" :key="field.id">
-              <label class="block text-[10px] font-black text-slate-400 uppercase mb-2 ml-1">{{ field.label }}</label>
-              <input v-model="form[field.id]" :type="field.type" required
-                class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl text-slate-800 focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 outline-none transition-all">
+        <!-- Row 2: Emergencia -->
+        <div class="flex flex-col lg:flex-row gap-6">
+          <div class="flex-1 bg-orange-50/30 p-6 rounded-2xl border border-orange-100/50">
+            <h2 class="text-[10px] font-black text-orange-500 uppercase tracking-[0.2em] mb-4 border-b border-orange-200/50 pb-2">3. Contacto de Emergencia 1</h2>
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              <div v-for="field in camposEmergencia" :key="field.id">
+                <label class="block text-[9px] font-black text-orange-400 uppercase mb-1.5 ml-1">{{ field.label }}</label>
+                <select v-if="field.type === 'select'" v-model="form[field.id]" required class="w-full px-3 py-2.5 text-sm bg-white border border-orange-200/50 rounded-xl text-slate-800 focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 outline-none transition-all shadow-sm">
+                  <option value="" disabled>Seleccione...</option>
+                  <option v-for="opt in field.options" :key="opt" :value="opt">{{ opt }}</option>
+                </select>
+                <input v-else v-model="form[field.id]" :type="field.type" :placeholder="field.placeholder" required
+                  class="w-full px-3 py-2.5 text-sm bg-white border border-orange-200/50 rounded-xl text-slate-800 focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 outline-none transition-all shadow-sm">
+              </div>
             </div>
           </div>
-        </div>
-
-        <div>
-          <h2 class="text-[10px] font-black text-orange-500 uppercase tracking-[0.2em] mb-6 border-b pb-2">3. Contacto de Emergencia 1</h2>
-          <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div v-for="field in camposEmergencia" :key="field.id">
-              <label class="block text-[10px] font-black text-slate-400 uppercase mb-2 ml-1">{{ field.label }}</label>
-              <select v-if="field.type === 'select'" v-model="form[field.id]" required class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl text-slate-800 focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 outline-none transition-all">
-                <option value="" disabled>Seleccione...</option>
-                <option v-for="opt in field.options" :key="opt" :value="opt">{{ opt }}</option>
-              </select>
-              <input v-else v-model="form[field.id]" :type="field.type" :placeholder="field.placeholder" required
-                class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl text-slate-800 focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 outline-none transition-all">
+          
+          <div class="flex-1 bg-slate-50/50 p-6 rounded-2xl border border-slate-100">
+            <h2 class="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] mb-4 border-b border-slate-200 pb-2">4. Contacto de Emergencia 2 <span class="text-slate-400 lowercase italic tracking-normal">(Opcional)</span></h2>
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              <div v-for="field in camposEmergencia2" :key="field.id">
+                <label class="block text-[9px] font-black text-slate-400 uppercase mb-1.5 ml-1">{{ field.label }}</label>
+                <select v-if="field.type === 'select'" v-model="form[field.id]" class="w-full px-3 py-2.5 text-sm bg-white border border-slate-200 rounded-xl text-slate-800 focus:ring-2 focus:ring-slate-500/20 focus:border-slate-500 outline-none transition-all shadow-sm">
+                  <option value="" disabled>Seleccione...</option>
+                  <option v-for="opt in field.options" :key="opt" :value="opt">{{ opt }}</option>
+                </select>
+                <input v-else v-model="form[field.id]" :type="field.type" :placeholder="field.placeholder"
+                  class="w-full px-3 py-2.5 text-sm bg-white border border-slate-200 rounded-xl text-slate-800 focus:ring-2 focus:ring-slate-500/20 focus:border-slate-500 outline-none transition-all shadow-sm">
+              </div>
             </div>
           </div>
-        </div>
-
-        <div class="mt-8">
-          <h2 class="text-[10px] font-black text-orange-500 uppercase tracking-[0.2em] mb-6 border-b pb-2">4. Contacto de Emergencia 2 (Opcional)</h2>
-          <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div v-for="field in camposEmergencia2" :key="field.id">
-              <label class="block text-[10px] font-black text-slate-400 uppercase mb-2 ml-1">{{ field.label }}</label>
-              <select v-if="field.type === 'select'" v-model="form[field.id]" class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl text-slate-800 focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 outline-none transition-all">
-                <option value="" disabled>Seleccione...</option>
-                <option v-for="opt in field.options" :key="opt" :value="opt">{{ opt }}</option>
-              </select>
-              <input v-else v-model="form[field.id]" :type="field.type" :placeholder="field.placeholder"
-                class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl text-slate-800 focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 outline-none transition-all">
-            </div>
-          </div>
-        </div>
-
-        <div class="flex justify-end gap-4 mt-10 border-t border-slate-100 pt-8">
-          <button type="submit" :disabled="loading"
-            class="px-12 py-4 bg-blue-600 text-white rounded-2xl font-black uppercase text-xs tracking-[0.2em] hover:bg-blue-700 shadow-xl shadow-blue-500/20 active:scale-[0.98] transition-all disabled:bg-slate-300">
-            {{ loading ? 'Guardando...' : 'Guardar y Cerrar' }}
-          </button>
         </div>
       </form>
     </main>

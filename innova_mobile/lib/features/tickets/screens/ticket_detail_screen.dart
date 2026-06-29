@@ -4,6 +4,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/ticket_model.dart';
 import '../providers/ticket_provider.dart';
+import '../../auth/providers/auth_provider.dart';
+import 'package:url_launcher/url_launcher.dart';
+import '../utils/pdf_ticket_generator.dart';
+import 'package:innova_mobile/core/constants/api_constants.dart';
 
 class TicketDetailScreen extends ConsumerStatefulWidget {
   final Ticket ticket;
@@ -31,11 +35,11 @@ class _TicketDetailScreenState extends ConsumerState<TicketDetailScreen> {
     setState(() => _isSending = true);
     try {
       final repo = ref.read(ticketRepositoryProvider);
-      // Para efectos de demostración, omitimos el usuario_id si no lo tenemos en local, 
-      // la API deberia manejarlo mediante token o ignorarlo en el peor caso.
+      final usuarioId = ref.read(authProvider).user?.id;
       await repo.addRespuesta(
         ticketId: widget.ticket.id, 
-        mensaje: _respuestaController.text.trim()
+        mensaje: _respuestaController.text.trim(),
+        usuarioId: usuarioId,
       );
       _respuestaController.clear();
       ref.invalidate(ticketRespuestasProvider(widget.ticket.id));
@@ -86,6 +90,43 @@ class _TicketDetailScreenState extends ConsumerState<TicketDetailScreen> {
   String _formatDate(DateTime? date) {
     if (date == null) return 'N/D';
     return '${date.day}/${date.month}/${date.year} ${date.hour.toString().padLeft(2, '0')}:${date.minute.toString().padLeft(2, '0')}';
+  }
+
+  void _makePhoneCall(String phoneNumber) async {
+    // Remove all non-numeric characters for the tel URI except '+'
+    final cleanPhone = phoneNumber.replaceAll(RegExp(r'[^\d+]'), '');
+    if (cleanPhone.isEmpty) return;
+    
+    final Uri launchUri = Uri(scheme: 'tel', path: cleanPhone);
+    if (await canLaunchUrl(launchUri)) {
+      await launchUrl(launchUri);
+    } else {
+      if (mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('No se pudo abrir el marcador de teléfono')));
+    }
+  }
+
+  void _openWhatsApp(String phoneNumber) async {
+    // Clean phone number (WhatsApp needs country code, we assume +504 or let the user provide it)
+    final cleanPhone = phoneNumber.replaceAll(RegExp(r'[^\d+]'), '');
+    if (cleanPhone.isEmpty) return;
+    
+    final Uri launchUri = Uri.parse('https://wa.me/$cleanPhone');
+    if (await canLaunchUrl(launchUri)) {
+      await launchUrl(launchUri, mode: LaunchMode.externalApplication);
+    } else {
+      if (mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('No se pudo abrir WhatsApp')));
+    }
+  }
+
+  Future<void> _generarPDFTicket() async {
+    try {
+      final respuestasAsync = ref.read(ticketRespuestasProvider(widget.ticket.id));
+      final respuestas = respuestasAsync.value ?? [];
+      await PdfTicketGenerator.generarPdfTicket(widget.ticket, respuestas);
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error al generar PDF: $e')));
+    }
   }
 
   @override
@@ -205,12 +246,27 @@ class _TicketDetailScreenState extends ConsumerState<TicketDetailScreen> {
                   style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                 ),
                 const SizedBox(height: 16),
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton.icon(
+                    icon: const Icon(Icons.picture_as_pdf, size: 16),
+                    label: const Text('CREAR PDF REPORTE', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.grey.shade800,
+                      foregroundColor: Colors.white,
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                    ),
+                    onPressed: _generarPDFTicket,
+                  ),
+                ),
+                const SizedBox(height: 16),
                 Row(
                   children: [
                     CircleAvatar(
                       backgroundColor: Colors.grey[300],
                       backgroundImage: ticket.empleadoFoto != null 
-                        ? NetworkImage('http://10.0.2.2:3007${ticket.empleadoFoto}') 
+                        ? NetworkImage('${ApiConstants.baseUrl}${ticket.empleadoFoto}') 
                         : null,
                       child: ticket.empleadoFoto == null 
                         ? Text(ticket.solicitanteNombre.isNotEmpty ? ticket.solicitanteNombre[0].toUpperCase() : '?')
@@ -364,7 +420,7 @@ class _TicketDetailScreenState extends ConsumerState<TicketDetailScreen> {
               CircleAvatar(
                 backgroundColor: Colors.grey[300],
                 backgroundImage: ticket.empleadoFoto != null 
-                  ? NetworkImage('http://10.0.2.2:3007${ticket.empleadoFoto}') 
+                  ? NetworkImage('${ApiConstants.baseUrl}${ticket.empleadoFoto}') 
                   : null,
                 child: ticket.empleadoFoto == null 
                   ? Text(ticket.solicitanteNombre.isNotEmpty ? ticket.solicitanteNombre[0].toUpperCase() : '?')
@@ -386,6 +442,18 @@ class _TicketDetailScreenState extends ConsumerState<TicketDetailScreen> {
                   ],
                 ),
               ),
+              if (ticket.empleadoTelefono != null && ticket.empleadoTelefono!.isNotEmpty) ...[
+                IconButton(
+                  icon: const Icon(Icons.phone, color: Colors.green),
+                  tooltip: 'Llamar',
+                  onPressed: () => _makePhoneCall(ticket.empleadoTelefono!),
+                ),
+                IconButton(
+                  icon: const Icon(Icons.chat, color: Colors.teal),
+                  tooltip: 'WhatsApp',
+                  onPressed: () => _openWhatsApp(ticket.empleadoTelefono!),
+                ),
+              ],
             ],
           ),
           const SizedBox(height: 16),
@@ -469,7 +537,7 @@ class _TicketDetailScreenState extends ConsumerState<TicketDetailScreen> {
                                 radius: 16,
                                 backgroundColor: Colors.grey[300],
                                 backgroundImage: r.autorFoto != null 
-                                  ? NetworkImage('http://10.0.2.2:3007${r.autorFoto}') 
+                                  ? NetworkImage('${ApiConstants.baseUrl}${r.autorFoto}') 
                                   : null,
                                 child: r.autorFoto == null 
                                   ? Text(r.autorNombre.isNotEmpty ? r.autorNombre[0].toUpperCase() : '?', style: const TextStyle(fontSize: 12))

@@ -104,34 +104,32 @@
               </div>
               
               <!-- Barra de Herramientas -->
-              <div class="flex flex-wrap gap-4 items-center justify-between bg-white p-3 rounded-xl border border-slate-200">
+              <div class="flex flex-col md:flex-row gap-4 items-center justify-between bg-white p-4 rounded-2xl border border-slate-100 shadow-sm mt-2">
                 <!-- Búsqueda -->
-                <div class="flex-1 min-w-[250px] relative">
-                  <span class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">🔍</span>
+                <div class="flex-1 w-full relative group">
+                  <span class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-red-500 transition-colors">🔍</span>
                   <input v-model="searchTrm" type="text" placeholder="Buscador Reportes de Incidencia..." 
-                    class="w-full pl-10 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-lg outline-none focus:border-red-500 text-sm font-medium text-slate-700 transition-colors">
+                    class="w-full pl-12 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:border-red-500 focus:ring-4 focus:ring-red-500/10 text-sm font-medium text-slate-700 transition-all">
                 </div>
                 
-                <div class="flex gap-4 items-center flex-wrap">
+                <div class="flex gap-4 w-full md:w-auto items-center flex-wrap">
                   <!-- Filtro por Prioridad -->
                   <div class="flex items-center gap-2">
-                    <span class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Filtro:</span>
-                    <select v-model="priorityFilter" class="bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 outline-none focus:border-red-500 text-sm font-medium text-slate-700 transition-colors cursor-pointer">
+                    <select v-model="priorityFilter" class="bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 outline-none focus:border-red-500 focus:ring-4 focus:ring-red-500/10 text-sm font-medium text-slate-700 transition-all cursor-pointer">
                       <option value="todas">Todas las prioridades</option>
                       <option value="Urgente">URGENTE</option>
-                      <option value="Alta">ALTO</option>
-                      <option value="Media">MEDIO</option>
-                      <option value="Baja">BAJO</option>
+                      <option value="Alta">ALTA</option>
+                      <option value="Media">MEDIA</option>
+                      <option value="Baja">BAJA</option>
                     </select>
                   </div>
 
                   <!-- Ordenar por -->
                   <div class="flex items-center gap-2">
-                    <span class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Ordenar:</span>
-                    <select v-model="sortOption" class="bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 outline-none focus:border-red-500 text-sm font-medium text-slate-700 transition-colors cursor-pointer">
-                      <option value="reciente">Primero más reciente</option>
-                      <option value="antiguo">Primero Antiguo</option>
-                      <option value="prioridad">Prioridad (de Alta a Baja)</option>
+                    <select v-model="sortOption" class="bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 outline-none focus:border-red-500 focus:ring-4 focus:ring-red-500/10 text-sm font-medium text-slate-700 transition-all cursor-pointer">
+                      <option value="reciente">Más reciente</option>
+                      <option value="antiguo">Más Antiguo</option>
+                      <option value="prioridad">Prioridad (Alta - Baja)</option>
                       <option value="actualizado">Actualizado recientemente</option>
                     </select>
                   </div>
@@ -139,12 +137,21 @@
               </div>
             </div>
             
-            <div v-if="reportesPaginados.length === 0" class="p-8 text-center text-slate-500 font-medium">
-              No se encontraron reportes con los filtros actuales.
+            <div v-if="loadingFetch" class="flex flex-col items-center justify-center py-20">
+              <div class="animate-spin rounded-full h-12 w-12 border-b-4 border-red-600 mb-4"></div>
+              <span class="text-slate-500 font-bold text-sm tracking-widest uppercase">Cargando Reportes...</span>
+            </div>
+            <div v-else-if="reportesPaginados.length === 0" class="flex flex-col items-center justify-center py-20 text-center">
+              <div class="w-20 h-20 bg-slate-50 rounded-full flex items-center justify-center mb-4 border border-slate-100 shadow-inner">
+                <span class="text-4xl">⚠️</span>
+              </div>
+              <h3 class="text-slate-800 font-black text-xl mb-2">Sin Reportes</h3>
+              <p class="text-slate-500 text-sm max-w-sm">No se encontraron reportes con los filtros actuales o la búsqueda "{{ searchTrm }}".</p>
             </div>
             <div class="flex flex-col gap-4 p-6 bg-slate-50/50" v-else>
               <!-- Cards Integradas -->
-              <div v-for="reporte in reportesPaginados" :key="reporte.id" class="bg-white rounded-2xl p-4 shadow-sm hover:shadow-md transition-shadow flex flex-col gap-3 border border-slate-100">
+              <div v-for="reporte in reportesPaginados" :key="reporte.id" class="bg-white rounded-3xl p-5 shadow-sm hover:shadow-xl transition-all duration-300 hover:-translate-y-1 flex flex-col gap-4 border border-slate-100 group relative overflow-hidden">
+                <div class="absolute left-0 top-0 bottom-0 w-1 bg-red-600 opacity-0 group-hover:opacity-100 transition-opacity"></div>
                 <div class="flex items-center justify-between">
                   <div class="flex items-center gap-3">
                     <span class="font-bold text-slate-700 text-sm">#INC-{{ String(reporte.id).padStart(3, '0') }}</span>
@@ -194,17 +201,17 @@
             </div>
             
             <!-- Paginación -->
-            <div class="flex justify-between items-center p-6 bg-white border-t border-slate-100 rounded-b-3xl" v-if="totalPaginas > 1">
-              <span class="text-sm font-medium text-slate-500">Mostrando página {{ paginaActual }} de {{ totalPaginas }} ({{ misReportes.length }} reportes)</span>
+            <div class="flex flex-col sm:flex-row justify-between items-center p-6 bg-white border-t border-slate-100 rounded-b-3xl gap-4" v-if="totalPaginas > 1">
+              <span class="text-xs font-bold text-slate-400 uppercase tracking-widest">Página {{ paginaActual }} de {{ totalPaginas }} ({{ misReportes.length }} reportes)</span>
               <div class="flex items-center gap-2">
-                <button @click="cambiarPagina(paginaActual - 1)" :disabled="paginaActual === 1" class="px-3 py-1 rounded-lg border border-slate-200 text-slate-500 hover:bg-slate-50 transition-colors text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed">Anterior</button>
+                <button @click="cambiarPagina(paginaActual - 1)" :disabled="paginaActual === 1" class="px-4 py-2 rounded-xl bg-slate-50 border border-slate-200 text-slate-500 hover:bg-slate-100 hover:text-slate-700 transition-all text-xs font-bold uppercase tracking-widest disabled:opacity-50 disabled:cursor-not-allowed">Anterior</button>
                 
                 <button v-for="pag in totalPaginas" :key="pag" @click="cambiarPagina(pag)"
-                  :class="['px-3 py-1 rounded-lg shadow-sm text-sm font-bold transition-all', pag === paginaActual ? 'bg-red-600 text-white shadow-red-200' : 'border border-slate-200 text-slate-500 hover:bg-slate-50']">
+                  :class="['px-4 py-2 rounded-xl text-xs font-black transition-all', pag === paginaActual ? 'bg-red-600 text-white shadow-lg shadow-red-200 scale-105' : 'bg-slate-50 border border-slate-200 text-slate-500 hover:bg-slate-100']">
                   {{ pag }}
                 </button>
 
-                <button @click="cambiarPagina(paginaActual + 1)" :disabled="paginaActual === totalPaginas" class="px-3 py-1 rounded-lg border border-slate-200 text-slate-500 hover:bg-slate-50 transition-colors text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed">Siguiente</button>
+                <button @click="cambiarPagina(paginaActual + 1)" :disabled="paginaActual === totalPaginas" class="px-4 py-2 rounded-xl bg-slate-50 border border-slate-200 text-slate-500 hover:bg-slate-100 hover:text-slate-700 transition-all text-xs font-bold uppercase tracking-widest disabled:opacity-50 disabled:cursor-not-allowed">Siguiente</button>
               </div>
             </div>
           </div>
@@ -267,34 +274,35 @@
     </main>
 
     <!-- Modal Nuevo Reporte -->
-    <div v-if="mostrarModal" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4 overflow-y-auto">
-      <div class="bg-white rounded-3xl shadow-2xl border border-slate-100 w-full max-w-md my-8">
-        <header class="p-6 border-b border-slate-100 flex justify-between items-center bg-red-50 rounded-t-3xl">
-          <div>
+    <div v-if="mostrarModal" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4 overflow-y-auto animate-in fade-in duration-200">
+      <div class="bg-white rounded-3xl shadow-2xl border border-slate-100 w-full max-w-lg my-8 transform transition-all animate-in zoom-in-95">
+        <header class="p-6 border-b border-slate-100 flex justify-between items-center bg-gradient-to-r from-red-50 to-white rounded-t-3xl">
+          <div class="flex items-center gap-3">
+            <span class="text-2xl bg-white p-2 rounded-xl shadow-sm">⚠️</span>
             <h3 class="text-xl font-black text-slate-800 uppercase tracking-tight">Nuevo Reporte</h3>
           </div>
-          <button @click="cerrarModal" class="text-slate-400 hover:text-red-500 transition-colors">
-            ❌
+          <button @click="cerrarModal" class="h-8 w-8 bg-white border border-slate-200 rounded-full flex items-center justify-center text-slate-400 hover:text-red-500 hover:border-red-200 hover:bg-red-50 transition-all">
+            ✕
           </button>
         </header>
 
         <div class="p-8">
-          <form @submit.prevent="crearReporte" class="space-y-5">
+          <form @submit.prevent="crearReporte" class="space-y-6">
             <div>
-              <label class="block text-[10px] font-bold text-slate-400 uppercase mb-2">Número de Identidad (Reportado)</label>
+              <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 pl-1">Número de Identidad (Reportado)</label>
               <input v-model="nuevoReporte.identidad" type="text" placeholder="Ej: 0801-1990-12345" required
-                class="w-full p-4 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:border-red-500 text-slate-700 font-medium transition-colors">
+                class="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl outline-none focus:border-red-500 focus:ring-4 focus:ring-red-500/10 text-slate-800 font-bold transition-all">
             </div>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
-                <label class="block text-[10px] font-bold text-slate-400 uppercase mb-2">Categoría</label>
-                <select v-model="nuevoReporte.categoria" class="w-full p-4 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:border-red-500 text-slate-700 font-medium transition-colors">
+                <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 pl-1">Categoría</label>
+                <select v-model="nuevoReporte.categoria" class="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl outline-none focus:border-red-500 focus:ring-4 focus:ring-red-500/10 text-slate-800 font-bold transition-all cursor-pointer">
                   <option v-for="cat in categoriasActivas" :key="cat.id" :value="cat.nombre">{{ cat.nombre }}</option>
                 </select>
               </div>
               <div>
-                <label class="block text-[10px] font-bold text-slate-400 uppercase mb-2">Prioridad</label>
-                <select v-model="nuevoReporte.prioridad" class="w-full p-4 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:border-red-500 text-slate-700 font-medium transition-colors">
+                <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 pl-1">Prioridad</label>
+                <select v-model="nuevoReporte.prioridad" class="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl outline-none focus:border-red-500 focus:ring-4 focus:ring-red-500/10 text-slate-800 font-bold transition-all cursor-pointer">
                   <option value="Baja">Baja</option>
                   <option value="Media">Media</option>
                   <option value="Alta">Alta</option>
@@ -303,23 +311,23 @@
               </div>
             </div>
             <div>
-              <label class="block text-[10px] font-bold text-slate-400 uppercase mb-2">Tema / Asunto</label>
+              <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 pl-1">Tema / Asunto</label>
               <input v-model="nuevoReporte.tema" type="text" placeholder="Breve resumen de la incidencia" required
-                class="w-full p-4 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:border-red-500 text-slate-700 font-medium transition-colors">
+                class="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl outline-none focus:border-red-500 focus:ring-4 focus:ring-red-500/10 text-slate-800 font-bold transition-all">
             </div>
             <div>
-              <label class="block text-[10px] font-bold text-slate-400 uppercase mb-2">Descripción Detallada</label>
-              <textarea v-model="nuevoReporte.descripcion" class="w-full p-4 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:border-red-500 text-slate-700 transition-colors" rows="4" placeholder="Detalla la incidencia aquí..." required></textarea>
+              <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 pl-1">Descripción Detallada</label>
+              <textarea v-model="nuevoReporte.descripcion" class="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl outline-none focus:border-red-500 focus:ring-4 focus:ring-red-500/10 text-slate-800 transition-all resize-none" rows="4" placeholder="Detalla la incidencia aquí..." required></textarea>
             </div>
             <div>
-              <label class="block text-[10px] font-bold text-slate-400 uppercase mb-2">Evidencia (Opcional)</label>
+              <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 pl-1">Evidencia (Opcional)</label>
               <input type="file" ref="fileInputRef" @change="handleFileUpload"
-                class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:border-red-500 text-slate-700 text-sm transition-colors cursor-pointer">
+                class="w-full p-3 bg-slate-50 border border-slate-200 rounded-2xl outline-none focus:border-red-500 focus:ring-4 focus:ring-red-500/10 text-slate-600 font-medium text-sm transition-all cursor-pointer file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-bold file:uppercase file:tracking-widest file:bg-slate-200 file:text-slate-700 hover:file:bg-slate-300">
             </div>
             
-            <div class="flex justify-end gap-3 pt-4 border-t border-slate-100 mt-6">
-              <button type="button" @click="cerrarModal" class="px-6 py-3 text-slate-400 font-bold uppercase text-xs">Cancelar</button>
-              <button type="submit" :disabled="loading" class="px-8 py-3 bg-red-600 text-white rounded-xl font-black uppercase text-xs shadow-lg shadow-red-200 hover:bg-red-700 transition-all disabled:opacity-50">
+            <div class="flex justify-end gap-3 pt-6 border-t border-slate-100 mt-8">
+              <button type="button" @click="cerrarModal" class="px-6 py-4 text-slate-400 hover:bg-slate-50 rounded-2xl font-black uppercase tracking-widest text-xs transition-colors">Cancelar</button>
+              <button type="submit" :disabled="loading" class="px-8 py-4 bg-red-600 text-white rounded-2xl font-black uppercase tracking-widest text-xs shadow-xl shadow-red-500/20 hover:bg-red-700 hover:-translate-y-0.5 transition-all disabled:opacity-50 disabled:hover:translate-y-0">
                 {{ loading ? 'Enviando...' : 'Crear Reporte' }}
               </button>
             </div>
@@ -400,6 +408,7 @@ const cambiarPassword = async () => {
 // Variables del Módulo Reportes
 const mostrarModal = ref(false)
 const loading = ref(false)
+const loadingFetch = ref(true)
 const misReportes = ref([])
 const todosLosReportes = ref([])
 
@@ -518,7 +527,15 @@ const filtrarReportes = () => {
     )
   }
 
+  const isClosed = (estado) => ['Resuelto', 'Cancelado', 'Desestimado', 'Cerrado'].includes(estado)
+
   data = data.sort((a, b) => {
+    const aClosed = isClosed(a.estado)
+    const bClosed = isClosed(b.estado)
+
+    if (aClosed && !bClosed) return 1
+    if (!aClosed && bClosed) return -1
+
     if (sortOption.value === 'reciente') {
       return new Date(b.fecha_creacion) - new Date(a.fecha_creacion)
     } else if (sortOption.value === 'antiguo') {
@@ -570,6 +587,7 @@ const verDetalle = (id) => {
 
 const fetchReportes = async () => {
   try {
+    loadingFetch.value = true
     const response = await axios.get('http://localhost:3007/api/reportes-incidencia/lista')
     const data = response.data
     todosLosReportes.value = data
@@ -595,6 +613,8 @@ const fetchReportes = async () => {
     filtrarReportes()
   } catch (error) { 
     console.error("Error al cargar reportes:", error) 
+  } finally {
+    loadingFetch.value = false
   }
 }
 
