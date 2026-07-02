@@ -1,5 +1,5 @@
 <template>
-  <div class="min-h-screen bg-gray-100 flex font-sans">
+  <div class="min-h-screen bg-[#f1f5f9] flex font-sans">
     <!-- SIDEBAR DINÁMICO -->
     <aside class="w-64 bg-slate-800 text-white flex flex-col shadow-xl fixed h-full z-10">
       <div class="p-6 text-2xl font-bold border-b border-slate-700 tracking-tight text-blue-400 uppercase">
@@ -32,30 +32,40 @@
     </aside>
 
     <!-- CONTENIDO PRINCIPAL -->
-    <main class="flex-1 ml-64 p-8 overflow-y-auto">
-      <header class="mb-10 flex justify-between items-center bg-white p-5 rounded-3xl shadow-sm border border-slate-100">
+    <main class="flex-1 ml-64 p-6 overflow-y-auto">
+      <!-- HEADER -->
+      <header class="mb-6 flex justify-between items-center bg-white px-6 py-4 rounded-2xl shadow-sm border border-slate-100">
         <div>
-          <h1 class="text-3xl font-black text-slate-800 tracking-tight uppercase">Reportes de Incidencia</h1>
-          <p class="text-slate-500 mt-1 font-medium italic">Gestiona faltas, incidentes y reportes del personal</p>
+          <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-red-500 to-rose-600 flex items-center justify-center shadow-lg shadow-red-500/25">
+              <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z"/></svg>
+            </div>
+            <div>
+              <h1 class="text-xl font-black text-slate-800 tracking-tight">Incidencias Laborales</h1>
+              <p class="text-slate-400 text-xs font-medium mt-0.5">Gestión de faltas, incidentes y reportes del personal</p>
+            </div>
+          </div>
         </div>
-        <div class="flex items-center gap-6">
-          
-          <button v-if="permisosModulo.puedeCrear" @click="abrirModalNuevo" class="bg-red-600 text-white px-6 py-3 rounded-xl font-black uppercase text-xs hover:bg-red-700 transition-all shadow-lg shadow-red-200">
-            + Nuevo Reporte
+        <div class="flex items-center gap-3">
+          <button v-if="permisosModulo.puedeCrear" @click="abrirModalNuevo"
+            class="flex items-center gap-2 bg-gradient-to-r from-red-500 to-rose-600 text-white px-5 py-2.5 rounded-xl font-bold text-xs uppercase tracking-wider hover:shadow-lg hover:shadow-red-500/25 hover:-translate-y-0.5 transition-all duration-200">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" d="M12 5v14m-7-7h14"/></svg>
+            Nuevo Reporte
           </button>
-          
+
           <div class="relative w-full md:w-auto flex justify-end">
-            <div @click="dropdownPerfilAbierto = !dropdownPerfilAbierto" class="flex items-center gap-3 pl-6 border-l border-slate-200 cursor-pointer hover:bg-slate-50 p-2 rounded-xl transition-colors no-print">
-              <div v-if="fotoUsuario" class="h-10 w-10 rounded-full flex items-center justify-center overflow-hidden ring-2 ring-slate-100">
+            <div @click="dropdownPerfilAbierto = !dropdownPerfilAbierto" class="flex items-center gap-3 pl-4 border-l border-slate-200 cursor-pointer hover:bg-slate-50 p-2 rounded-xl transition-colors no-print">
+              <div v-if="fotoUsuario" class="h-9 w-9 rounded-full flex items-center justify-center overflow-hidden ring-2 ring-slate-100">
                 <img :src="`http://localhost:3007${fotoUsuario}`" class="w-full h-full object-cover" />
               </div>
-              <div v-else class="h-10 w-10 rounded-full bg-slate-800 flex items-center justify-center text-blue-400 font-black text-lg ring-2 ring-slate-100 uppercase">
+              <div v-else class="h-9 w-9 rounded-full bg-slate-800 flex items-center justify-center text-blue-400 font-black text-sm ring-2 ring-slate-100 uppercase">
                 {{ nombreUsuario ? nombreUsuario.charAt(0) : 'U' }}
               </div>
               <div class="flex flex-col text-left">
-                <span class="text-[10px] text-slate-400 font-black uppercase tracking-widest">Usuario Activo</span>
-                <span class="text-base font-black text-slate-900 leading-tight">{{ nombreUsuario || 'Cargando...' }}</span>
+                <span class="text-[9px] text-slate-400 font-bold uppercase tracking-widest">Sesión</span>
+                <span class="text-sm font-bold text-slate-800 leading-tight">{{ nombreUsuario || 'Cargando...' }}</span>
               </div>
+              <svg class="w-3.5 h-3.5 text-slate-400 transition-transform" :class="{'rotate-180': dropdownPerfilAbierto}" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" d="M19 9l-7 7-7-7"/></svg>
             </div>
 
             <!-- Dropdown Menu -->
@@ -88,130 +98,279 @@
         </div>
       </header>
 
-      <div class="flex gap-8 items-start">
-        <!-- Sidebar del Módulo -->
-        <ReportesSidebar :counts="sidebarCounts" :activeFilter="filtroActivo" :reportesList="unfilteredReportesForCounts" @filter-changed="aplicarFiltro" @categorias-actualizadas="actualizarCategorias" class="shrink-0 rounded-3xl shadow-sm border border-slate-100 overflow-hidden" style="height: auto;" />
+      <!-- KPI Summary Cards — Premium Vibrant Style -->
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
 
-        <div class="flex-1 grid grid-cols-1 gap-8">
+        <!-- Tarjeta Pendientes -->
+        <div @click="aplicarFiltro('estado-Pendiente')"
+             class="group relative rounded-2xl p-4 cursor-pointer transition-all duration-300 overflow-hidden bg-gradient-to-br from-amber-400 to-orange-500"
+             :class="filtroActivo === 'estado-Pendiente' ? 'shadow-lg shadow-orange-500/40 scale-[1.02] ring-2 ring-white/50 ring-offset-1 ring-offset-orange-50' : 'shadow-sm hover:shadow-lg hover:shadow-orange-500/20 hover:-translate-y-0.5'"
+        >
+          <div class="absolute right-0 top-0 -mr-6 -mt-6 w-24 h-24 rounded-full bg-white/20 blur-xl transition-transform group-hover:scale-150"></div>
+          <div class="absolute right-2 bottom-2 text-white/20 transition-transform duration-500 group-hover:scale-110 group-hover:rotate-12">
+            <svg class="w-12 h-12" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path stroke-linecap="round" d="M12 6v6l4 2"/></svg>
+          </div>
+          
+          <div class="relative z-10 flex flex-col h-full justify-between">
+            <div class="flex justify-between items-start">
+              <div class="flex flex-col gap-1">
+                <h3 class="text-white/90 uppercase text-[9px] font-extrabold tracking-widest">Pendientes</h3>
+                <span v-if="filtroActivo === 'estado-Pendiente'" class="bg-white/20 text-white text-[9px] font-black uppercase tracking-widest px-2 py-0.5 rounded-full backdrop-blur-md border border-white/20 shadow-sm w-max">Activo</span>
+              </div>
+              <span class="text-sm p-1.5 rounded-xl backdrop-blur-sm shadow-sm bg-white/20 text-white">
+                <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path stroke-linecap="round" d="M12 6v6l4 2"/></svg>
+              </span>
+            </div>
+            <div class="mt-2">
+              <p class="text-2xl font-black text-white tabular-nums leading-none drop-shadow-sm">{{ sidebarCounts.pendiente }}</p>
+              <p class="text-[9px] text-white/80 font-bold mt-1">Requieren atención</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tarjeta En Proceso -->
+        <div @click="aplicarFiltro('estado-En Proceso')"
+             class="group relative rounded-2xl p-4 cursor-pointer transition-all duration-300 overflow-hidden bg-gradient-to-br from-blue-500 to-indigo-600"
+             :class="filtroActivo === 'estado-En Proceso' ? 'shadow-lg shadow-blue-500/40 scale-[1.02] ring-2 ring-white/50 ring-offset-1 ring-offset-blue-50' : 'shadow-sm hover:shadow-lg hover:shadow-blue-500/20 hover:-translate-y-0.5'"
+        >
+          <div class="absolute right-0 top-0 -mr-6 -mt-6 w-24 h-24 rounded-full bg-white/20 blur-xl transition-transform group-hover:scale-150"></div>
+          <div class="absolute right-2 bottom-2 text-white/20 transition-transform duration-500 group-hover:scale-110 group-hover:rotate-12">
+            <svg class="w-12 h-12" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+          </div>
+          
+          <div class="relative z-10 flex flex-col h-full justify-between">
+            <div class="flex justify-between items-start">
+              <div class="flex flex-col gap-1">
+                <h3 class="text-white/90 uppercase text-[9px] font-extrabold tracking-widest">En Proceso</h3>
+                <span v-if="filtroActivo === 'estado-En Proceso'" class="bg-white/20 text-white text-[9px] font-black uppercase tracking-widest px-2 py-0.5 rounded-full backdrop-blur-md border border-white/20 shadow-sm w-max">Activo</span>
+              </div>
+              <span class="text-sm p-1.5 rounded-xl backdrop-blur-sm shadow-sm bg-white/20 text-white">
+                <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+              </span>
+            </div>
+            <div class="mt-2">
+              <p class="text-2xl font-black text-white tabular-nums leading-none drop-shadow-sm">{{ sidebarCounts.enProceso }}</p>
+              <p class="text-[9px] text-white/80 font-bold mt-1">En seguimiento</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tarjeta Resueltos -->
+        <div @click="aplicarFiltro('estado-Resuelto')"
+             class="group relative rounded-2xl p-4 cursor-pointer transition-all duration-300 overflow-hidden bg-gradient-to-br from-emerald-400 to-teal-500"
+             :class="filtroActivo === 'estado-Resuelto' ? 'shadow-lg shadow-emerald-500/40 scale-[1.02] ring-2 ring-white/50 ring-offset-1 ring-offset-emerald-50' : 'shadow-sm hover:shadow-lg hover:shadow-emerald-500/20 hover:-translate-y-0.5'"
+        >
+          <div class="absolute right-0 top-0 -mr-6 -mt-6 w-24 h-24 rounded-full bg-white/20 blur-xl transition-transform group-hover:scale-150"></div>
+          <div class="absolute right-2 bottom-2 text-white/20 transition-transform duration-500 group-hover:scale-110 group-hover:rotate-12">
+            <svg class="w-12 h-12" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+          </div>
+          
+          <div class="relative z-10 flex flex-col h-full justify-between">
+            <div class="flex justify-between items-start">
+              <div class="flex flex-col gap-1">
+                <h3 class="text-white/90 uppercase text-[9px] font-extrabold tracking-widest">Resueltos</h3>
+                <span v-if="filtroActivo === 'estado-Resuelto'" class="bg-white/20 text-white text-[9px] font-black uppercase tracking-widest px-2 py-0.5 rounded-full backdrop-blur-md border border-white/20 shadow-sm w-max">Cerrado</span>
+              </div>
+              <span class="text-sm p-1.5 rounded-xl backdrop-blur-sm shadow-sm bg-white/20 text-white">
+                <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+              </span>
+            </div>
+            <div class="mt-2">
+              <p class="text-2xl font-black text-white tabular-nums leading-none drop-shadow-sm">{{ sidebarCounts.resuelto }}</p>
+              <p class="text-[9px] text-white/80 font-bold mt-1">Casos cerrados</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tarjeta Total -->
+        <div @click="aplicarFiltro('todas')"
+             class="group relative rounded-2xl p-4 cursor-pointer transition-all duration-300 overflow-hidden bg-gradient-to-br from-violet-500 to-fuchsia-600"
+             :class="filtroActivo === 'todas' ? 'shadow-lg shadow-violet-500/40 scale-[1.02] ring-2 ring-white/50 ring-offset-1 ring-offset-violet-50' : 'shadow-sm hover:shadow-lg hover:shadow-violet-500/20 hover:-translate-y-0.5'"
+        >
+          <div class="absolute right-0 top-0 -mr-6 -mt-6 w-24 h-24 rounded-full bg-white/20 blur-xl transition-transform group-hover:scale-150"></div>
+          <div class="absolute right-2 bottom-2 text-white/20 transition-transform duration-500 group-hover:scale-110 group-hover:rotate-12">
+            <svg class="w-12 h-12" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
+          </div>
+          
+          <div class="relative z-10 flex flex-col h-full justify-between">
+            <div class="flex justify-between items-start">
+              <div class="flex flex-col gap-1">
+                <h3 class="text-white/90 uppercase text-[9px] font-extrabold tracking-widest">Total Reportes</h3>
+                <span v-if="filtroActivo === 'todas'" class="bg-white/20 text-white text-[9px] font-black uppercase tracking-widest px-2 py-0.5 rounded-full backdrop-blur-md border border-white/20 shadow-sm w-max">Total</span>
+              </div>
+              <span class="text-sm p-1.5 rounded-xl backdrop-blur-sm shadow-sm bg-white/20 text-white">
+                <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
+              </span>
+            </div>
+            <div class="mt-2">
+              <p class="text-2xl font-black text-white tabular-nums leading-none drop-shadow-sm">{{ sidebarCounts.todas }}</p>
+              <p class="text-[9px] text-white/80 font-bold mt-1">Registro histórico</p>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <div class="flex gap-6 items-start">
+        <!-- Sidebar del Módulo -->
+        <ReportesSidebar :counts="sidebarCounts" :activeFilter="filtroActivo" :reportesList="unfilteredReportesForCounts" @filter-changed="aplicarFiltro" @categorias-actualizadas="actualizarCategorias" class="shrink-0 rounded-2xl shadow-sm border border-slate-200/80 overflow-hidden" style="height: auto;" />
+
+        <div class="flex-1 flex flex-col gap-6">
           <!-- TABLA DE REPORTES -->
-          <div class="bg-white rounded-3xl shadow-sm border border-slate-100 overflow-hidden">
-            <div class="p-6 border-b border-slate-100 bg-slate-50/50 flex flex-col gap-4">
-              <div class="flex justify-between items-center">
-                <h2 class="text-xl font-black text-slate-800 uppercase tracking-tight">Historial de Reportes</h2>
-                <button @click="fetchReportes" class="text-slate-400 hover:text-red-500 transition-colors" title="Actualizar">
-                  🔄
-                </button>
+          <div class="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
+            <!-- Toolbar -->
+            <div class="px-5 pt-4 pb-0 border-b border-slate-100">
+              <div class="flex justify-between items-center mb-4">
+                <div class="flex items-center gap-3">
+                  <h2 class="text-sm font-black text-slate-800 tracking-tight uppercase">Historial de Reportes</h2>
+                  <span class="text-[10px] font-bold text-white bg-red-500 px-2 py-0.5 rounded-full tabular-nums shadow-sm shadow-red-200">{{ misReportes.length }}</span>
+                </div>
+                <div class="flex items-center gap-2">
+                  <button @click="generarPDF" :disabled="misReportes.length === 0" class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 disabled:opacity-40 text-slate-700 font-bold text-[11px] uppercase tracking-wider transition-all" title="Exportar a PDF">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                    PDF
+                  </button>
+                  <button @click="fetchReportes" class="w-7 h-7 rounded-lg bg-slate-50 border border-slate-200 flex items-center justify-center text-slate-400 hover:text-red-500 hover:border-red-200 hover:bg-red-50 transition-all" title="Actualizar">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                  </button>
+                </div>
               </div>
               
-              <!-- Barra de Herramientas -->
-              <div class="flex flex-col md:flex-row gap-4 items-center justify-between bg-white p-4 rounded-2xl border border-slate-100 shadow-sm mt-2">
-                <!-- Búsqueda -->
-                <div class="flex-1 w-full relative group">
-                  <span class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-red-500 transition-colors">🔍</span>
-                  <input v-model="searchTrm" type="text" placeholder="Buscador Reportes de Incidencia..." 
-                    class="w-full pl-12 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:border-red-500 focus:ring-4 focus:ring-red-500/10 text-sm font-medium text-slate-700 transition-all">
+              <!-- Search & Filters Bar -->
+              <div class="flex gap-2 items-center pb-4">
+                <!-- Search -->
+                <div class="flex-1 relative group">
+                  <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-300 group-focus-within:text-red-400 transition-colors" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path stroke-linecap="round" d="M21 21l-4.35-4.35"/></svg>
+                  <input v-model="searchTrm" type="text" placeholder="Buscar por tema, empleado, identidad..."
+                    class="w-full pl-9 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:border-red-300 focus:ring-2 focus:ring-red-500/10 text-sm font-medium text-slate-700 transition-all placeholder:text-slate-400">
                 </div>
                 
-                <div class="flex gap-4 w-full md:w-auto items-center flex-wrap">
-                  <!-- Filtro por Prioridad -->
-                  <div class="flex items-center gap-2">
-                    <select v-model="priorityFilter" class="bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 outline-none focus:border-red-500 focus:ring-4 focus:ring-red-500/10 text-sm font-medium text-slate-700 transition-all cursor-pointer">
-                      <option value="todas">Todas las prioridades</option>
-                      <option value="Urgente">URGENTE</option>
-                      <option value="Alta">ALTA</option>
-                      <option value="Media">MEDIA</option>
-                      <option value="Baja">BAJA</option>
-                    </select>
-                  </div>
+                <!-- Priority Filter -->
+                <div class="relative">
+                  <select v-model="priorityFilter" class="appearance-none bg-slate-50 border border-slate-200 rounded-xl pl-3 pr-7 py-2 outline-none focus:border-red-300 text-sm font-medium text-slate-600 transition-all cursor-pointer">
+                    <option value="todas">Prioridad</option>
+                    <option value="Urgente">Urgente</option>
+                    <option value="Alta">Alta</option>
+                    <option value="Media">Media</option>
+                    <option value="Baja">Baja</option>
+                  </select>
+                  <svg class="absolute right-2 top-1/2 -translate-y-1/2 w-3 h-3 text-slate-400 pointer-events-none" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" d="M19 9l-7 7-7-7"/></svg>
+                </div>
 
-                  <!-- Ordenar por -->
-                  <div class="flex items-center gap-2">
-                    <select v-model="sortOption" class="bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 outline-none focus:border-red-500 focus:ring-4 focus:ring-red-500/10 text-sm font-medium text-slate-700 transition-all cursor-pointer">
-                      <option value="reciente">Más reciente</option>
-                      <option value="antiguo">Más Antiguo</option>
-                      <option value="prioridad">Prioridad (Alta - Baja)</option>
-                      <option value="actualizado">Actualizado recientemente</option>
-                    </select>
-                  </div>
+                <!-- Sort -->
+                <div class="relative">
+                  <select v-model="sortOption" class="appearance-none bg-slate-50 border border-slate-200 rounded-xl pl-3 pr-7 py-2 outline-none focus:border-red-300 text-sm font-medium text-slate-600 transition-all cursor-pointer">
+                    <option value="reciente">Más reciente</option>
+                    <option value="antiguo">Más antiguo</option>
+                    <option value="prioridad">Por prioridad</option>
+                    <option value="actualizado">Actualizado</option>
+                  </select>
+                  <svg class="absolute right-2 top-1/2 -translate-y-1/2 w-3 h-3 text-slate-400 pointer-events-none" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" d="M19 9l-7 7-7-7"/></svg>
                 </div>
               </div>
             </div>
             
-            <div v-if="loadingFetch" class="flex flex-col items-center justify-center py-20">
-              <div class="animate-spin rounded-full h-12 w-12 border-b-4 border-red-600 mb-4"></div>
-              <span class="text-slate-500 font-bold text-sm tracking-widest uppercase">Cargando Reportes...</span>
-            </div>
-            <div v-else-if="reportesPaginados.length === 0" class="flex flex-col items-center justify-center py-20 text-center">
-              <div class="w-20 h-20 bg-slate-50 rounded-full flex items-center justify-center mb-4 border border-slate-100 shadow-inner">
-                <span class="text-4xl">⚠️</span>
+            <!-- Loading -->
+            <div v-if="loadingFetch" class="flex flex-col items-center justify-center py-24">
+              <div class="relative">
+                <div class="animate-spin rounded-full h-10 w-10 border-2 border-slate-200 border-t-red-500"></div>
               </div>
-              <h3 class="text-slate-800 font-black text-xl mb-2">Sin Reportes</h3>
-              <p class="text-slate-500 text-sm max-w-sm">No se encontraron reportes con los filtros actuales o la búsqueda "{{ searchTrm }}".</p>
+              <span class="text-slate-400 font-semibold text-xs tracking-widest uppercase mt-5">Cargando reportes...</span>
             </div>
-            <div class="flex flex-col gap-4 p-6 bg-slate-50/50" v-else>
-              <!-- Cards Integradas -->
-              <div v-for="reporte in reportesPaginados" :key="reporte.id" class="bg-white rounded-3xl p-5 shadow-sm hover:shadow-xl transition-all duration-300 hover:-translate-y-1 flex flex-col gap-4 border border-slate-100 group relative overflow-hidden">
-                <div class="absolute left-0 top-0 bottom-0 w-1 bg-red-600 opacity-0 group-hover:opacity-100 transition-opacity"></div>
-                <div class="flex items-center justify-between">
-                  <div class="flex items-center gap-3">
-                    <span class="font-bold text-slate-700 text-sm">#INC-{{ String(reporte.id).padStart(3, '0') }}</span>
-                    <span :class="['px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-widest', prioridadClass(reporte.prioridad)]">
-                      {{ reporte.prioridad || 'Media' }}
-                    </span>
-                    <span :class="['px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-widest', claseEstado(reporte.estado)]">
-                      {{ reporte.estado || 'Pendiente' }}
-                    </span>
-                  </div>
-                  <div class="h-8 w-8 rounded-full overflow-hidden border border-slate-200 shrink-0" :title="`Asignado a: ${reporte.asignado_usuario_nombre || 'Nadie'}`">
-                    <img v-if="reporte.asignado_usuario_foto" :src="`http://localhost:3007${reporte.asignado_usuario_foto}`" class="w-full h-full object-cover" />
-                    <div v-else class="w-full h-full bg-slate-200 flex items-center justify-center text-slate-500 font-bold text-xs uppercase">
-                      {{ (reporte.asignado_usuario_nombre || '?').charAt(0) }}
+
+            <!-- Empty State -->
+            <div v-else-if="reportesPaginados.length === 0" class="flex flex-col items-center justify-center py-24 text-center px-4">
+              <div class="w-16 h-16 bg-slate-50 rounded-2xl flex items-center justify-center mb-4 border border-slate-100">
+                <svg class="w-7 h-7 text-slate-300" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z"/></svg>
+              </div>
+              <h3 class="text-slate-700 font-bold text-base mb-1.5">Sin resultados</h3>
+              <p class="text-slate-400 text-sm max-w-xs leading-relaxed">No se encontraron reportes con los filtros actuales<span v-if="searchTrm"> o la búsqueda "{{ searchTrm }}"</span>.</p>
+            </div>
+
+            <!-- Report Rows -->
+            <div v-else>
+              <div v-for="reporte in reportesPaginados" :key="reporte.id"
+                class="px-5 py-4 hover:bg-slate-50/60 transition-all duration-200 cursor-pointer group relative border-b border-slate-50 last:border-0"
+                :class="(reporte.prioridad || '').toUpperCase() === 'URGENTE' ? 'border-l-[3px] border-l-red-400' : 'border-l-[3px] border-l-transparent'"
+                @click="verDetalle(reporte.id)">
+                <div class="flex items-start gap-4">
+
+                  <!-- Avatar Asignado -->
+                  <div class="shrink-0 mt-0.5">
+                    <div class="h-9 w-9 rounded-xl overflow-hidden border border-slate-200 shadow-sm" :title="`Asignado: ${reporte.asignado_usuario_nombre || 'Sin asignar'}`">
+                      <img v-if="reporte.asignado_usuario_foto" :src="`http://localhost:3007${reporte.asignado_usuario_foto}`" class="w-full h-full object-cover" />
+                      <div v-else class="w-full h-full bg-gradient-to-br from-slate-100 to-slate-200 flex items-center justify-center text-slate-400 font-bold text-[10px] uppercase">
+                        {{ (reporte.asignado_usuario_nombre || '?').charAt(0) }}
+                      </div>
                     </div>
                   </div>
-                </div>
 
-                <div>
-                  <h3 class="text-slate-800 font-semibold text-base leading-tight cursor-pointer hover:text-red-600 transition-colors" @click="verDetalle(reporte.id)">
-                    {{ reporte.tema || 'Sin tema' }}
-                  </h3>
-                  <p class="text-slate-500 text-sm mt-1 line-clamp-2 truncate">Reportado a: {{ reporte.empleado_nombre || 'Desconocido' }} {{ reporte.empleado_apellido || '' }} - {{ reporte.descripcion }}</p>
-                </div>
-
-                <div class="flex items-center gap-4 text-xs text-slate-400 font-medium mt-1">
-                  <div class="flex items-center gap-1">
-                    <div class="h-4 w-4 rounded-full overflow-hidden bg-slate-200 flex items-center justify-center shrink-0 border border-slate-300">
-                      <span class="text-[8px] text-slate-600 font-bold uppercase">{{ (reporte.jefe_reporta || '?').charAt(0) }}</span>
+                  <!-- Content -->
+                  <div class="flex-1 min-w-0">
+                    <div class="flex items-center gap-2 mb-1.5 flex-wrap">
+                      <span class="text-[11px] font-bold text-slate-400 tabular-nums">#INC-{{ String(reporte.id).padStart(3, '0') }}</span>
+                      <span :class="['inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-wide', prioridadClass(reporte.prioridad)]">
+                        <span class="w-1.5 h-1.5 rounded-full flex-shrink-0" :class="[(reporte.prioridad || '').toUpperCase() === 'URGENTE' ? 'animate-ping' : '', prioridadDotClass(reporte.prioridad)]"></span>
+                        {{ reporte.prioridad || 'Media' }}
+                      </span>
+                      <span :class="['inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-wide', claseEstado(reporte.estado)]">
+                        {{ reporte.estado || 'Pendiente' }}
+                      </span>
                     </div>
-                    <span>{{ reporte.jefe_reporta || 'Usuario' }}</span>
+                    <h3 class="text-slate-800 font-semibold text-[14px] leading-snug group-hover:text-red-600 transition-colors truncate mb-1">
+                      {{ reporte.tema || 'Sin tema' }}
+                    </h3>
+                    <p class="text-slate-400 text-xs leading-relaxed line-clamp-1">
+                      <span class="font-medium text-slate-500">{{ reporte.empleado_nombre || 'Desconocido' }} {{ reporte.empleado_apellido || '' }}</span>
+                      <span class="mx-1.5 text-slate-300">·</span>
+                      {{ reporte.descripcion }}
+                    </p>
                   </div>
-                  <div class="flex items-center gap-1">
-                    <span>📁</span>
-                    <span>{{ reporte.categoria || 'General' }}</span>
+
+                  <!-- Meta Right -->
+                  <div class="shrink-0 flex flex-col items-end gap-2 text-right">
+                    <span class="text-[11px] text-slate-400 font-medium tabular-nums whitespace-nowrap" :title="formatearFecha(reporte.fecha_creacion)">{{ tiempoRelativo(reporte.fecha_creacion) }}</span>
+                    <div class="flex items-center gap-3 text-[11px] text-slate-400">
+                      <span class="flex items-center gap-1" :title="reporte.categoria || 'General'">
+                        <svg class="w-3 h-3 text-slate-300" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"/></svg>
+                        {{ reporte.categoria || 'General' }}
+                      </span>
+                      <span class="flex items-center gap-1">
+                        <svg class="w-3 h-3 text-slate-300" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/></svg>
+                        {{ reporte.respuestas_count || 0 }}
+                      </span>
+                      <button v-if="permisosModulo.puedeEliminar" @click.stop="eliminarReporte(reporte.id)" class="opacity-0 group-hover:opacity-100 p-1 text-slate-400 hover:text-red-500 hover:bg-red-50 transition-all rounded-md" title="Eliminar">
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                      </button>
+                    </div>
                   </div>
-                  <div class="flex items-center gap-1">
-                    <span>⏱️</span>
-                    <span>{{ formatearFecha(reporte.fecha_creacion) }}</span>
-                  </div>
-                  <div class="flex items-center gap-1">
-                    <span>💬</span>
-                    <span>{{ reporte.respuestas_count || 0 }}</span>
-                  </div>
+
                 </div>
               </div>
             </div>
             
             <!-- Paginación -->
-            <div class="flex flex-col sm:flex-row justify-between items-center p-6 bg-white border-t border-slate-100 rounded-b-3xl gap-4" v-if="totalPaginas > 1">
-              <span class="text-xs font-bold text-slate-400 uppercase tracking-widest">Página {{ paginaActual }} de {{ totalPaginas }} ({{ misReportes.length }} reportes)</span>
-              <div class="flex items-center gap-2">
-                <button @click="cambiarPagina(paginaActual - 1)" :disabled="paginaActual === 1" class="px-4 py-2 rounded-xl bg-slate-50 border border-slate-200 text-slate-500 hover:bg-slate-100 hover:text-slate-700 transition-all text-xs font-bold uppercase tracking-widest disabled:opacity-50 disabled:cursor-not-allowed">Anterior</button>
+            <div class="flex flex-col sm:flex-row justify-between items-center px-5 py-4 bg-slate-50/50 border-t border-slate-100 gap-3" v-if="totalPaginas > 1">
+              <span class="text-[11px] font-semibold text-slate-400 tabular-nums">Página {{ paginaActual }} de {{ totalPaginas }} — {{ misReportes.length }} reportes</span>
+              <div class="flex items-center gap-1.5">
+                <button @click="cambiarPagina(paginaActual - 1)" :disabled="paginaActual === 1" 
+                  class="w-8 h-8 rounded-lg bg-white border border-slate-200 flex items-center justify-center text-slate-400 hover:bg-slate-50 hover:text-slate-600 transition-all text-sm disabled:opacity-40 disabled:cursor-not-allowed">
+                  <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" d="M15 19l-7-7 7-7"/></svg>
+                </button>
                 
-                <button v-for="pag in totalPaginas" :key="pag" @click="cambiarPagina(pag)"
-                  :class="['px-4 py-2 rounded-xl text-xs font-black transition-all', pag === paginaActual ? 'bg-red-600 text-white shadow-lg shadow-red-200 scale-105' : 'bg-slate-50 border border-slate-200 text-slate-500 hover:bg-slate-100']">
+                <button v-for="pag in paginasVisibles" :key="pag" @click="pag !== '...' && cambiarPagina(pag)"
+                  :disabled="pag === '...'"
+                  :class="['w-8 h-8 rounded-lg text-xs font-bold transition-all', 
+                    pag === paginaActual ? 'bg-gradient-to-r from-red-500 to-rose-600 text-white shadow-md shadow-red-500/20' : 
+                    pag === '...' ? 'text-slate-400 cursor-default' :
+                    'bg-white border border-slate-200 text-slate-500 hover:bg-slate-50']">
                   {{ pag }}
                 </button>
 
-                <button @click="cambiarPagina(paginaActual + 1)" :disabled="paginaActual === totalPaginas" class="px-4 py-2 rounded-xl bg-slate-50 border border-slate-200 text-slate-500 hover:bg-slate-100 hover:text-slate-700 transition-all text-xs font-bold uppercase tracking-widest disabled:opacity-50 disabled:cursor-not-allowed">Siguiente</button>
+                <button @click="cambiarPagina(paginaActual + 1)" :disabled="paginaActual === totalPaginas" 
+                  class="w-8 h-8 rounded-lg bg-white border border-slate-200 flex items-center justify-center text-slate-400 hover:bg-slate-50 hover:text-slate-600 transition-all text-sm disabled:opacity-40 disabled:cursor-not-allowed">
+                  <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" d="M9 5l7 7-7 7"/></svg>
+                </button>
               </div>
             </div>
           </div>
@@ -220,10 +379,14 @@
 
       <!-- Modal Perfil -->
       <div v-if="modalAbiertoPerfil" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex justify-center items-center p-4">
-        <div class="bg-white w-full max-w-md overflow-hidden rounded-3xl shadow-2xl animate-in fade-in zoom-in duration-200">
+        <div class="bg-white w-full max-w-md overflow-hidden rounded-2xl shadow-2xl animate-in fade-in zoom-in duration-200">
           <div class="p-6 border-b bg-white flex justify-between items-center">
-            <h2 class="text-2xl font-black text-slate-800 uppercase tracking-tight">👤 Perfil de Usuario</h2>
-            <button @click="cerrarModalPerfil" class="text-slate-400 hover:text-red-500 transition text-2xl">&times;</button>
+            <h2 class="text-xl font-extrabold text-slate-800 tracking-tight flex items-center gap-2">
+              <span class="text-lg">👤</span> Perfil de Usuario
+            </h2>
+            <button @click="cerrarModalPerfil" class="w-8 h-8 rounded-lg bg-slate-50 border border-slate-200 flex items-center justify-center text-slate-400 hover:text-red-500 hover:border-red-200 hover:bg-red-50 transition-all">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" d="M6 18L18 6M6 6l12 12"/></svg>
+            </button>
           </div>
 
           <form @submit.prevent="cambiarPassword" class="p-8 space-y-6">
@@ -275,59 +438,72 @@
 
     <!-- Modal Nuevo Reporte -->
     <div v-if="mostrarModal" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4 overflow-y-auto animate-in fade-in duration-200">
-      <div class="bg-white rounded-3xl shadow-2xl border border-slate-100 w-full max-w-lg my-8 transform transition-all animate-in zoom-in-95">
-        <header class="p-6 border-b border-slate-100 flex justify-between items-center bg-gradient-to-r from-red-50 to-white rounded-t-3xl">
+      <div class="bg-white rounded-2xl shadow-2xl border border-slate-100 w-full max-w-lg my-8 transform transition-all animate-in zoom-in-95">
+        <header class="p-5 border-b border-slate-100 flex justify-between items-center bg-gradient-to-r from-red-50/80 to-white rounded-t-2xl">
           <div class="flex items-center gap-3">
-            <span class="text-2xl bg-white p-2 rounded-xl shadow-sm">⚠️</span>
-            <h3 class="text-xl font-black text-slate-800 uppercase tracking-tight">Nuevo Reporte</h3>
+            <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-red-500 to-rose-600 flex items-center justify-center shadow-lg shadow-red-500/20">
+              <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z"/></svg>
+            </div>
+            <div>
+              <h3 class="text-lg font-extrabold text-slate-800 tracking-tight">Nuevo Reporte</h3>
+              <p class="text-[10px] text-slate-400 font-medium">Registrar incidencia laboral</p>
+            </div>
           </div>
-          <button @click="cerrarModal" class="h-8 w-8 bg-white border border-slate-200 rounded-full flex items-center justify-center text-slate-400 hover:text-red-500 hover:border-red-200 hover:bg-red-50 transition-all">
-            ✕
+          <button @click="cerrarModal" class="w-8 h-8 bg-white border border-slate-200 rounded-lg flex items-center justify-center text-slate-400 hover:text-red-500 hover:border-red-200 hover:bg-red-50 transition-all">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" d="M6 18L18 6M6 6l12 12"/></svg>
           </button>
         </header>
 
-        <div class="p-8">
-          <form @submit.prevent="crearReporte" class="space-y-6">
+        <div class="p-6">
+          <form @submit.prevent="crearReporte" class="space-y-5">
             <div>
-              <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 pl-1">Número de Identidad (Reportado)</label>
+              <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5 pl-0.5">Número de Identidad (Reportado)</label>
               <input v-model="nuevoReporte.identidad" type="text" placeholder="Ej: 0801-1990-12345" required
-                class="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl outline-none focus:border-red-500 focus:ring-4 focus:ring-red-500/10 text-slate-800 font-bold transition-all">
+                class="w-full p-3.5 bg-slate-50/80 border border-slate-200 rounded-xl outline-none focus:border-red-400 focus:ring-3 focus:ring-red-500/10 text-slate-800 font-semibold text-sm transition-all placeholder:text-slate-400">
             </div>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div class="grid grid-cols-2 gap-4">
               <div>
-                <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 pl-1">Categoría</label>
-                <select v-model="nuevoReporte.categoria" class="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl outline-none focus:border-red-500 focus:ring-4 focus:ring-red-500/10 text-slate-800 font-bold transition-all cursor-pointer">
-                  <option v-for="cat in categoriasActivas" :key="cat.id" :value="cat.nombre">{{ cat.nombre }}</option>
-                </select>
+                <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5 pl-0.5">Categoría</label>
+                <div class="relative">
+                  <select v-model="nuevoReporte.categoria" class="appearance-none w-full p-3.5 bg-slate-50/80 border border-slate-200 rounded-xl outline-none focus:border-red-400 focus:ring-3 focus:ring-red-500/10 text-slate-800 font-semibold text-sm transition-all cursor-pointer pr-9">
+                    <option v-for="cat in categoriasActivas" :key="cat.id" :value="cat.nombre">{{ cat.nombre }}</option>
+                  </select>
+                  <svg class="absolute right-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400 pointer-events-none" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" d="M19 9l-7 7-7-7"/></svg>
+                </div>
               </div>
               <div>
-                <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 pl-1">Prioridad</label>
-                <select v-model="nuevoReporte.prioridad" class="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl outline-none focus:border-red-500 focus:ring-4 focus:ring-red-500/10 text-slate-800 font-bold transition-all cursor-pointer">
-                  <option value="Baja">Baja</option>
-                  <option value="Media">Media</option>
-                  <option value="Alta">Alta</option>
-                  <option value="Urgente">Urgente</option>
-                </select>
+                <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5 pl-0.5">Prioridad</label>
+                <div class="relative">
+                  <select v-model="nuevoReporte.prioridad" class="appearance-none w-full p-3.5 bg-slate-50/80 border border-slate-200 rounded-xl outline-none focus:border-red-400 focus:ring-3 focus:ring-red-500/10 text-slate-800 font-semibold text-sm transition-all cursor-pointer pr-9">
+                    <option value="Baja">Baja</option>
+                    <option value="Media">Media</option>
+                    <option value="Alta">Alta</option>
+                    <option value="Urgente">Urgente</option>
+                  </select>
+                  <svg class="absolute right-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400 pointer-events-none" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" d="M19 9l-7 7-7-7"/></svg>
+                </div>
               </div>
             </div>
             <div>
-              <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 pl-1">Tema / Asunto</label>
+              <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5 pl-0.5">Tema / Asunto</label>
               <input v-model="nuevoReporte.tema" type="text" placeholder="Breve resumen de la incidencia" required
-                class="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl outline-none focus:border-red-500 focus:ring-4 focus:ring-red-500/10 text-slate-800 font-bold transition-all">
+                class="w-full p-3.5 bg-slate-50/80 border border-slate-200 rounded-xl outline-none focus:border-red-400 focus:ring-3 focus:ring-red-500/10 text-slate-800 font-semibold text-sm transition-all placeholder:text-slate-400">
             </div>
             <div>
-              <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 pl-1">Descripción Detallada</label>
-              <textarea v-model="nuevoReporte.descripcion" class="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl outline-none focus:border-red-500 focus:ring-4 focus:ring-red-500/10 text-slate-800 transition-all resize-none" rows="4" placeholder="Detalla la incidencia aquí..." required></textarea>
+              <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5 pl-0.5">Descripción Detallada</label>
+              <textarea v-model="nuevoReporte.descripcion" class="w-full p-3.5 bg-slate-50/80 border border-slate-200 rounded-xl outline-none focus:border-red-400 focus:ring-3 focus:ring-red-500/10 text-slate-800 text-sm transition-all resize-none placeholder:text-slate-400" rows="3" placeholder="Detalla la incidencia aquí..." required></textarea>
             </div>
             <div>
-              <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 pl-1">Evidencia (Opcional)</label>
-              <input type="file" ref="fileInputRef" @change="handleFileUpload"
-                class="w-full p-3 bg-slate-50 border border-slate-200 rounded-2xl outline-none focus:border-red-500 focus:ring-4 focus:ring-red-500/10 text-slate-600 font-medium text-sm transition-all cursor-pointer file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-bold file:uppercase file:tracking-widest file:bg-slate-200 file:text-slate-700 hover:file:bg-slate-300">
+              <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5 pl-0.5">Evidencia (Opcional)</label>
+              <div class="relative">
+                <input type="file" ref="fileInputRef" @change="handleFileUpload"
+                  class="w-full p-3 bg-slate-50/80 border border-slate-200 rounded-xl outline-none focus:border-red-400 text-slate-600 font-medium text-sm transition-all cursor-pointer file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-[10px] file:font-bold file:uppercase file:tracking-wider file:bg-slate-200 file:text-slate-700 hover:file:bg-slate-300 file:transition-colors file:cursor-pointer">
+              </div>
             </div>
             
-            <div class="flex justify-end gap-3 pt-6 border-t border-slate-100 mt-8">
-              <button type="button" @click="cerrarModal" class="px-6 py-4 text-slate-400 hover:bg-slate-50 rounded-2xl font-black uppercase tracking-widest text-xs transition-colors">Cancelar</button>
-              <button type="submit" :disabled="loading" class="px-8 py-4 bg-red-600 text-white rounded-2xl font-black uppercase tracking-widest text-xs shadow-xl shadow-red-500/20 hover:bg-red-700 hover:-translate-y-0.5 transition-all disabled:opacity-50 disabled:hover:translate-y-0">
+            <div class="flex justify-end gap-3 pt-5 border-t border-slate-100">
+              <button type="button" @click="cerrarModal" class="px-5 py-3 text-slate-400 hover:bg-slate-50 rounded-xl font-bold uppercase tracking-wider text-xs transition-colors">Cancelar</button>
+              <button type="submit" :disabled="loading" class="px-7 py-3 bg-gradient-to-r from-red-500 to-rose-600 text-white rounded-xl font-bold uppercase tracking-wider text-xs shadow-lg shadow-red-500/20 hover:shadow-xl hover:shadow-red-500/30 hover:-translate-y-0.5 transition-all disabled:opacity-50 disabled:hover:translate-y-0">
                 {{ loading ? 'Enviando...' : 'Crear Reporte' }}
               </button>
             </div>
@@ -335,6 +511,8 @@
         </div>
       </div>
     </div>
+    <!-- Modal Detalle Reporte -->
+    <TicketDetailReportesIncidencia v-if="selectedTicketId" :id="selectedTicketId" @close="cerrarDetalle" />
   </div>
 </template>
 
@@ -344,6 +522,14 @@ import axios from 'axios'
 import { useRouter } from 'vue-router'
 import jsPDF from 'jspdf'
 import 'jspdf-autotable'
+import Swal from 'sweetalert2'
+import TicketDetailReportesIncidencia from '~/pages/TicketDetailReportesIncidencia.vue'
+
+const selectedTicketId = ref(null)
+const cerrarDetalle = () => {
+  selectedTicketId.value = null
+  fetchReportes()
+}
 
 const router = useRouter()
 
@@ -443,6 +629,22 @@ const reportesPaginados = computed(() => {
 })
 
 const totalPaginas = computed(() => Math.ceil(misReportes.value.length / ticketsPorPagina.value) || 1)
+
+const paginasVisibles = computed(() => {
+  const total = totalPaginas.value
+  const actual = paginaActual.value
+  if (total <= 7) return Array.from({ length: total }, (_, i) => i + 1)
+  
+  const pages = []
+  pages.push(1)
+  if (actual > 3) pages.push('...')
+  for (let i = Math.max(2, actual - 1); i <= Math.min(total - 1, actual + 1); i++) {
+    pages.push(i)
+  }
+  if (actual < total - 2) pages.push('...')
+  pages.push(total)
+  return pages
+})
 
 const cambiarPagina = (pag) => {
   if (pag >= 1 && pag <= totalPaginas.value) {
@@ -582,7 +784,7 @@ const cerrarModal = () => {
 }
 
 const verDetalle = (id) => {
-  router.push({ path: '/TicketDetailReportesIncidencia', query: { id } })
+  selectedTicketId.value = id
 }
 
 const fetchReportes = async () => {
@@ -654,21 +856,86 @@ const crearReporte = async () => {
   }
 }
 
+const eliminarReporte = async (id) => {
+  const result = await Swal.fire({
+    title: '¿Eliminar reporte?',
+    text: "Esta acción no se puede deshacer.",
+    icon: 'warning',
+    showCancelButton: true,
+    confirmButtonColor: '#ef4444',
+    cancelButtonColor: '#94a3b8',
+    confirmButtonText: 'Sí, eliminar',
+    cancelButtonText: 'Cancelar',
+    customClass: {
+      popup: 'rounded-2xl border border-slate-100',
+      title: 'text-lg font-black text-slate-800',
+      htmlContainer: 'text-sm font-medium text-slate-500',
+      confirmButton: 'rounded-xl text-xs font-bold px-5 py-2.5 shadow-lg shadow-red-500/30 uppercase tracking-wide',
+      cancelButton: 'rounded-xl text-xs font-bold px-5 py-2.5 uppercase tracking-wide'
+    }
+  });
+
+  if (result.isConfirmed) {
+    try {
+      await axios.delete(`http://localhost:3007/api/reportes-incidencia/${id}`);
+      await fetchReportes();
+      Swal.fire({
+        title: 'Eliminado',
+        text: 'El reporte ha sido eliminado correctamente.',
+        icon: 'success',
+        timer: 2000,
+        showConfirmButton: false,
+        customClass: {
+          popup: 'rounded-2xl border border-slate-100',
+          title: 'text-lg font-black text-slate-800',
+          htmlContainer: 'text-sm font-medium text-slate-500'
+        }
+      });
+    } catch (error) {
+      console.error(error);
+      Swal.fire('Error', 'No se pudo eliminar el reporte.', 'error');
+    }
+  }
+}
+
 const claseEstado = (estado) => {
   const e = estado || 'Pendiente'
-  if (e === 'En Proceso') return 'bg-blue-100 text-blue-700 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest border border-blue-200'
-  if (e === 'Pendiente') return 'bg-orange-100 text-orange-700 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest border border-orange-200'
-  if (e === 'Resuelto') return 'bg-green-100 text-green-700 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest border border-green-200'
-  if (e === 'Cancelado' || e === 'Desestimado') return 'bg-slate-100 text-slate-700 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest border border-slate-200'
-  return 'bg-slate-100 text-slate-700 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest border border-slate-200'
+  if (e === 'En Proceso') return 'bg-blue-50 text-blue-600 border border-blue-100'
+  if (e === 'Pendiente') return 'bg-amber-50 text-amber-600 border border-amber-100'
+  if (e === 'Resuelto') return 'bg-emerald-50 text-emerald-600 border border-emerald-100'
+  if (e === 'Cancelado' || e === 'Desestimado') return 'bg-slate-50 text-slate-500 border border-slate-200'
+  return 'bg-slate-50 text-slate-500 border border-slate-200'
 }
 
 const prioridadClass = (prioridad) => {
   const p = (prioridad || 'Media').toUpperCase()
-  if (p === 'URGENTE') return 'text-red-700 font-black bg-red-50 border border-red-100'
-  if (p === 'ALTA') return 'text-orange-600 font-bold bg-orange-50 border border-orange-100'
-  if (p === 'BAJA') return 'text-green-600 font-bold bg-green-50 border border-green-100'
-  return 'text-yellow-600 font-bold bg-yellow-50 border border-yellow-100' // Media
+  if (p === 'URGENTE') return 'text-red-600 bg-red-50 border border-red-100'
+  if (p === 'ALTA') return 'text-orange-600 bg-orange-50 border border-orange-100'
+  if (p === 'BAJA') return 'text-emerald-600 bg-emerald-50 border border-emerald-100'
+  return 'text-amber-600 bg-amber-50 border border-amber-100' // Media
+}
+
+const prioridadDotClass = (prioridad) => {
+  const p = (prioridad || 'Media').toUpperCase()
+  if (p === 'URGENTE') return 'bg-red-500'
+  if (p === 'ALTA') return 'bg-orange-500'
+  if (p === 'BAJA') return 'bg-emerald-500'
+  return 'bg-amber-500'
+}
+
+const tiempoRelativo = (fechaStr) => {
+  if (!fechaStr) return '-'
+  const ahora = new Date()
+  const fecha = new Date(fechaStr)
+  const diffMs = ahora - fecha
+  const diffMin = Math.floor(diffMs / 60000)
+  const diffHrs = Math.floor(diffMin / 60)
+  const diffDays = Math.floor(diffHrs / 24)
+  if (diffMin < 2) return 'Ahora mismo'
+  if (diffMin < 60) return `Hace ${diffMin} min`
+  if (diffHrs < 24) return `Hace ${diffHrs}h`
+  if (diffDays < 7) return `Hace ${diffDays}d`
+  return formatearFecha(fechaStr)
 }
 
 const formatearFecha = (fechaStr) => {
@@ -679,26 +946,42 @@ const formatearFecha = (fechaStr) => {
   })
 }
 
-const generarPDF = () => {
+const generarPDF = async () => {
   const doc = new jsPDF('landscape')
 
-  doc.setFontSize(22)
-  doc.setTextColor(220, 38, 38) // red-600
-  doc.text('Reportes de Incidencia', 14, 22)
-  
-  doc.setFontSize(10)
-  doc.setTextColor(100, 116, 139) // slate-500
-  doc.text(`Generado el: ${new Date().toLocaleString('es-HN')}`, 14, 30)
-  doc.text(`Filtro activo: ${filtroActivo.value.toUpperCase()}`, 14, 36)
+  // Cargar logo
+  const imgLogo = new Image();
+  imgLogo.crossOrigin = 'Anonymous';
+  imgLogo.src = 'http://localhost:3007/uploads/Logo/Logo.png';
+  await new Promise((resolve) => { imgLogo.onload = resolve; imgLogo.onerror = resolve; });
 
-  const headers = [['ID', 'Prioridad', 'Estado', 'Reportado A', 'Tema', 'Categoría', 'Fecha Creación']]
-  const data = reportesPaginados.value.map(r => [
+  doc.setFontSize(20)
+  doc.setTextColor(220, 38, 38)
+  doc.setFont('helvetica', 'bold')
+  doc.text('REPORTES DE INCIDENCIAS LABORALES', 14, 20)
+  
+  doc.setFontSize(9)
+  doc.setTextColor(100, 116, 139)
+  doc.setFont('helvetica', 'normal')
+  doc.text(`Generado el: ${new Date().toLocaleString('es-HN')}`, 14, 28)
+  doc.text(`Filtro: ${filtroActivo.value === 'todas' ? 'Todos los registros' : filtroActivo.value}  |  Total: ${misReportes.value.length} reportes`, 14, 33)
+
+  try { doc.addImage(imgLogo, 'PNG', 240, 12, 35, 15); } catch(e) {}
+
+  doc.setDrawColor(220, 38, 38);
+  doc.setLineWidth(0.5);
+  doc.line(14, 37, 283, 37);
+
+  const headers = [['#', 'Prioridad', 'Estado', 'Empleado Reportado', 'Tema', 'Categoría', 'Reportado Por', 'Asignado A', 'Fecha']]
+  const data = misReportes.value.map(r => [
     `#INC-${String(r.id).padStart(3, '0')}`,
     (r.prioridad || 'Media').toUpperCase(),
     (r.estado || 'Pendiente').toUpperCase(),
     `${r.empleado_nombre || ''} ${r.empleado_apellido || ''}`.trim() || 'Desconocido',
     r.tema || 'Sin tema',
     r.categoria || 'General',
+    r.jefe_reporta || '-',
+    r.asignado_usuario_nombre || 'Sin asignar',
     formatearFecha(r.fecha_creacion)
   ])
 
@@ -708,23 +991,44 @@ const generarPDF = () => {
     body: data,
     theme: 'grid',
     headStyles: {
-      fillColor: [220, 38, 38], // red-600
+      fillColor: [220, 38, 38],
       textColor: [255, 255, 255],
       fontStyle: 'bold',
-      halign: 'center'
+      halign: 'center',
+      fontSize: 8
     },
-    bodyStyles: {
-      halign: 'center'
-    },
+    bodyStyles: { fontSize: 7.5, cellPadding: 3 },
     columnStyles: {
-      4: { halign: 'left' } // El tema alineado a la izquierda para mejor lectura
+      4: { halign: 'left', cellWidth: 45 },
+      3: { cellWidth: 35 },
     },
-    alternateRowStyles: {
-      fillColor: [248, 250, 252] // slate-50
+    alternateRowStyles: { fillColor: [248, 250, 252] },
+    didParseCell: (data) => {
+      if (data.section === 'body' && data.column.index === 1) {
+        const val = (data.cell.raw || '').toUpperCase();
+        if (val === 'URGENTE') data.cell.styles.textColor = [220, 38, 38];
+        else if (val === 'ALTA') data.cell.styles.textColor = [234, 88, 12];
+        else if (val === 'BAJA') data.cell.styles.textColor = [5, 150, 105];
+      }
+      if (data.section === 'body' && data.column.index === 2) {
+        const val = (data.cell.raw || '').toUpperCase();
+        if (val === 'PENDIENTE') data.cell.styles.textColor = [217, 119, 6];
+        else if (val === 'EN PROCESO') data.cell.styles.textColor = [37, 99, 235];
+        else if (val === 'RESUELTO') data.cell.styles.textColor = [5, 150, 105];
+      }
     }
   })
 
-  doc.save('Historial_Reportes_Incidencia.pdf')
+  // Footer with page numbers
+  const totalPages = doc.internal.getNumberOfPages();
+  for (let i = 1; i <= totalPages; i++) {
+    doc.setPage(i);
+    doc.setFontSize(7);
+    doc.setTextColor(100, 116, 139);
+    doc.text(`Página ${i} de ${totalPages}  —  INNOVA RRHH`, 148.5, doc.internal.pageSize.height - 8, { align: 'center' });
+  }
+
+  doc.save(`Reportes_Incidencias_${new Date().toISOString().split('T')[0]}.pdf`)
 }
 
 onMounted(async () => {
@@ -754,7 +1058,7 @@ onMounted(async () => {
   }
 
   try {
-    const m = await axios.get(`http://localhost:3007/api/menu/${rolID.value}`)
+    const m = await axios.get(`http://localhost:3007/api/menu/${rolID.value}?usuario_id=${localStorage.getItem('usuarioID')}`)
     menuUsuario.value = m.data
   } catch(e) {
     console.error("Error al cargar menú", e)

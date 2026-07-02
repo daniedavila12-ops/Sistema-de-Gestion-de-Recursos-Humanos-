@@ -378,7 +378,8 @@ onMounted(async () => {
   }
 
   try {
-    const m = await axios.get(`http://localhost:3007/api/menu/${rolID.value}`)
+    const userId = localStorage.getItem('usuarioID');
+    const m = await axios.get(`http://localhost:3007/api/menu/${rolID.value}?usuario_id=${userId}`)
     menuUsuario.value = m.data
   } catch (e) {
     console.error('Error cargando menú', e)

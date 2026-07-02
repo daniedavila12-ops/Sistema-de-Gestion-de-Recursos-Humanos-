@@ -8,14 +8,17 @@ import 'package:go_router/go_router.dart';
 import 'package:mask_text_input_formatter/mask_text_input_formatter.dart';
 import 'package:dio/dio.dart';
 
-class NuevoEmpleadoScreen extends ConsumerStatefulWidget {
-  const NuevoEmpleadoScreen({super.key});
+import '../models/empleado_model.dart';
+
+class EditarEmpleadoScreen extends ConsumerStatefulWidget {
+  final Empleado empleado;
+  const EditarEmpleadoScreen({super.key, required this.empleado});
 
   @override
-  ConsumerState<NuevoEmpleadoScreen> createState() => _NuevoEmpleadoScreenState();
+  ConsumerState<EditarEmpleadoScreen> createState() => _EditarEmpleadoScreenState();
 }
 
-class _NuevoEmpleadoScreenState extends ConsumerState<NuevoEmpleadoScreen> {
+class _EditarEmpleadoScreenState extends ConsumerState<EditarEmpleadoScreen> {
   final _formKey = GlobalKey<FormState>();
 
   // --- Validación en tiempo real ---
@@ -70,6 +73,57 @@ class _NuevoEmpleadoScreenState extends ConsumerState<NuevoEmpleadoScreen> {
     filter: { "#": RegExp(r'[0-9]') },
     type: MaskAutoCompletionType.lazy
   );
+
+  @override
+  void initState() {
+    super.initState();
+    final emp = widget.empleado;
+    _codigoEmpleadoController.text = emp.codigoEmpleado ?? '';
+    // Safe initialization with mask formatters
+    if (emp.identidad != null) {
+      _identidadController.text = _identidadMask.maskText(emp.identidad!);
+    }
+    
+    _nombresController.text = emp.nombre;
+    _apellidosController.text = emp.apellido;
+    _correoController.text = emp.correo ?? '';
+    
+    if (emp.telefono != null) {
+      _telefonoController.text = _telefonoMask.maskText(emp.telefono!);
+    }
+    _direccionController.text = emp.direccion ?? '';
+    _ciudadController.text = emp.ciudad ?? '';
+    _ubicacionController.text = emp.ubicacion ?? '';
+    _emergenciaNombreController.text = emp.emergenciaNombre ?? '';
+    if (emp.emergenciaTelefono != null) {
+      _emergenciaTelefonoController.text = _telefonoMask.maskText(emp.emergenciaTelefono!);
+    }
+    _emergenciaNombre2Controller.text = emp.emergenciaNombre2 ?? '';
+    if (emp.emergenciaTelefono2 != null) {
+      _emergenciaTelefono2Controller.text = _telefonoMask.maskText(emp.emergenciaTelefono2!);
+    }
+    
+    if (emp.departamento != null) {
+      _departamentoId = int.tryParse(emp.departamento!);
+    }
+    if (emp.tipoContrato != null && ['Permanente', 'Temporal', 'Servicios Profesionales'].contains(emp.tipoContrato)) {
+      _tipoContrato = emp.tipoContrato!;
+    }
+    if (emp.emergenciaParentesco != null && _opcionesParentesco.contains(emp.emergenciaParentesco)) {
+      _emergenciaParentesco = emp.emergenciaParentesco;
+    }
+    if (emp.emergenciaParentesco2 != null && emp.emergenciaParentesco2!.isNotEmpty && _opcionesParentesco.contains(emp.emergenciaParentesco2)) {
+      _emergenciaParentesco2 = emp.emergenciaParentesco2;
+    }
+    if (emp.fechaNacimiento != null) {
+      try {
+        _fechaNacimiento = DateTime.parse(emp.fechaNacimiento!);
+      } catch (_) {}
+    }
+    if (emp.fechaInicio != null) {
+      _fechaInicio = emp.fechaInicio;
+    }
+  }
 
   @override
   void dispose() {
@@ -220,7 +274,7 @@ class _NuevoEmpleadoScreenState extends ConsumerState<NuevoEmpleadoScreen> {
     };
 
     try {
-      final response = await apiClient.post('/empleados/crear', data: data);
+      final response = await apiClient.put('/empleados/', data: data);
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('✅ ${response.data['mensaje'] ?? 'Empleado registrado'}'), backgroundColor: Colors.green),
@@ -284,7 +338,7 @@ class _NuevoEmpleadoScreenState extends ConsumerState<NuevoEmpleadoScreen> {
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
-        title: const Text('Nuevo Empleado'),
+        title: const Text('Editar Empleado'),
         elevation: 0,
         backgroundColor: Colors.white,
         foregroundColor: Colors.black87,
@@ -297,7 +351,7 @@ class _NuevoEmpleadoScreenState extends ConsumerState<NuevoEmpleadoScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const Text(
-                'NUEVO EMPLEADO',
+                'EDITAR EMPLEADO',
                 style: TextStyle(fontSize: 24, fontWeight: FontWeight.w900, color: Colors.black87),
               ),
               const Text(
@@ -420,7 +474,7 @@ class _NuevoEmpleadoScreenState extends ConsumerState<NuevoEmpleadoScreen> {
                     child: departamentosAsync.when(
                       data: (deps) => DropdownButtonFormField<int>(
                         isExpanded: true,
-                        initialValue: _departamentoId,
+                        initialValue: deps.any((d) => d.id == _departamentoId) ? _departamentoId : null,
                         decoration: _inputDecoration('Departamento'),
                         items: deps.map((d) => DropdownMenuItem(value: d.id, child: Text(d.nombre, overflow: TextOverflow.ellipsis))).toList(),
                         onChanged: (v) => setState(() => _departamentoId = v),

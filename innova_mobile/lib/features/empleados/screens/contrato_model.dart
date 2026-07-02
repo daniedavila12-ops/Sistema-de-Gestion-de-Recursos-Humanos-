@@ -40,12 +40,16 @@ class Contrato {
       id: json['id'] ?? 0,
       empleadoId: json['empleado_id'] ?? json['empleadoId'] ?? 0,
       tipoContrato: json['tipo_contrato'] ?? json['tipoContrato'] ?? 'No especificado',
-      fechaInicio: DateTime.parse(json['fecha_inicio'] ?? json['fechaInicio']),
+      fechaInicio: (json['fecha_inicio'] != null || json['fechaInicio'] != null)
+          ? DateTime.parse(json['fecha_inicio'] ?? json['fechaInicio'])
+          : DateTime.now(),
       fechaFin: json['fecha_fin'] != null ? DateTime.parse(json['fecha_fin']) : (json['fechaFinal'] != null ? DateTime.parse(json['fechaFinal']) : null),
       salario: (json['salario'] as num?)?.toDouble() ?? 0.0,
       puesto: json['puesto'] ?? 'No especificado',
       notas: json['notas'] ?? json['observacion'],
-      fechaCreacion: DateTime.parse(json['fecha_creacion'] ?? json['fechaCreacion']),
+      fechaCreacion: (json['fecha_creacion'] != null || json['fechaCreacion'] != null)
+          ? DateTime.parse(json['fecha_creacion'] ?? json['fechaCreacion'])
+          : DateTime.now(),
       estado: json['estado'] ?? 'Activo',
       fechaSalida: json['fecha_salida'] != null ? DateTime.parse(json['fecha_salida']) : (json['fechaSalida'] != null ? DateTime.parse(json['fechaSalida']) : null),
       archivo: json['archivo'],

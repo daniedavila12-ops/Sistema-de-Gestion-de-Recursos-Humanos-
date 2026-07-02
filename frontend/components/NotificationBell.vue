@@ -40,20 +40,30 @@
         </div>
         <div 
           v-else 
-          v-for="notif in notificaciones" 
+          v-for="notif in notificacionesEnriquecidas" 
           :key="notif.id"
           @click="manejarClickNotificacion(notif)"
-          class="p-4 border-b border-slate-50 hover:bg-slate-50 cursor-pointer transition-colors relative"
-          :class="{'bg-blue-50/30': !notif.leido}"
+          class="p-4 border-b border-slate-50 hover:bg-slate-50 cursor-pointer transition-colors relative flex items-start gap-3"
+          :class="{'bg-slate-50/50': !notif.leido}"
         >
+          <!-- Indicador de no leído -->
           <div 
             v-if="!notif.leido" 
-            class="absolute left-2 top-1/2 -translate-y-1/2 w-1.5 h-1.5 rounded-full bg-blue-500"
+            class="absolute left-1.5 top-1/2 -translate-y-1/2 w-1.5 h-1.5 rounded-full bg-indigo-500"
           ></div>
-          <div :class="{'pl-3': !notif.leido}">
-            <p class="text-xs font-bold text-slate-800 leading-tight mb-1">{{ notif.titulo }}</p>
-            <p class="text-[11px] text-slate-500 leading-snug line-clamp-2">{{ notif.mensaje }}</p>
-            <p class="text-[9px] text-slate-400 font-bold uppercase mt-2">{{ formatearFecha(notif.fecha_creacion) }}</p>
+          
+          <!-- Avatar -->
+          <div class="shrink-0 relative" :class="{'ml-2': !notif.leido}">
+            <div class="w-10 h-10 rounded-full overflow-hidden bg-slate-100 shadow-sm flex items-center justify-center text-slate-500 font-bold uppercase">
+              <img :src="notif.avatarUrl" class="w-full h-full object-cover" />
+            </div>
+          </div>
+
+          <!-- Contenido -->
+          <div class="flex-1 min-w-0 pt-0.5">
+            <p class="text-[13px] font-bold text-slate-800 leading-tight mb-0.5 truncate">{{ notif.nombreMostrar }}</p>
+            <p class="text-[11px] text-slate-500 leading-snug line-clamp-2 pr-2">{{ notif.mensajeLimpio }}</p>
+            <p class="text-[9px] text-slate-400 font-medium uppercase mt-1">{{ formatearFecha(notif.fecha_creacion) }}</p>
           </div>
         </div>
       </div>
@@ -76,6 +86,7 @@ import { io } from 'socket.io-client';
 const router = useRouter();
 
 const notificaciones = ref([]);
+const empleados = ref([]);
 const dropdownAbierto = ref(false);
 const loading = ref(true);
 let socket = null;
@@ -107,6 +118,15 @@ const vClickOutside = {
   },
   unmounted(el) {
     document.body.removeEventListener('click', el.clickOutsideEvent);
+  }
+};
+
+const cargarEmpleados = async () => {
+  try {
+    const res = await axios.get('http://localhost:3007/api/empleados/lista');
+    empleados.value = res.data;
+  } catch (err) {
+    console.error('Error cargando empleados:', err);
   }
 };
 
@@ -155,8 +175,8 @@ const manejarClickNotificacion = (notif) => {
   const titulo = notif.titulo ? notif.titulo.toLowerCase() : '';
   const mensaje = notif.mensaje ? notif.mensaje : '';
   
-  // Extraer el ID si viene en el mensaje (ej: "al Ticket #12" o "Incidente #5")
-  const matchId = mensaje.match(/#(\d+)/);
+  // Extraer el ID si viene en el mensaje (ej: "al Ticket #12" o "Incidente #5" o "ID: 4")
+  const matchId = mensaje.match(/(?:#|ID:\s*)(\d+)/i);
   const itemId = matchId ? matchId[1] : null;
 
   if (titulo.includes('ticket')) {
@@ -177,8 +197,12 @@ const manejarClickNotificacion = (notif) => {
     }
   } else if (titulo.includes('empleado') || titulo.includes('cumpleaños') || titulo.includes('contrato')) {
     router.push('/empleados');
-  } else if (titulo.includes('vacaciones')) {
-    router.push('/vacaciones');
+  } else if (titulo.includes('vacaciones') || titulo.includes('vacacion')) {
+    if (itemId) {
+      router.push({ path: `/empleados/${itemId}`, query: { tab: 'VACACIONES' } });
+    } else {
+      router.push('/empleados');
+    }
   } else if (titulo.includes('departamento')) {
     router.push('/departamentos');
   }
@@ -203,7 +227,59 @@ const formatearFecha = (fechaStr) => {
   return date.toLocaleDateString('es-HN', { day: 'numeric', month: 'short' });
 };
 
+const notificacionesEnriquecidas = computed(() => {
+  return notificaciones.value.map(notif => {
+    let nombreEncontrado = null;
+    let mensajeLimpio = notif.mensaje || '';
+    const msg = notif.mensaje || '';
+    let fotoUrl = null;
+    
+    // Extraer el nombre basado en patrones conocidos de los mensajes del sistema
+    if (msg.includes(' añadió una respuesta')) {
+      nombreEncontrado = msg.split(' añadió una respuesta')[0];
+      mensajeLimpio = msg.replace(nombreEncontrado, '').trim(); 
+    } else if (msg.includes(' creó un')) {
+      nombreEncontrado = msg.split(' creó un')[0];
+      mensajeLimpio = msg.replace(nombreEncontrado, '').trim();
+    } else if (msg.includes(' asignó')) {
+      nombreEncontrado = msg.split(' asignó')[0];
+      mensajeLimpio = msg.replace(nombreEncontrado, '').trim();
+    } else if (msg.includes(' acaba de actualizar')) {
+      nombreEncontrado = msg.split(' acaba de actualizar')[0];
+      mensajeLimpio = msg.replace(nombreEncontrado, '').trim();
+    }
+
+    if (nombreEncontrado) {
+      nombreEncontrado = nombreEncontrado.trim();
+      if (mensajeLimpio) {
+        mensajeLimpio = mensajeLimpio.charAt(0).toUpperCase() + mensajeLimpio.slice(1);
+      }
+
+      // Buscar en la lista de empleados si coinciden con ese nombre
+      const empleado = empleados.value.find(e => {
+        const nombreCompleto = `${e.nombre} ${e.apellido}`.trim().toLowerCase();
+        return nombreCompleto === nombreEncontrado.toLowerCase() || e.nombre.toLowerCase() === nombreEncontrado.toLowerCase();
+      });
+
+      if (empleado && empleado.foto) {
+        fotoUrl = `http://localhost:3007${empleado.foto}`;
+      }
+    }
+
+    const nombreMostrar = nombreEncontrado || notif.titulo;
+    const avatarUrl = fotoUrl || `https://ui-avatars.com/api/?name=${encodeURIComponent(nombreMostrar)}&background=random&color=fff&size=128&bold=true`;
+
+    return {
+      ...notif,
+      nombreMostrar,
+      mensajeLimpio: nombreEncontrado ? mensajeLimpio : notif.mensaje,
+      avatarUrl
+    };
+  });
+});
+
 onMounted(() => {
+  cargarEmpleados();
   cargarNotificaciones();
   
   // Conectar a socket.io

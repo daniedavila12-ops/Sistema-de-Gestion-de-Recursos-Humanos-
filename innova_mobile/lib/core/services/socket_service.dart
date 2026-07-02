@@ -1,6 +1,15 @@
 import 'package:socket_io_client/socket_io_client.dart' as io;
 import 'package:logger/logger.dart';
 import 'package:innova_mobile/core/constants/api_constants.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+
+// Providers to invalidate
+import 'package:innova_mobile/features/empleados/providers/empleado_provider.dart';
+import 'package:innova_mobile/features/empleados/screens/contrato_provider.dart';
+import 'package:innova_mobile/features/empleados/screens/vacaciones_empleado_provider.dart';
+import 'package:innova_mobile/features/empleados/screens/faltas_empleado_provider.dart';
+import 'package:innova_mobile/features/empleados/screens/notas_empleado_provider.dart';
+import 'package:innova_mobile/features/empleados/screens/documentos_empleado_provider.dart';
 
 class SocketService {
   static final SocketService _instance = SocketService._internal();
@@ -38,4 +47,29 @@ class SocketService {
   late io.Socket _socket;
 
   io.Socket get socket => _socket;
+
+  bool _listenersInitialized = false;
+
+  void initListeners(WidgetRef ref) {
+    if (_listenersInitialized) return;
+    _listenersInitialized = true;
+
+    _socket.on('refresh_empleados', (_) {
+      ref.invalidate(empleadosProvider);
+    });
+
+    _socket.on('refresh_empleado_detalle', (data) {
+      if (data != null) {
+        final id = data is int ? data : int.tryParse(data.toString());
+        if (id != null) {
+          ref.invalidate(empleadosProvider);
+          ref.invalidate(contratosProvider(id));
+          ref.invalidate(vacacionesEmpleadoProvider(id));
+          ref.invalidate(faltasEmpleadoProvider(id));
+          ref.invalidate(notasEmpleadoProvider(id));
+          ref.invalidate(documentosEmpleadoProvider(id));
+        }
+      }
+    });
+  }
 }

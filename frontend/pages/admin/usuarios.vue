@@ -124,11 +124,19 @@
               <td colspan="7" class="p-10 text-center text-slate-400 italic">No se encontraron usuarios.</td>
             </tr>
             <tr v-else v-for="usuario in usuarios" :key="usuario.id" class="border-b border-slate-50 hover:bg-slate-50 transition-colors">
-              <td class="p-5 font-bold text-slate-800">
-                <button @click="verPermisosUsuario(usuario)" class="hover:text-blue-600 hover:underline text-left flex flex-col transition-colors" title="Ver Permisos del Rol">
-                  <span>{{ usuario.nombre }}</span>
-                  <span class="text-[9px] font-normal text-slate-400 mt-0.5 flex items-center gap-1"><span>🛡️</span> Ver Permisos</span>
-                </button>
+              <td class="p-5">
+                <div class="flex items-center gap-3">
+                  <div v-if="usuario.foto" class="h-10 w-10 shrink-0 rounded-full overflow-hidden border border-slate-200 shadow-sm">
+                    <img :src="`http://localhost:3007${usuario.foto}`" class="w-full h-full object-cover" />
+                  </div>
+                  <div v-else class="h-10 w-10 shrink-0 rounded-full bg-slate-100 flex items-center justify-center text-slate-500 font-bold uppercase border border-slate-200 shadow-sm">
+                    {{ usuario.nombre.charAt(0) }}
+                  </div>
+                  <button @click="verPermisosUsuario(usuario)" class="hover:text-blue-600 hover:underline text-left flex flex-col transition-colors font-bold text-slate-800" title="Ver Permisos del Rol">
+                    <span>{{ usuario.nombre }}</span>
+                    <span class="text-[9px] font-normal text-slate-400 mt-0.5 flex items-center gap-1"><span>🛡️</span> Ver Permisos</span>
+                  </button>
+                </div>
               </td>
               <td class="p-5 text-sm text-slate-600">{{ usuario.email }}</td>
               <td class="p-5 text-sm">
@@ -768,7 +776,11 @@ onMounted(async () => {
   }
 
   try {
-    const m = await axios.get(`http://localhost:3007/api/menu/${rolID.value}`)
+    const usuarioID = localStorage.getItem('usuarioID')
+    const urlMenu = usuarioID 
+      ? `http://localhost:3007/api/menu/${rolID.value}?usuario_id=${usuarioID}`
+      : `http://localhost:3007/api/menu/${rolID.value}`
+    const m = await axios.get(urlMenu)
     menuUsuario.value = m.data
   } catch (e) {
     console.error('Error cargando menú', e)

@@ -32,12 +32,26 @@ router.post('/crear', (req, res) => {
     const db = req.app.get('db');
     const d = req.body;
 
-    const sql = `INSERT INTO empleados (
-        codigo_empleado, identidad, nombre, apellido, fecha_nacimiento, correo, telefono, direccion,
-        tipo_contrato, fecha_inicio, ciudad, ubicacion,
-        emergencia_parentesco, emergencia_nombre, emergencia_telefono,
-        emergencia_parentesco_2, emergencia_nombre_2, emergencia_telefono_2, genero, departamento_id
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
+    const checkSql = "SELECT id, codigo_empleado, identidad FROM empleados WHERE codigo_empleado = ? OR identidad = ?";
+    db.query(checkSql, [v(d.codigo_empleado), v(d.identidad)], (err, rows) => {
+        if (err) return res.status(500).json({ mensaje: "Error verificando código o identidad", detalle: err.sqlMessage });
+        
+        const codigoRepetido = rows.some(r => r.codigo_empleado === v(d.codigo_empleado));
+        const identidadRepetida = rows.some(r => r.identidad === v(d.identidad));
+
+        if (codigoRepetido) {
+            return res.status(400).json({ mensaje: "El código de empleado ya está en uso. Por favor, ingrese uno distinto." });
+        }
+        if (identidadRepetida) {
+            return res.status(400).json({ mensaje: "El número de identidad ya está registrado para otro empleado." });
+        }
+
+        const sql = `INSERT INTO empleados (
+            codigo_empleado, identidad, nombre, apellido, fecha_nacimiento, correo, telefono, direccion,
+            tipo_contrato, fecha_inicio, ciudad, ubicacion,
+            emergencia_parentesco, emergencia_nombre, emergencia_telefono,
+            emergencia_parentesco_2, emergencia_nombre_2, emergencia_telefono_2, genero, departamento_id
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
 
     const values = [
         v(d.codigo_empleado), v(d.identidad), v(d.nombre), v(d.apellido), v(d.fecha_nacimiento),
@@ -55,7 +69,10 @@ router.post('/crear', (req, res) => {
         }
 
         const io = req.app.get('io');
-        if (io) io.emit('nueva_notificacion');
+        if (io) {
+            io.emit('nueva_notificacion');
+            io.emit('refresh_empleados');
+        }
 
         db.query('SELECT id FROM usuarios WHERE rol_id IN (1, 2)', (err, users) => {
             if (!err && users && users.length > 0) {
@@ -71,6 +88,27 @@ router.post('/crear', (req, res) => {
             mensaje: "Empleado guardado correctamente", 
             id: result.insertId 
         });
+    });
+    });
+});
+
+router.get('/validar-codigo/:codigo', (req, res) => {
+    const db = req.app.get('db');
+    const { codigo } = req.params;
+    const sql = "SELECT id FROM empleados WHERE codigo_empleado = ?";
+    db.query(sql, [codigo], (err, results) => {
+        if (err) return res.status(500).json(err);
+        res.json({ existe: results.length > 0 });
+    });
+});
+
+router.get('/validar-identidad/:identidad', (req, res) => {
+    const db = req.app.get('db');
+    const { identidad } = req.params;
+    const sql = "SELECT id FROM empleados WHERE identidad = ?";
+    db.query(sql, [identidad], (err, results) => {
+        if (err) return res.status(500).json(err);
+        res.json({ existe: results.length > 0 });
     });
 });
 
@@ -139,6 +177,11 @@ router.put('/:id', (req, res) => {
             console.error('❌ Error SQL:', err);
             return res.status(500).json({ mensaje: "Error en la base de datos", detalle: err.sqlMessage });
         }
+        const io = req.app.get('io');
+        if (io) {
+            io.emit('refresh_empleados');
+            io.emit('refresh_empleado_detalle', id);
+        }
         res.status(200).json({ success: true, mensaje: "Empleado actualizado correctamente" });
     });
 });
@@ -152,7 +195,11 @@ router.put('/:id/desactivar', (req, res) => {
         if (err) return res.status(500).json({ mensaje: "Error al desactivar", detalle: err.sqlMessage });
 
         const io = req.app.get('io');
-        if (io) io.emit('nueva_notificacion');
+        if (io) {
+            io.emit('nueva_notificacion');
+            io.emit('refresh_empleados');
+            io.emit('refresh_empleado_detalle', id);
+        }
 
         db.query('SELECT id FROM usuarios WHERE rol_id IN (1, 2)', (err, users) => {
             if (!err && users && users.length > 0) {
@@ -173,7 +220,31 @@ router.put('/:id/activar', (req, res) => {
     const sql = "UPDATE empleados SET estado = 1 WHERE id = ?";
     db.query(sql, [id], (err, result) => {
         if (err) return res.status(500).json({ mensaje: "Error al activar", detalle: err.sqlMessage });
+        const io = req.app.get('io');
+        if (io) {
+            io.emit('refresh_empleados');
+            io.emit('refresh_empleado_detalle', id);
+        }
         res.json({ success: true, mensaje: "Empleado activado correctamente" });
+    });
+});
+router.delete('/:id', (req, res) => {
+    const db = req.app.get('db');
+    const { id } = req.params;
+    
+    // Disable FK checks to allow hard delete of the employee
+    db.query("SET FOREIGN_KEY_CHECKS=0;", (err) => {
+        if (err) return res.status(500).json({ error: "Error de BD" });
+        
+        db.query("DELETE FROM empleados WHERE id = ?", [id], (err, result) => {
+            db.query("SET FOREIGN_KEY_CHECKS=1;"); // Re-enable immediately
+            
+            if (err) return res.status(500).json({ error: "Error al eliminar el empleado", detalle: err.sqlMessage });
+            if (result.affectedRows === 0) return res.status(404).json({ error: "Empleado no encontrado" });
+            const io = req.app.get('io');
+            if (io) io.emit('refresh_empleados');
+            res.json({ success: true, mensaje: "Empleado eliminado correctamente con todas sus dependencias" });
+        });
     });
 });
 
@@ -211,6 +282,8 @@ router.post('/:id/contratos', uploadContratos.single('archivo'), (req, res) => {
 
     db.query(sql, values, (err, result) => {
         if (err) return res.status(500).json({ mensaje: "Error al guardar contrato", detalle: err.sqlMessage });
+        const io = req.app.get('io');
+        if (io) io.emit('refresh_empleado_detalle', id);
         res.status(200).json({ success: true, mensaje: "Contrato registrado correctamente" });
     });
 });
@@ -238,6 +311,8 @@ router.put('/:id/contratos/:contratoId', uploadContratos.single('archivo'), (req
 
     db.query(sql, values, (err, result) => {
         if (err) return res.status(500).json({ mensaje: "Error al actualizar contrato", detalle: err.sqlMessage });
+        const io = req.app.get('io');
+        if (io) io.emit('refresh_empleado_detalle', id);
         res.status(200).json({ success: true, mensaje: "Contrato actualizado correctamente" });
     });
 });

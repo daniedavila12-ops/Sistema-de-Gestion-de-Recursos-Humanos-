@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import '../providers/notificaciones_provider.dart';
 import '../../tickets/providers/ticket_provider.dart';
 import '../../reportes_incidencias/providers/reporte_incidencia_provider.dart';
+import '../../empleados/providers/empleado_provider.dart';
 
 class NotificacionesButton extends ConsumerWidget {
   const NotificacionesButton({super.key});
@@ -120,7 +121,7 @@ class NotificacionesButton extends ConsumerWidget {
                           final titulo = (n['titulo'] ?? '').toString().toLowerCase();
                           final mensaje = (n['mensaje'] ?? '').toString();
                           
-                          final idMatch = RegExp(r'#(\d+)').firstMatch(mensaje);
+                          final idMatch = RegExp(r'(?:#|ID:\s*)(\d+)', caseSensitive: false).firstMatch(mensaje);
                           int? entityId;
                           if (idMatch != null) {
                             entityId = int.tryParse(idMatch.group(1)!);
@@ -148,10 +149,25 @@ class NotificacionesButton extends ConsumerWidget {
                             } else {
                               if (context.mounted) context.push('/reportes-incidencias');
                             }
+                          } else if (titulo.contains('vacacion') || titulo.contains('vacaciones')) {
+                            if (entityId != null) {
+                              try {
+                                final empleados = await ref.read(empleadosProvider.future);
+                                final empleado = empleados.firstWhere((e) => e.id == entityId);
+                                if (context.mounted) {
+                                  context.push('/empleado', extra: {
+                                    'empleado': empleado,
+                                    'initialTabIndex': 2,
+                                  });
+                                }
+                              } catch (e) {
+                                if (context.mounted) context.push('/empleados');
+                              }
+                            } else {
+                              if (context.mounted) context.push('/empleados');
+                            }
                           } else if (titulo.contains('empleado') || titulo.contains('cumpleaños') || titulo.contains('contrato')) {
                             if (context.mounted) context.push('/empleados');
-                          } else if (titulo.contains('vacaciones')) {
-                            if (context.mounted) context.push('/vacaciones');
                           } else if (titulo.contains('departamento')) {
                             if (context.mounted) context.push('/departamentos');
                           }

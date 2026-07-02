@@ -143,7 +143,6 @@ app.get('/api/menu/:rol_id', (req, res) => {
             return res.status(500).json(err);
         }
         
-        const isAdmin = (rol_id == 1);
         const allowed = [];
 
         results.forEach(r => {
@@ -151,68 +150,68 @@ app.get('/api/menu/:rol_id', (req, res) => {
                 // Configuración individual estricta
                 if (r.userPuedeVer === 1) allowed.push(r.nombre);
             } else {
-                // Sin configuración individual: manda rol o si es admin
-                if (isAdmin || r.rolPuedeVer === 1) allowed.push(r.nombre);
+                // Sin configuración individual: manda rol
+                if (r.rolPuedeVer === 1) allowed.push(r.nombre);
             }
         });
 
-        const hasAccess = (moduleName) => allowed.includes(moduleName);
+            const hasAccess = (moduleName) => allowed.includes(moduleName);
 
-        // MENÚ BASE
-        let menu = [
-            { nombre: 'Dashboard', ruta: '/', icono: '🏠' }
-        ];
+            // MENÚ BASE
+            let menu = [
+                { nombre: 'Dashboard', ruta: '/', icono: '🏠' }
+            ];
 
-        // MÓDULOS DE RECURSOS HUMANOS
-        let rrhhItems = [];
-        
-        if (hasAccess('Empleados')) {
-            rrhhItems.push({ nombre: 'Empleados', ruta: '/empleados', icono: '👥' });
-            rrhhItems.push({ nombre: 'Nuevo Empleado', ruta: '/empleados/nuevo', icono: '👤+' });
-        }
-        if (hasAccess('Vacaciones')) {
-            rrhhItems.push({ nombre: 'Registrar Vacaciones', ruta: '/vacaciones', icono: '🏖️' });
-        }
-        if (hasAccess('Reportes') || hasAccess('Módulo de Reportes')) {
-            rrhhItems.push({ nombre: 'Reportes', ruta: '/reportes', icono: '📊' });
-        }
-        if (hasAccess('Departamentos')) {
-            rrhhItems.push({ nombre: 'Departamentos', ruta: '/departamentos', icono: '🏢' });
-        }
-        if (hasAccess('Reportes de Incidencia')) {
-            rrhhItems.push({ nombre: 'Reportes de Incidencia', ruta: '/reportes-incidencia', icono: '⚠️' });
-        }
-        if (hasAccess('Gestión de Manuales')) {
-            rrhhItems.push({ nombre: 'Gestión Manuales', ruta: '/admin/manuales', icono: '📚' });
-        }
-        if (hasAccess('Archivero Legal') || hasAccess('Documentos Legales')) {
-            rrhhItems.push({ nombre: 'Documentos Legales', ruta: '/documentos-legales', icono: '📁' });
-        }
+            // MÓDULOS DE RECURSOS HUMANOS
+            let rrhhItems = [];
+            
+            if (hasAccess('Empleados')) {
+                rrhhItems.push({ nombre: 'Empleados', ruta: '/empleados', icono: '👥' });
+                rrhhItems.push({ nombre: 'Nuevo Empleado', ruta: '/empleados/nuevo', icono: '👤+' });
+            }
+            if (hasAccess('Vacaciones')) {
+                rrhhItems.push({ nombre: 'Registrar Vacaciones', ruta: '/vacaciones', icono: '🏖️' });
+            }
+            if (hasAccess('Reportes') || hasAccess('Módulo de Reportes')) {
+                rrhhItems.push({ nombre: 'Reportes', ruta: '/reportes', icono: '📊' });
+            }
+            if (hasAccess('Departamentos')) {
+                rrhhItems.push({ nombre: 'Departamentos', ruta: '/departamentos', icono: '🏢' });
+            }
+            if (hasAccess('Reportes de Incidencia')) {
+                rrhhItems.push({ nombre: 'Reportes de Incidencia', ruta: '/reportes-incidencia', icono: '⚠️' });
+            }
+            if (hasAccess('Gestión de Manuales')) {
+                rrhhItems.push({ nombre: 'Gestión Manuales', ruta: '/admin/manuales', icono: '📚' });
+            }
+            if (hasAccess('Archivero Legal') || hasAccess('Documentos Legales')) {
+                rrhhItems.push({ nombre: 'Documentos Legales', ruta: '/documentos-legales', icono: '📁' });
+            }
 
-        if (rrhhItems.length > 0) {
-            menu.push({ nombre: 'RECURSOS HUMANOS', esCabecera: true });
-            menu = menu.concat(rrhhItems);
-        }
+            if (rrhhItems.length > 0) {
+                menu.push({ nombre: 'RECURSOS HUMANOS', esCabecera: true });
+                menu = menu.concat(rrhhItems);
+            }
 
-        // MÓDULOS DE IT
-        let itItems = [];
-        
-        if (hasAccess('Tickets')) {
-            itItems.push({ nombre: 'Tickets', ruta: '/tickets', icono: '🎫' });
-        }
-        if (hasAccess('Control de Usuarios') || hasAccess('Roles y Permisos') || hasAccess('Control Usuarios y Roles')) {
-            itItems.push({ nombre: 'Control Usuarios y Roles', ruta: '/admin/usuarios', icono: '🔐' });
-        }
-        if (hasAccess('Logs de Sistema')) {
-            itItems.push({ nombre: 'Logs de Sistema', ruta: '/admin/logs', icono: '📋' });
-        }
+            // MÓDULOS DE IT
+            let itItems = [];
+            
+            if (hasAccess('Tickets')) {
+                itItems.push({ nombre: 'Tickets', ruta: '/tickets', icono: '🎫' });
+            }
+            if (hasAccess('Control de Usuarios') || hasAccess('Roles y Permisos') || hasAccess('Control Usuarios y Roles')) {
+                itItems.push({ nombre: 'Control Usuarios y Roles', ruta: '/admin/usuarios', icono: '🔐' });
+            }
+            if (hasAccess('Logs de Sistema')) {
+                itItems.push({ nombre: 'Logs de Sistema', ruta: '/admin/logs', icono: '📋' });
+            }
 
-        if (itItems.length > 0) {
-            menu.push({ nombre: 'Departamento de IT', esCabecera: true });
-            menu = menu.concat(itItems);
-        }
+            if (itItems.length > 0) {
+                menu.push({ nombre: 'Departamento de IT', esCabecera: true });
+                menu = menu.concat(itItems);
+            }
 
-        res.json(menu);
+            res.json(menu);
     });
 });
 
@@ -239,23 +238,20 @@ app.get('/api/dashboard-permisos/:rol_id', (req, res) => {
         `;
         params = [rol_id];
     }
-    
     db.query(sql, params, (err, results) => {
         if (err) return res.status(500).json(err);
         
-        const isAdmin = (rol_id == 1);
         const allowed = [];
 
         results.forEach(r => {
             if (r.userPuedeVer !== null) {
                 if (r.userPuedeVer === 1) allowed.push(r.nombre);
             } else {
-                if (isAdmin || r.rolPuedeVer === 1) allowed.push(r.nombre);
+                if (r.rolPuedeVer === 1) allowed.push(r.nombre);
             }
         });
 
-        // Si es admin Y no tiene restricciones individuales, podría retornar 'ALL'
-        // pero retornar allowed es más seguro y real a lo configurado
+        // Retornar allowed
         res.json(allowed);
     });
 });

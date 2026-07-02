@@ -89,18 +89,25 @@
         </div>
       </header>
 
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6 mb-8">
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4 mb-6">
         <div
           v-for="(stat, index) in tarjetas" :key="index" 
           @click="handleStatClick(stat.link)"
-          :class="[stat.color, stat.link ? 'cursor-pointer hover:-translate-y-1 hover:shadow-lg active:scale-[0.98]' : 'hover:shadow-md']" 
-          class="bg-white p-6 rounded-2xl shadow-sm border-l-4 transition-all block">
-          <div class="flex justify-between items-start">
-            <div>
-              <h3 class="text-slate-400 uppercase text-[10px] font-black tracking-widest">{{ stat.label }}</h3>
-              <p class="text-3xl font-black text-slate-800 mt-1">{{ stat.valor }}</p>
+          :class="[stat.color, stat.hoverGlow, stat.link ? 'cursor-pointer hover:-translate-y-1 hover:shadow-lg active:scale-[0.98]' : 'hover:shadow-md']" 
+          class="relative overflow-hidden p-4 rounded-2xl shadow-sm transition-all duration-300 block group ring-2 ring-white/50 ring-offset-2">
+          <!-- Icono de fondo grande -->
+          <div class="absolute right-0 top-0 -mt-2 -mr-2 text-white/20 transition-transform group-hover:scale-110">
+            <span class="text-5xl opacity-50">{{ stat.icon }}</span>
+          </div>
+          <div class="relative z-10 flex flex-col h-full justify-between">
+            <div class="flex justify-between items-start">
+              <h3 class="text-white/90 uppercase text-[9px] font-extrabold tracking-widest">{{ stat.label }}</h3>
+              <span class="text-sm p-1.5 rounded-xl backdrop-blur-sm shadow-sm" :class="stat.bgIcon">{{ stat.icon }}</span>
             </div>
-            <span class="text-2xl p-2 rounded-xl" :class="stat.bgIcon">{{ stat.icon }}</span>
+            <div class="mt-2">
+              <p class="text-2xl font-black text-white tabular-nums leading-none drop-shadow-sm">{{ stat.valor }}</p>
+              <p class="text-[9px] text-white/80 font-bold mt-1" v-if="stat.sub">{{ stat.sub }}</p>
+            </div>
           </div>
         </div>
       </div>
@@ -514,17 +521,17 @@ const guardarEmpleado = async () => {
 
 const tarjetas = computed(() => {
   let list = [
-    { label: 'Total Empleados', valor: stats.value.total, icon: '👥', color: 'border-indigo-500', bgIcon: 'bg-indigo-50', link: '/empleados' },
-    { label: 'Tickets Pendientes', valor: stats.value.tickets, icon: '🎫', color: 'border-yellow-500', bgIcon: 'bg-yellow-50', link: '/tickets' },
-    { label: 'Incidentes Pendientes', valor: stats.value.incidencias, icon: '⚠️', color: 'border-red-500', bgIcon: 'bg-red-50', link: '/reportes-incidencia' },
-    { label: 'Cumpleañeros', valor: stats.value.cumpleaneros, icon: '🎂', color: 'border-pink-500', bgIcon: 'bg-pink-50', link: '#cumpleaneros' },
-    { label: 'Vencimientos', valor: stats.value.vencimientos, icon: '📄', color: 'border-orange-600', bgIcon: 'bg-orange-50', link: '#vencimientos' },
+    { label: 'Total Empleados', valor: stats.value.total, icon: '👥', color: 'bg-gradient-to-br from-blue-500 to-blue-600 ring-offset-blue-50', bgIcon: 'bg-white/20 text-white', hoverGlow: 'shadow-blue-500/30', sub: `Activos: ${dashboardLists.value.activos?.length || 0}`, link: '/empleados' },
+    { label: 'Tickets Ptes.', valor: stats.value.tickets, icon: '🎫', color: 'bg-gradient-to-br from-orange-400 to-orange-500 ring-offset-orange-50', bgIcon: 'bg-white/20 text-white', hoverGlow: 'shadow-orange-500/30', sub: 'Soporte IT', link: '/tickets' },
+    { label: 'Incidentes Ptes.', valor: stats.value.incidencias, icon: '⚠️', color: 'bg-gradient-to-br from-red-400 to-red-500 ring-offset-red-50', bgIcon: 'bg-white/20 text-white', hoverGlow: 'shadow-red-500/30', sub: 'Requieren atención', link: '/reportes-incidencia' },
+    { label: 'Cumpleañeros', valor: stats.value.cumpleaneros, icon: '🎂', color: 'bg-gradient-to-br from-fuchsia-400 to-fuchsia-500 ring-offset-fuchsia-50', bgIcon: 'bg-white/20 text-white', hoverGlow: 'shadow-fuchsia-500/30', sub: 'Este mes', link: '#cumpleaneros' },
+    { label: 'Vencimientos', valor: stats.value.vencimientos, icon: '📄', color: 'bg-gradient-to-br from-indigo-500 to-indigo-600 ring-offset-indigo-50', bgIcon: 'bg-white/20 text-white', hoverGlow: 'shadow-indigo-500/30', sub: 'Próximos 30 días', link: '#vencimientos' },
   ];
 
   if (!isDashboardAdmin.value) {
     if (!allowedDashboard.value.includes('Total Empleados')) list = list.filter(t => t.label !== 'Total Empleados');
-    if (!allowedDashboard.value.includes('Tickets Pendientes')) list = list.filter(t => t.label !== 'Tickets Pendientes');
-    if (!allowedDashboard.value.includes('Incidentes Pendientes')) list = list.filter(t => t.label !== 'Incidentes Pendientes');
+    if (!allowedDashboard.value.includes('Tickets Pendientes')) list = list.filter(t => t.label !== 'Tickets Ptes.');
+    if (!allowedDashboard.value.includes('Incidentes Pendientes')) list = list.filter(t => t.label !== 'Incidentes Ptes.');
     if (!allowedDashboard.value.includes('Cumpleañeros')) list = list.filter(t => t.label !== 'Cumpleañeros');
     if (!allowedDashboard.value.includes('Vencimientos')) list = list.filter(t => t.label !== 'Vencimientos');
   }

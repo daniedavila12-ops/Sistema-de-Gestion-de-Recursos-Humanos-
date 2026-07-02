@@ -80,4 +80,56 @@ class Empleado {
   }
 
   String get nombreCompleto => '$nombre $apellido';
+
+  Empleado copyWith({
+    int? id,
+    String? nombre,
+    String? apellido,
+    String? cargo,
+    String? departamento,
+    String? codigoEmpleado,
+    String? identidad,
+    String? correo,
+    String? tipoContrato,
+    String? ubicacion,
+    int? estado,
+    String? foto,
+    String? fechaNacimiento,
+    String? telefono,
+    String? direccion,
+    DateTime? fechaInicio,
+    String? ciudad,
+    String? emergenciaNombre,
+    String? emergenciaParentesco,
+    String? emergenciaTelefono,
+    String? emergenciaNombre2,
+    String? emergenciaParentesco2,
+    String? emergenciaTelefono2,
+  }) {
+    return Empleado(
+      id: id ?? this.id,
+      nombre: nombre ?? this.nombre,
+      apellido: apellido ?? this.apellido,
+      cargo: cargo ?? this.cargo,
+      departamento: departamento ?? this.departamento,
+      codigoEmpleado: codigoEmpleado ?? this.codigoEmpleado,
+      identidad: identidad ?? this.identidad,
+      correo: correo ?? this.correo,
+      tipoContrato: tipoContrato ?? this.tipoContrato,
+      ubicacion: ubicacion ?? this.ubicacion,
+      estado: estado ?? this.estado,
+      foto: foto ?? this.foto,
+      fechaNacimiento: fechaNacimiento ?? this.fechaNacimiento,
+      telefono: telefono ?? this.telefono,
+      direccion: direccion ?? this.direccion,
+      fechaInicio: fechaInicio ?? this.fechaInicio,
+      ciudad: ciudad ?? this.ciudad,
+      emergenciaNombre: emergenciaNombre ?? this.emergenciaNombre,
+      emergenciaParentesco: emergenciaParentesco ?? this.emergenciaParentesco,
+      emergenciaTelefono: emergenciaTelefono ?? this.emergenciaTelefono,
+      emergenciaNombre2: emergenciaNombre2 ?? this.emergenciaNombre2,
+      emergenciaParentesco2: emergenciaParentesco2 ?? this.emergenciaParentesco2,
+      emergenciaTelefono2: emergenciaTelefono2 ?? this.emergenciaTelefono2,
+    );
+  }
 }

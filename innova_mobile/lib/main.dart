@@ -12,10 +12,12 @@ import 'features/dashboard/screens/dashboard_screen.dart';
 import 'features/tickets/screens/ticket_detail_screen.dart';
 import 'features/tickets/models/ticket_model.dart';
 import 'features/empleados/screens/empleado_detail_screen.dart';
+import 'features/empleados/screens/editar_empleado_screen.dart';
 import 'features/empleados/models/empleado_model.dart';
 import 'features/notificaciones/widgets/notificaciones_button.dart';
 import 'features/notificaciones/providers/notificaciones_provider.dart';
 import 'shared/widgets/app_drawer.dart';
+import 'core/services/socket_service.dart';
 
 // Importaciones de los nuevos módulos (placeholders y existentes)
 import 'features/empleados/screens/empleados_screen.dart';
@@ -35,6 +37,7 @@ import 'features/tickets/screens/tickets_screen.dart';
 import 'features/tickets/screens/crear_ticket_screen.dart';
 import 'features/usuarios_roles/screens/usuarios_roles_screen.dart';
 import 'features/logs/screens/logs_screen.dart';
+import 'features/vacaciones/screens/reportes_vacaciones_screen.dart';
 
 import 'features/manuales/screens/biblioteca_publica_screen.dart';
 import 'features/tickets/screens/tickets_publicos_screen.dart';
@@ -49,11 +52,23 @@ void main() {
   );
 }
 
-class InnovaApp extends ConsumerWidget {
+class InnovaApp extends ConsumerStatefulWidget {
   const InnovaApp({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<InnovaApp> createState() => _InnovaAppState();
+}
+
+class _InnovaAppState extends ConsumerState<InnovaApp> {
+  @override
+  void initState() {
+    super.initState();
+    // Inicializar listeners globales de WebSockets
+    SocketService().initListeners(ref);
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final authState = ref.watch(authProvider);
 
     final router = GoRouter(
@@ -161,6 +176,10 @@ class InnovaApp extends ConsumerWidget {
               builder: (context, state) => const VacacionesScreen(),
             ),
             GoRoute(
+              path: '/reportes-vacaciones',
+              builder: (context, state) => const ReportesVacacionesScreen(),
+            ),
+            GoRoute(
               path: '/reportes',
               builder: (context, state) => const ReportesScreen(),
             ),
@@ -213,11 +232,40 @@ class InnovaApp extends ConsumerWidget {
         ),
         GoRoute(
           path: '/empleado',
-          builder: (context, state) => EmpleadoDetailScreen(empleado: state.extra as Empleado),
+          builder: (context, state) {
+            if (state.extra is Empleado) {
+              return EmpleadoDetailScreen(empleado: state.extra as Empleado);
+            } else if (state.extra is Map<String, dynamic>) {
+              final extra = state.extra as Map<String, dynamic>;
+              return EmpleadoDetailScreen(
+                empleado: extra['empleado'] as Empleado,
+                initialTabIndex: extra['initialTabIndex'] as int? ?? 0,
+              );
+            }
+            throw Exception('Argumentos inválidos para /empleado');
+          },
+        ),
+        GoRoute(
+          path: '/editar-empleado',
+          builder: (context, state) {
+            final empleado = state.extra as Empleado;
+            return EditarEmpleadoScreen(empleado: empleado);
+          },
         ),
         GoRoute(
           path: '/nuevo-contrato',
-          builder: (context, state) => NuevoContratoScreen(empleadoId: state.extra as int),
+          builder: (context, state) {
+            final extra = state.extra;
+            if (extra is int) {
+              return NuevoContratoScreen(empleadoId: extra);
+            } else if (extra is Map<String, dynamic>) {
+              return NuevoContratoScreen(
+                empleadoId: extra['empleadoId'] as int,
+                contratoExistente: extra['contrato'], // Contrato
+              );
+            }
+            return NuevoContratoScreen(empleadoId: 0);
+          },
         ),
         GoRoute(
           path: '/reporte-incidencia-detalle',

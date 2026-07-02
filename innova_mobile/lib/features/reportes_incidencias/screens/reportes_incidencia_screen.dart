@@ -291,74 +291,118 @@ class _ReporteCard extends StatelessWidget {
     final prioBg = _getPriorityBgColor(reporte.prioridad);
     final stColor = _getStatusColor(reporte.estado);
     final stBg = _getStatusBgColor(reporte.estado);
+    final isUrgente = reporte.prioridad.toUpperCase() == 'URGENTE';
 
-    return Card(
-      margin: const EdgeInsets.only(bottom: 12),
-      elevation: 1,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-      child: InkWell(
-        borderRadius: BorderRadius.circular(16),
-        onTap: () {
-          context.push('/reporte-incidencia-detalle', extra: reporte);
-        },
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Header row
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  Text('#INC-${reporte.id.toString().padLeft(3, '0')}', style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.black87, fontSize: 13)),
-                  const SizedBox(width: 8),
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                    decoration: BoxDecoration(color: prioBg, borderRadius: BorderRadius.circular(12), border: Border.all(color: prioColor.withValues(alpha: 0.3))),
-                    child: Text((reporte.prioridad).toUpperCase(), style: TextStyle(color: prioColor, fontSize: 9, fontWeight: FontWeight.bold, letterSpacing: 0.5)),
+    return Container(
+      margin: const EdgeInsets.only(bottom: 8),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: isUrgente ? Colors.redAccent.withValues(alpha: 0.5) : Colors.grey.shade100,
+          width: isUrgente ? 1.5 : 1,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.03),
+            blurRadius: 4,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          borderRadius: BorderRadius.circular(12),
+          onTap: () {
+            context.push('/reporte-incidencia-detalle', extra: reporte);
+          },
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 10.0),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Avatar
+                CircleAvatar(
+                  radius: 14,
+                  backgroundColor: Colors.grey.shade100,
+                  backgroundImage: reporte.asignadoUsuarioFoto != null ? NetworkImage('${ApiConstants.baseUrl}${reporte.asignadoUsuarioFoto}') : null,
+                  onBackgroundImageError: reporte.asignadoUsuarioFoto != null ? (e, s) {} : null,
+                  child: reporte.asignadoUsuarioFoto == null 
+                    ? Text(reporte.asignadoUsuarioNombre?.isNotEmpty == true ? reporte.asignadoUsuarioNombre![0].toUpperCase() : '?', style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Colors.grey)) 
+                    : null,
+                ),
+                const SizedBox(width: 10),
+                // Content
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Header row
+                      Row(
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          Text('#INC-${reporte.id.toString().padLeft(3, '0')}', style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.black45, fontSize: 10, fontFamily: 'monospace')),
+                          const SizedBox(width: 6),
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1.5),
+                            decoration: BoxDecoration(color: prioBg, borderRadius: BorderRadius.circular(6)),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Container(
+                                  width: 4, height: 4,
+                                  decoration: BoxDecoration(color: prioColor, shape: BoxShape.circle),
+                                ),
+                                const SizedBox(width: 3),
+                                Text((reporte.prioridad).toUpperCase(), style: TextStyle(color: prioColor, fontSize: 8, fontWeight: FontWeight.w900, letterSpacing: 0.3)),
+                              ],
+                            ),
+                          ),
+                          const SizedBox(width: 4),
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1.5),
+                            decoration: BoxDecoration(color: stBg, borderRadius: BorderRadius.circular(6)),
+                            child: Text((reporte.estado).toUpperCase(), style: TextStyle(color: stColor, fontSize: 8, fontWeight: FontWeight.w900, letterSpacing: 0.3)),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 4),
+                      
+                      // Tema y Descripcion
+                      Text(reporte.tema, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: Colors.black87), maxLines: 1, overflow: TextOverflow.ellipsis),
+                      const SizedBox(height: 2),
+                      RichText(
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        text: TextSpan(
+                          style: TextStyle(color: Colors.grey.shade500, fontSize: 10),
+                          children: [
+                            TextSpan(text: '${reporte.empleadoNombre ?? 'Desconocido'} ${reporte.empleadoApellido ?? ''}', style: const TextStyle(fontWeight: FontWeight.bold)),
+                            const TextSpan(text: ' · '),
+                            TextSpan(text: reporte.descripcion),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      
+                      // Footer row
+                      Row(
+                        children: [
+                          Expanded(child: _IconTextBadge(icon: Icons.folder_outlined, text: reporte.categoria)),
+                          const SizedBox(width: 4),
+                          Expanded(flex: 2, child: _IconTextBadge(icon: Icons.access_time, text: _formatDate(reporte.fechaCreacion))),
+                          const SizedBox(width: 4),
+                          _IconTextBadge(icon: Icons.chat_bubble_outline, text: '${reporte.respuestasCount ?? 0}'),
+                        ],
+                      )
+                    ],
                   ),
-                  const SizedBox(width: 4),
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                    decoration: BoxDecoration(color: stBg, borderRadius: BorderRadius.circular(12), border: Border.all(color: stColor.withValues(alpha: 0.3))),
-                    child: Text((reporte.estado).toUpperCase(), style: TextStyle(color: stColor, fontSize: 9, fontWeight: FontWeight.bold, letterSpacing: 0.5)),
-                  ),
-                  const Spacer(),
-                  CircleAvatar(
-                    radius: 12,
-                    backgroundColor: Colors.grey.shade200,
-                    backgroundImage: reporte.asignadoUsuarioFoto != null ? NetworkImage('${ApiConstants.baseUrl}${reporte.asignadoUsuarioFoto}') : null,
-                    onBackgroundImageError: reporte.asignadoUsuarioFoto != null ? (e, s) {} : null,
-                    child: reporte.asignadoUsuarioFoto == null ? Text(reporte.asignadoUsuarioNombre?.isNotEmpty == true ? reporte.asignadoUsuarioNombre![0].toUpperCase() : '?', style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Colors.grey)) : null,
-                  ),
-                ],
-              ),
-              const SizedBox(height: 12),
-              
-              // Tema y Descripcion
-              Text(reporte.tema, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15, color: Colors.black87)),
-              const SizedBox(height: 4),
-              Text(
-                'Reportado a: ${reporte.empleadoNombre ?? 'Desconocido'} ${reporte.empleadoApellido ?? ''} - ${reporte.descripcion}',
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-                style: TextStyle(color: Colors.grey.shade600, fontSize: 12),
-              ),
-              const SizedBox(height: 12),
-              
-              // Footer row
-              Row(
-                children: [
-                  Expanded(child: _IconTextBadge(icon: Icons.person_outline, text: reporte.jefeReporta ?? 'Usuario')),
-                  const SizedBox(width: 4),
-                  Expanded(child: _IconTextBadge(icon: Icons.folder_outlined, text: reporte.categoria)),
-                  const SizedBox(width: 4),
-                  Expanded(flex: 2, child: _IconTextBadge(icon: Icons.access_time, text: _formatDate(reporte.fechaCreacion))),
-                  const SizedBox(width: 4),
-                  _IconTextBadge(icon: Icons.chat_bubble_outline, text: '${reporte.respuestasCount ?? 0}'),
-                ],
-              )
-            ],
+                ),
+                const SizedBox(width: 8),
+                Icon(Icons.chevron_right, color: Colors.grey.shade300, size: 20),
+              ],
+            ),
           ),
         ),
       ),
@@ -377,9 +421,9 @@ class _IconTextBadge extends StatelessWidget {
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        Icon(icon, size: 12, color: Colors.grey.shade500),
-        const SizedBox(width: 4),
-        Flexible(child: Text(text, style: TextStyle(fontSize: 10, color: Colors.grey.shade600, fontWeight: FontWeight.w500), overflow: TextOverflow.ellipsis)),
+        Icon(icon, size: 10, color: Colors.grey.shade400),
+        const SizedBox(width: 3),
+        Flexible(child: Text(text, style: TextStyle(fontSize: 9, color: Colors.grey.shade500, fontWeight: FontWeight.w500), overflow: TextOverflow.ellipsis)),
       ],
     );
   }

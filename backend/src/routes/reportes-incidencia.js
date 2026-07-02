@@ -26,10 +26,11 @@ router.post('/crear', upload.single('archivo'), (req, res) => {
     const archivo = req.file ? `/uploads/incidencias/${req.file.filename}` : null;
 
     if (identidad) {
-        db.query('SELECT id FROM empleados WHERE identidad = ?', [identidad], (err, results) => {
+        db.query('SELECT id, nombre, apellido FROM empleados WHERE identidad = ?', [identidad], (err, results) => {
             if (err) return res.status(500).json({ error: err.message });
             
             const empleado_id = results.length > 0 ? results[0].id : null;
+            const empleado_nombre = results.length > 0 ? `${results[0].nombre} ${results[0].apellido}` : 'Un empleado';
             
             const query = 'INSERT INTO reportes_incidencias (jefe_reporta, empleado_reportado_id, identidad, categoria, descripcion, tema, prioridad, archivo) VALUES (?, ?, ?, ?, ?, ?, ?, ?)';
             db.execute(query, [jefe_reporta, empleado_id, identidad, categoria, descripcion, tema || null, prioridad || 'Media', archivo], (err, result) => {
@@ -43,7 +44,7 @@ router.post('/crear', upload.single('archivo'), (req, res) => {
                 db.query('SELECT id FROM usuarios WHERE rol_id IN (1, 2)', (err, users) => {
                     if (!err && users && users.length > 0) {
                         const notifQuery = 'INSERT INTO notificaciones (usuario_id, titulo, mensaje, tipo) VALUES ?';
-                        const notifValues = users.map(u => [u.id, 'Nuevo Incidente Pendiente', `Se ha recibido un nuevo incidente: ${tema || categoria}`, 'warning']);
+                        const notifValues = users.map(u => [u.id, 'Nuevo Incidente Pendiente', `${empleado_nombre} creó un nuevo incidente #${result.insertId}: ${tema || categoria}`, 'warning']);
                         db.query(notifQuery, [notifValues]);
                     }
                 });
@@ -64,7 +65,7 @@ router.post('/crear', upload.single('archivo'), (req, res) => {
             db.query('SELECT id FROM usuarios WHERE rol_id IN (1, 2)', (err, users) => {
                 if (!err && users && users.length > 0) {
                     const notifQuery = 'INSERT INTO notificaciones (usuario_id, titulo, mensaje, tipo) VALUES ?';
-                    const notifValues = users.map(u => [u.id, 'Nuevo Incidente Pendiente', `Se ha recibido un nuevo incidente: ${tema || categoria}`, 'warning']);
+                    const notifValues = users.map(u => [u.id, 'Nuevo Incidente Pendiente', `Un empleado creó un nuevo incidente #${result.insertId}: ${tema || categoria}`, 'warning']);
                     db.query(notifQuery, [notifValues]);
                 }
             });
@@ -302,6 +303,40 @@ router.put('/categorias/:id', (req, res) => {
         const io = req.app.get('io');
         io.emit('reportes_actualizados');
         res.json({ mensaje: 'Categoría actualizada con éxito' });
+    });
+});
+
+// Ruta para eliminar un reporte
+router.delete('/:id', (req, res) => {
+    const db = req.app.get('db');
+    const reporteId = req.params.id;
+
+    // Primero obtener el reporte para eliminar el archivo si existe
+    db.query('SELECT archivo FROM reportes_incidencias WHERE id = ?', [reporteId], (err, results) => {
+        if (err) return res.status(500).json({ error: err.message });
+        
+        if (results.length > 0 && results[0].archivo) {
+            const filePath = path.join(__dirname, '../../', results[0].archivo);
+            if (fs.existsSync(filePath)) {
+                try {
+                    fs.unlinkSync(filePath);
+                } catch(e) {
+                    console.error("Error eliminando archivo:", e);
+                }
+            }
+        }
+
+        // Eliminar respuestas asociadas primero (asumiendo que hay cascada o se deben borrar manual)
+        db.query('DELETE FROM reporte_incidencia_respuestas WHERE reporte_id = ?', [reporteId], (err) => {
+            if (err) console.error("Error al eliminar respuestas asociadas:", err);
+            
+            db.query('DELETE FROM reportes_incidencias WHERE id = ?', [reporteId], (err, result) => {
+                if (err) return res.status(500).json({ error: err.message });
+                const io = req.app.get('io');
+                if (io) io.emit('reportes_actualizados');
+                res.json({ mensaje: 'Reporte eliminado con éxito' });
+            });
+        });
     });
 });
 

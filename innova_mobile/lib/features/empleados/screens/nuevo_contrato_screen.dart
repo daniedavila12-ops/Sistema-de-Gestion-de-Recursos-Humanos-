@@ -4,11 +4,16 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:file_picker/file_picker.dart';
+import '../../auth/providers/auth_provider.dart';
 import 'contrato_provider.dart';
+
+import 'contrato_model.dart'; // Asegurar de importar el modelo
 
 class NuevoContratoScreen extends ConsumerStatefulWidget {
   final int empleadoId;
-  const NuevoContratoScreen({super.key, required this.empleadoId});
+  final Contrato? contratoExistente;
+
+  const NuevoContratoScreen({super.key, required this.empleadoId, this.contratoExistente});
 
   @override
   ConsumerState<NuevoContratoScreen> createState() => _NuevoContratoScreenState();
@@ -28,6 +33,22 @@ class _NuevoContratoScreenState extends ConsumerState<NuevoContratoScreen> {
   PlatformFile? _archivoContrato;
 
   bool _isLoading = false;
+
+  @override
+  void initState() {
+    super.initState();
+    if (widget.contratoExistente != null) {
+      final c = widget.contratoExistente!;
+      _tipoContrato = c.tipoContrato;
+      _estado = c.estado;
+      _fechaInicio = c.fechaInicio;
+      _fechaFin = c.fechaFin;
+      _fechaSalida = c.fechaSalida;
+      if (c.notas != null) {
+        _notasController.text = c.notas!;
+      }
+    }
+  }
 
   @override
   void dispose() {
@@ -74,24 +95,31 @@ class _NuevoContratoScreenState extends ConsumerState<NuevoContratoScreen> {
 
       setState(() => _isLoading = true);
 
+      final user = ref.read(authProvider).user;
       final contratoData = {
         'empleadoId': widget.empleadoId.toString(),
-        'puesto': _puestoController.text,
-        'tipo_contrato': _tipoContrato,
+        'tipoContrato': _tipoContrato,
         'estado': _estado,
-        'fecha_inicio': _fechaInicio!.toIso8601String(),
-        'fecha_fin': _fechaFin?.toIso8601String(),
-        'fecha_salida': _fechaSalida?.toIso8601String(),
-        'notas': _notasController.text,
+        'fechaInicio': _fechaInicio!.toIso8601String(),
+        if (_fechaFin != null) 'fechaFinal': _fechaFin!.toIso8601String(),
+        if (_fechaSalida != null) 'fechaSalida': _fechaSalida!.toIso8601String(),
+        'observacion': _notasController.text,
+        if (user != null) 'creadoPor': user.id.toString(),
       };
 
       try {
-        await ref.read(contratoRepositoryProvider).createContrato(contratoData, _archivoContrato);
+        if (widget.contratoExistente != null) {
+          final modificadoPor = ref.read(authProvider).user?.id.toString();
+          contratoData['modificadoPor'] = modificadoPor;
+          await ref.read(contratoRepositoryProvider).updateContrato(widget.empleadoId, widget.contratoExistente!.id, contratoData, _archivoContrato);
+        } else {
+          await ref.read(contratoRepositoryProvider).createContrato(contratoData, _archivoContrato);
+        }
         ref.invalidate(contratosProvider(widget.empleadoId));
 
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Contrato registrado con éxito'), backgroundColor: Colors.green),
+            SnackBar(content: Text(widget.contratoExistente != null ? 'Contrato actualizado con éxito' : 'Contrato registrado con éxito'), backgroundColor: Colors.green),
           );
           context.pop();
         }
@@ -211,7 +239,7 @@ class _NuevoContratoScreenState extends ConsumerState<NuevoContratoScreen> {
                   style: ElevatedButton.styleFrom(backgroundColor: Colors.blue.shade900, foregroundColor: Colors.white, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))),
                   child: _isLoading
                       ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
-                      : const Text('GUARDAR CONTRATO', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                      : Text(widget.contratoExistente != null ? 'ACTUALIZAR CONTRATO' : 'GUARDAR CONTRATO', style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
                 ),
               ),
             ],

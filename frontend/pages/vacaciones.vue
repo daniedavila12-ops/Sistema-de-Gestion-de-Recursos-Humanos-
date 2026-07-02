@@ -37,9 +37,13 @@
             <h1 class="text-3xl font-black text-slate-800 tracking-tight uppercase">Registrar Vacaciones</h1>
             <p class="text-slate-500 mt-1 font-medium italic">Gestión de vacaciones para los empleados.</p>
           </div>
-          <div class="relative">
-            <div @click="dropdownPerfilAbierto = !dropdownPerfilAbierto" class="flex items-center gap-3 pl-6 cursor-pointer hover:bg-slate-50 p-2 rounded-xl transition-colors border border-slate-100 bg-slate-50">
-              <div v-if="fotoUsuario" class="h-10 w-10 rounded-full flex items-center justify-center overflow-hidden ring-2 ring-slate-100">
+          <div class="flex items-center gap-6">
+            <button v-if="!empleadoSeleccionado" @click="generarPDFVacacionesGlobal" class="bg-indigo-600 text-white px-6 py-3 rounded-xl font-black uppercase text-xs hover:bg-indigo-700 transition-all shadow-lg shadow-indigo-200 flex items-center gap-2">
+              <span>📄</span> Reportes Vacaciones
+            </button>
+            <div class="relative">
+              <div @click="dropdownPerfilAbierto = !dropdownPerfilAbierto" class="flex items-center gap-3 pl-6 border-l border-slate-200 cursor-pointer hover:bg-slate-50 p-2 rounded-xl transition-colors">
+                <div v-if="fotoUsuario" class="h-10 w-10 rounded-full flex items-center justify-center overflow-hidden ring-2 ring-slate-100">
                 <img :src="`http://localhost:3007${fotoUsuario}`" class="w-full h-full object-cover" />
               </div>
               <div v-else class="h-10 w-10 rounded-full bg-slate-800 flex items-center justify-center text-blue-400 font-black text-lg ring-2 ring-slate-100 uppercase">
@@ -78,6 +82,7 @@
             </div>
             <!-- Overlay invisible para cerrar el dropdown si se hace click fuera -->
             <div v-if="dropdownPerfilAbierto" @click="dropdownPerfilAbierto = false" class="fixed inset-0 z-40"></div>
+          </div>
           </div>
         </div>
       </header>
@@ -521,13 +526,15 @@
 </template>
 
 <script setup>
-import { ref, onMounted, watch, computed } from 'vue'
+import { ref, onMounted, onUnmounted, watch, computed } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import axios from 'axios'
 import jsPDF from 'jspdf'
 import autoTable from 'jspdf-autotable'
+import { io } from 'socket.io-client'
 
 const router = useRouter()
+let socketInstance = null
 const route = useRoute()
 
 // Lógica Modal Perfil
@@ -1348,17 +1355,46 @@ const generarPDFHistorial = async () => {
   try {
     const doc = new jsPDF('landscape');
     
+    let startX = 14;
+
+    // Intentar cargar y agregar la foto del empleado
+    if (empleadoSeleccionado.value.foto) {
+      const imgFoto = new Image();
+      imgFoto.crossOrigin = "Anonymous";
+      imgFoto.src = `http://localhost:3007${empleadoSeleccionado.value.foto}`;
+      
+      await new Promise((resolve) => {
+        imgFoto.onload = resolve;
+        imgFoto.onerror = resolve; // Si falla, continuamos
+      });
+      
+      try {
+        const ext = imgFoto.src.toUpperCase().includes('.PNG') ? 'PNG' : 'JPEG';
+        // Dibujar la foto
+        doc.addImage(imgFoto, ext, 14, 12, 22, 22);
+        
+        // Agregar un borde sutil alrededor de la foto para darle un toque más profesional
+        doc.setDrawColor(203, 213, 225); // Slate 300
+        doc.setLineWidth(0.5);
+        doc.rect(14, 12, 22, 22);
+        
+        startX = 42; // Desplazar el texto a la derecha de la foto
+      } catch(e) {
+        console.warn('No se pudo cargar la foto del empleado al PDF');
+      }
+    }
+
     // Encabezado
     doc.setFontSize(16);
     doc.setTextColor(15, 23, 42); // Slate 900
     doc.setFont('helvetica', 'bold');
-    doc.text('HISTORIAL DE VACACIONES', 14, 20);
+    doc.text('HISTORIAL DE VACACIONES', startX, 20);
     
     doc.setFontSize(10);
     doc.setTextColor(100, 116, 139); // Slate 500
     doc.setFont('helvetica', 'normal');
-    doc.text(`Empleado: ${empleadoSeleccionado.value.nombre} ${empleadoSeleccionado.value.apellido} | Identidad: ${empleadoSeleccionado.value.identidad}`, 14, 28);
-    doc.text(`Generado el: ${new Date().toLocaleString('es-HN')}`, 14, 33);
+    doc.text(`Empleado: ${empleadoSeleccionado.value.nombre} ${empleadoSeleccionado.value.apellido} | Identidad: ${empleadoSeleccionado.value.identidad}`, startX, 28);
+    doc.text(`Generado el: ${new Date().toLocaleString('es-HN')}`, startX, 33);
     
     // Cargar Logo Superior Derecho
     const imgLogo = new Image();
@@ -1406,7 +1442,93 @@ const generarPDFHistorial = async () => {
   }
 };
 
+const generarPDFVacacionesGlobal = async () => {
+  try {
+    const doc = new jsPDF('landscape');
+    
+    // Encabezado
+    doc.setFontSize(16);
+    doc.setTextColor(15, 23, 42); 
+    doc.setFont('helvetica', 'bold');
+    doc.text('REPORTE GLOBAL DE EMPLEADOS Y VACACIONES BASE', 14, 20);
+    
+    doc.setFontSize(10);
+    doc.setTextColor(100, 116, 139); 
+    doc.setFont('helvetica', 'normal');
+    doc.text(`Generado el: ${new Date().toLocaleString('es-HN')}`, 14, 28);
+    
+    // Cargar Logo Superior Derecho
+    const imgLogo = new Image();
+    imgLogo.crossOrigin = "Anonymous";
+    imgLogo.src = 'http://localhost:3007/uploads/Logo/Logo.png';
+    await new Promise((resolve) => {
+      imgLogo.onload = resolve;
+      imgLogo.onerror = resolve;
+    });
+    try { doc.addImage(imgLogo, 'PNG', 240, 10, 35, 15); } catch(e) {}
+    
+    // Línea divisoria
+    doc.setDrawColor(226, 232, 240);
+    doc.setLineWidth(0.5);
+    doc.line(14, 38, 280, 38);
+
+    // Preparar datos para la tabla
+    const tableData = listaEmpleados.value.map(emp => {
+      // Calculamos años laborados
+      const inicioStr = emp.fecha_inicio ? (emp.fecha_inicio.includes('T') ? emp.fecha_inicio.split('T')[0] : emp.fecha_inicio) : null;
+      const inicio = inicioStr ? new Date(inicioStr + 'T00:00:00') : new Date();
+      const hoy = new Date();
+      let anios = hoy.getFullYear() - inicio.getFullYear();
+      const m = hoy.getMonth() - inicio.getMonth();
+      if (m < 0 || (m === 0 && hoy.getDate() < inicio.getDate())) {
+        anios--;
+      }
+      anios = Math.max(0, anios);
+      
+      let diasCorrespondientes = 0;
+      if (anios >= 4) diasCorrespondientes = 20;
+      else if (anios === 3) diasCorrespondientes = 15;
+      else if (anios === 2) diasCorrespondientes = 12;
+      else if (anios === 1) diasCorrespondientes = 10;
+      
+      return [
+        emp.codigo_empleado || 'N/A',
+        `${emp.nombre} ${emp.apellido}`,
+        emp.identidad || 'N/A',
+        emp.fecha_inicio ? new Date(inicio).toLocaleDateString('es-HN', {timeZone: 'UTC'}) : 'N/A',
+        emp.ubicacion || 'N/A',
+        `${anios} años`,
+        `${diasCorrespondientes} días`
+      ];
+    });
+
+    autoTable(doc, {
+      startY: 45,
+      head: [['Código', 'Empleado', 'Identidad', 'Fecha Ingreso', 'Ubicación/Piso', 'Antigüedad', 'Días Base por Año']],
+      body: tableData,
+      theme: 'grid',
+      headStyles: { fillColor: [79, 70, 229], textColor: [255, 255, 255], fontStyle: 'bold' },
+      alternateRowStyles: { fillColor: [248, 250, 252] },
+      styles: { fontSize: 9, cellPadding: 4 },
+    });
+
+    doc.save(`Reporte_Global_Vacaciones_${new Date().toISOString().split('T')[0]}.pdf`);
+  } catch (error) {
+    console.error('Error generando PDF general:', error);
+    alert('Hubo un error al generar el PDF global.');
+  }
+};
+
 onMounted(async () => {
+
+  // Socket.io
+  socketInstance = io('http://localhost:3007')
+  socketInstance.on('refresh_empleado_detalle', (updatedId) => {
+    if (empleadoSeleccionado.value && empleadoSeleccionado.value.id == updatedId) {
+      cargarVacacionesEmpleado(updatedId)
+    }
+  })
+
   nombreUsuario.value = localStorage.getItem('usuarioNombre') || 'Gerad Cole'
   fotoUsuario.value = localStorage.getItem('usuarioFoto') || null
   rolID.value = localStorage.getItem('usuarioRol') || 2
@@ -1448,4 +1570,11 @@ onMounted(async () => {
     console.error("Error cargando los empleados:", error)
   }
 })
+
+onUnmounted(() => {
+  if (socketInstance) {
+    socketInstance.disconnect()
+  }
+})
+
 </script>

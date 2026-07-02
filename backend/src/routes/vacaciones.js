@@ -172,7 +172,10 @@ router.post('/registrar', upload.single('documento'), (req, res) => {
         }
 
         const io = req.app.get('io');
-        if (io) io.emit('nueva_notificacion');
+        if (io) {
+            io.emit('nueva_notificacion');
+            io.emit('refresh_empleado_detalle', empleado_id);
+        }
 
         db.query('SELECT id FROM usuarios WHERE rol_id IN (1, 2)', (err, users) => {
             if (!err && users && users.length > 0) {
@@ -280,7 +283,15 @@ router.put('/:id', upload.single('documento'), (req, res) => {
         if (err) {
             return res.status(500).json({ error: "Error al actualizar vacaciones", detalle: err.message });
         }
-        res.json({ mensaje: "Vacaciones actualizadas con éxito" });
+        
+        // Obtener empleado_id para emitir la actualización
+        db.query("SELECT empleado_id FROM vacaciones WHERE id = ?", [id], (err2, rows) => {
+            if (!err2 && rows.length > 0) {
+                const io = req.app.get('io');
+                if (io) io.emit('refresh_empleado_detalle', rows[0].empleado_id);
+            }
+            res.json({ mensaje: "Vacaciones actualizadas con éxito" });
+        });
     });
 });
 
@@ -288,12 +299,23 @@ router.delete('/:id', (req, res) => {
     const db = req.app.get('db');
     const id = req.params.id;
     
-    const query = "DELETE FROM vacaciones WHERE id = ?";
-    db.query(query, [id], (err, result) => {
-        if (err) {
-            return res.status(500).json({ error: "Error al eliminar vacaciones", detalle: err.message });
+    // Primero obtenemos el empleado_id para poder emitir el evento
+    db.query("SELECT empleado_id FROM vacaciones WHERE id = ?", [id], (errSelect, rows) => {
+        if (errSelect || rows.length === 0) {
+            return res.status(404).json({ error: "Vacación no encontrada" });
         }
-        res.json({ mensaje: "Vacaciones eliminadas con éxito" });
+        const empleado_id = rows[0].empleado_id;
+
+        const query = "DELETE FROM vacaciones WHERE id = ?";
+        db.query(query, [id], (err, result) => {
+            if (err) {
+                return res.status(500).json({ error: "Error al eliminar vacaciones", detalle: err.message });
+            }
+            const io = req.app.get('io');
+            if (io) io.emit('refresh_empleado_detalle', empleado_id);
+            
+            res.json({ mensaje: "Vacaciones eliminadas con éxito" });
+        });
     });
 });
 

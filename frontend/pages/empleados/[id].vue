@@ -98,6 +98,9 @@
                 </button>
                 
                 <div class="px-5 py-2 text-[10px] font-black text-slate-400 uppercase tracking-widest bg-slate-50 border-y border-slate-100 mt-1">Expediente</div>
+                <button @click="generarPDFPerfilEmpleado" class="w-full text-left px-5 py-2.5 text-sm font-bold hover:bg-blue-50 hover:text-blue-600 transition-colors">
+                  📄 Crear Pdf Perfil del Empleado
+                </button>
                 <button @click="abrirModalContrato" class="w-full text-left px-5 py-2.5 text-sm font-bold hover:bg-blue-50 hover:text-blue-600 transition-colors">
                   📄 Registrar contrato
                 </button>
@@ -806,9 +809,11 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import axios from 'axios'
+import jsPDF from 'jspdf'
+import autoTable from 'jspdf-autotable'
 
 const route = useRoute()
 const router = useRouter()
@@ -1387,6 +1392,153 @@ const logout = () => {
   navigateTo('/login')
 }
 
+const generarPDFPerfilEmpleado = async () => {
+  if (!empleado.value) return;
+
+  try {
+    const doc = new jsPDF();
+    
+    // Cargar Logo
+    const imgLogo = new Image();
+    imgLogo.crossOrigin = "Anonymous";
+    imgLogo.src = 'http://localhost:3007/uploads/Logo/Logo.png';
+    await new Promise((resolve) => {
+      imgLogo.onload = resolve;
+      imgLogo.onerror = resolve; // Continuar aunque falle
+    });
+
+    // Encabezado
+    doc.setFontSize(22);
+    doc.setTextColor(30, 58, 138); // blue-900
+    doc.setFont('helvetica', 'bold');
+    doc.text(`PERFIL DEL EMPLEADO`, 14, 20);
+    
+    // Dibujar logo superior derecho
+    try {
+      doc.addImage(imgLogo, 'PNG', 160, 15, 35, 14);
+    } catch(e) {}
+    
+    doc.setFontSize(11);
+    doc.setTextColor(100, 116, 139);
+    doc.setFont('helvetica', 'normal');
+    doc.text(`Identidad: ${empleado.value.identidad || 'N/A'}`, 14, 28);
+    doc.text(`Generado el: ${new Date().toLocaleString('es-HN')}`, 14, 33);
+    
+    // Línea divisoria
+    doc.setDrawColor(30, 58, 138);
+    doc.setLineWidth(0.5);
+    doc.line(14, 38, 196, 38);
+
+    // Cargar foto del empleado
+    if (empleado.value.foto) {
+      const imgEmp = new Image();
+      imgEmp.crossOrigin = 'Anonymous';
+      imgEmp.src = `http://localhost:3007${empleado.value.foto}`;
+      await new Promise((resolve) => { imgEmp.onload = resolve; imgEmp.onerror = resolve; });
+      try {
+        const imgWidth = 30;
+        const imgHeight = 30;
+        const imgX = 14;
+        const imgY = 45;
+        
+        doc.setFillColor(241, 245, 249);
+        doc.roundedRect(imgX - 1, imgY - 1, imgWidth + 2, imgHeight + 2, 2, 2, 'F');
+        const ext = imgEmp.src.toUpperCase().includes('.PNG') ? 'PNG' : 'JPEG';
+        doc.addImage(imgEmp, ext, imgX, imgY, imgWidth, imgHeight);
+        doc.setDrawColor(203, 213, 225);
+        doc.setLineWidth(0.3);
+        doc.roundedRect(imgX - 1, imgY - 1, imgWidth + 2, imgHeight + 2, 2, 2, 'S');
+      } catch(e) {}
+    }
+
+    // Información Principal
+    let startTablesY = empleado.value.foto ? 82 : 45;
+    autoTable(doc, {
+      startY: startTablesY,
+      head: [['Información Principal', '']],
+      body: [
+        ['Nombre Completo', `${empleado.value.nombre || ''} ${empleado.value.apellido || ''}`.trim() || 'N/A'],
+        ['Código de Empleado', empleado.value.codigo_empleado || 'N/A'],
+        ['Tipo de Contrato', empleado.value.tipo_contrato || 'Permanente'],
+        ['Estado', (empleado.value.estado == 1 || empleado.value.estado === undefined) ? 'Activo' : 'Inactivo'],
+      ],
+      theme: 'grid',
+      headStyles: { fillColor: [241, 245, 249], textColor: [15, 23, 42] },
+      columnStyles: { 0: { fontStyle: 'bold', cellWidth: 50 } }
+    });
+
+    let currentY = doc.lastAutoTable.finalY + 10;
+
+    // Información Personal
+    autoTable(doc, {
+      startY: currentY,
+      head: [['Información Personal', '']],
+      body: [
+        ['Fecha de Nacimiento', empleado.value.fecha_nacimiento ? new Date(empleado.value.fecha_nacimiento).toLocaleDateString('es-HN') : 'N/A'],
+        ['Correo Electrónico', empleado.value.correo || 'N/A'],
+        ['Teléfono', empleado.value.telefono || 'N/A'],
+        ['Dirección', empleado.value.direccion || 'N/A']
+      ],
+      theme: 'grid',
+      headStyles: { fillColor: [241, 245, 249], textColor: [15, 23, 42] },
+      columnStyles: { 0: { fontStyle: 'bold', cellWidth: 50 } }
+    });
+
+    currentY = doc.lastAutoTable.finalY + 10;
+
+    // Información Laboral
+    autoTable(doc, {
+      startY: currentY,
+      head: [['Información Laboral', '']],
+      body: [
+        ['Fecha de Inicio', empleado.value.fecha_inicio ? new Date(empleado.value.fecha_inicio).toLocaleDateString('es-HN') : 'N/A'],
+        ['Ciudad', empleado.value.ciudad || 'N/A'],
+        ['Ubicación / Piso', empleado.value.ubicacion || 'N/A']
+      ],
+      theme: 'grid',
+      headStyles: { fillColor: [241, 245, 249], textColor: [15, 23, 42] },
+      columnStyles: { 0: { fontStyle: 'bold', cellWidth: 50 } }
+    });
+    
+    currentY = doc.lastAutoTable.finalY + 10;
+
+    // Contactos de Emergencia
+    if (empleado.value.emergencia_nombre || empleado.value.emergencia_nombre_2) {
+        let contactos = [];
+        if (empleado.value.emergencia_nombre) {
+            contactos.push([empleado.value.emergencia_nombre, empleado.value.emergencia_parentesco || 'N/A', empleado.value.emergencia_telefono || 'N/A']);
+        }
+        if (empleado.value.emergencia_nombre_2) {
+            contactos.push([empleado.value.emergencia_nombre_2, empleado.value.emergencia_parentesco_2 || 'N/A', empleado.value.emergencia_telefono_2 || 'N/A']);
+        }
+
+        autoTable(doc, {
+        startY: currentY,
+        head: [['Contacto de Emergencia', 'Parentesco', 'Teléfono']],
+        body: contactos,
+        theme: 'grid',
+        headStyles: { fillColor: [255, 237, 213], textColor: [154, 52, 18] }, // orange-50, orange-800
+        });
+    }
+
+    // Pie de página
+    const totalPages = doc.internal.getNumberOfPages();
+    for (let i = 1; i <= totalPages; i++) {
+      doc.setPage(i);
+      const pageHeight = doc.internal.pageSize.height;
+      doc.setFontSize(8);
+      doc.setTextColor(100, 116, 139);
+      doc.text(`INNOVA SISTEMA RRHH - Página ${i} de ${totalPages}`, 196, pageHeight - 10, { align: 'right' });
+    }
+
+    // Guardar archivo
+    doc.save(`Perfil_Empleado_${empleado.value.identidad}.pdf`);
+  } catch (error) {
+    console.error("Error al generar PDF:", error);
+    alert('❌ Error al generar el PDF: ' + error.message);
+  }
+}
+
 const triggerFileInput = () => {
   fileInput.value.click()
 }
@@ -1488,6 +1640,28 @@ onMounted(async () => {
     error.value = err.response?.data?.mensaje || 'No se pudo cargar la información del empleado.'
   } finally {
     loading.value = false
+  }
+
+  // Socket.io for real-time updates
+  socketInstance = io('http://localhost:3007')
+  socketInstance.on('refresh_empleado_detalle', (updatedId) => {
+    if (updatedId == route.params.id) {
+      axios.get(`http://localhost:3007/api/empleados/${route.params.id}`).then(res => empleado.value = res.data)
+      cargarContratos()
+      cargarVacaciones()
+      cargarFaltas()
+      cargarNotas()
+      cargarDocumentos()
+      cargarTiposDocumentos()
+    }
+  })
+})
+
+let socketInstance = null
+
+onUnmounted(() => {
+  if (socketInstance) {
+    socketInstance.disconnect()
   }
 })
 </script>

@@ -18,8 +18,9 @@ import 'package:innova_mobile/core/constants/api_constants.dart';
  
 class EmpleadoDetailScreen extends StatefulWidget {
   final Empleado empleado;
+  final int initialTabIndex;
 
-  const EmpleadoDetailScreen({super.key, required this.empleado});
+  const EmpleadoDetailScreen({super.key, required this.empleado, this.initialTabIndex = 0});
 
   @override
   State<EmpleadoDetailScreen> createState() => _EmpleadoDetailScreenState();
@@ -34,7 +35,7 @@ class _EmpleadoDetailScreenState extends State<EmpleadoDetailScreen>
   void initState() {
     super.initState();
     // Se crean 6 tabs para las diferentes secciones del perfil del empleado
-    _tabController = TabController(length: 6, vsync: this);
+    _tabController = TabController(length: 6, vsync: this, initialIndex: widget.initialTabIndex);
   }
 
   @override
@@ -366,38 +367,149 @@ class _EmpleadoDetailScreenState extends State<EmpleadoDetailScreen>
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            // Fila de Título y Estado
+                            // Header: Status, Edit Button and Creators
                             Row(
+                              crossAxisAlignment: CrossAxisAlignment.start,
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
-                                Flexible(child: Text(contrato.tipoContrato, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold), overflow: TextOverflow.ellipsis)),
-                                Chip(
-                                  label: Text(contrato.estado),
-                                  backgroundColor: isActivo ? Colors.green.shade50 : Colors.grey.shade100,
-                                  labelStyle: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: isActivo ? Colors.green.shade800 : Colors.grey.shade700),
-                                  padding: const EdgeInsets.symmetric(horizontal: 4),
-                                  visualDensity: VisualDensity.compact,
+                                Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Row(
+                                      children: [
+                                        Container(
+                                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                          decoration: BoxDecoration(
+                                            color: Colors.grey.shade100,
+                                            border: Border.all(color: Colors.grey.shade200),
+                                            borderRadius: BorderRadius.circular(6),
+                                          ),
+                                          child: Text(
+                                            contrato.tipoContrato.toUpperCase(),
+                                            style: TextStyle(fontSize: 10, fontWeight: FontWeight.w900, color: Colors.grey.shade600),
+                                          ),
+                                        ),
+                                        const SizedBox(width: 8),
+                                        Container(
+                                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                          decoration: BoxDecoration(
+                                            color: isActivo ? Colors.green.shade50 : Colors.red.shade50,
+                                            border: Border.all(color: isActivo ? Colors.green.shade200 : Colors.red.shade200),
+                                            borderRadius: BorderRadius.circular(6),
+                                          ),
+                                          child: Text(
+                                            contrato.estado.toUpperCase(),
+                                            style: TextStyle(fontSize: 10, fontWeight: FontWeight.w900, color: isActivo ? Colors.green.shade700 : Colors.red.shade700),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ],
                                 ),
+                                const SizedBox(width: 8),
+                                Expanded(
+                                  child: Row(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    mainAxisAlignment: MainAxisAlignment.end,
+                                    children: [
+                                      Flexible(
+                                        child: Container(
+                                          padding: const EdgeInsets.all(8),
+                                          decoration: BoxDecoration(
+                                            color: Colors.grey.shade50,
+                                            border: Border.all(color: Colors.grey.shade200),
+                                            borderRadius: BorderRadius.circular(8),
+                                          ),
+                                          child: Column(
+                                            crossAxisAlignment: CrossAxisAlignment.end,
+                                            children: [
+                                              RichText(
+                                                textAlign: TextAlign.right,
+                                                text: TextSpan(
+                                                  style: const TextStyle(fontSize: 9, fontWeight: FontWeight.bold, color: Colors.grey),
+                                                  children: [
+                                                    const TextSpan(text: 'CREADO POR: '),
+                                                    TextSpan(text: (contrato.creadoPorNombre ?? 'Admin').toUpperCase(), style: const TextStyle(color: Colors.black54)),
+                                                    const TextSpan(text: '  |  FECHA: '),
+                                                    TextSpan(text: _formatDate(contrato.fechaCreacion), style: const TextStyle(color: Colors.black54)),
+                                                  ],
+                                                ),
+                                              ),
+                                              if (contrato.fechaModificacion != null && contrato.fechaModificacion != contrato.fechaCreacion) ...[
+                                                const SizedBox(height: 2),
+                                                RichText(
+                                                  textAlign: TextAlign.right,
+                                                  text: TextSpan(
+                                                    style: const TextStyle(fontSize: 9, fontWeight: FontWeight.bold, color: Colors.grey),
+                                                    children: [
+                                                      const TextSpan(text: 'MODIFICADO: '),
+                                                      TextSpan(text: (contrato.modificadoPorNombre ?? contrato.creadoPorNombre ?? 'S/D').toUpperCase(), style: const TextStyle(color: Colors.black54)),
+                                                      const TextSpan(text: '  |  FECHA: '),
+                                                      TextSpan(text: _formatDate(contrato.fechaModificacion!), style: const TextStyle(color: Colors.black54)),
+                                                    ],
+                                                  ),
+                                                ),
+                                              ],
+                                            ],
+                                          ),
+                                        ),
+                                      ),
+                                      const SizedBox(width: 8),
+                                    InkWell(
+                                      onTap: () {
+                                        
+                                        context.push('/nuevo-contrato', extra: {'empleadoId': empleado.id, 'contrato': contrato});
+                                      },
+                                      borderRadius: BorderRadius.circular(8),
+                                      child: Container(
+                                        padding: const EdgeInsets.all(6),
+                                        decoration: BoxDecoration(
+                                          color: Colors.blue.shade50,
+                                          border: Border.all(color: Colors.blue.shade100),
+                                          borderRadius: BorderRadius.circular(8),
+                                        ),
+                                        child: Icon(Icons.edit, size: 16, color: Colors.blue.shade600),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
                               ],
                             ),
-                            const Divider(height: 24),
+                            const SizedBox(height: 12),
                             // Fila de Fechas
                             Row(
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
                                 Expanded(child: _buildDetailColumn('Fecha Inicio', _formatDate(contrato.fechaInicio))),
                                 Expanded(child: _buildDetailColumn('Fecha Fin', contrato.fechaFin != null ? _formatDate(contrato.fechaFin!) : 'N/A', align: CrossAxisAlignment.center)),
-                                Expanded(child: _buildDetailColumn('Fecha Salida', contrato.fechaSalida != null ? _formatDate(contrato.fechaSalida!) : 'N/A', align: CrossAxisAlignment.end)),
+                                Expanded(child: _buildDetailColumn('Fecha Salida', contrato.fechaSalida != null ? _formatDate(contrato.fechaSalida!) : 'S/D', align: CrossAxisAlignment.end)),
                               ],
                             ),
                             // Observaciones y Archivo
                             if (contrato.notas?.isNotEmpty == true) ...[
-                              const SizedBox(height: 16),
-                              _buildDetailColumn('Observación', contrato.notas!),
+                              const SizedBox(height: 12),
+                              Container(
+                                padding: const EdgeInsets.all(10),
+                                width: double.infinity,
+                                decoration: BoxDecoration(
+                                  color: Colors.grey.shade50,
+                                  borderRadius: BorderRadius.circular(8),
+                                  border: Border.all(color: Colors.grey.shade100),
+                                ),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    const Text('OBSERVACIÓN', style: TextStyle(fontSize: 9, fontWeight: FontWeight.w900, color: Colors.grey)),
+                                    const SizedBox(height: 2),
+                                    Text(contrato.notas!, style: TextStyle(fontSize: 12, color: Colors.grey.shade800, fontStyle: FontStyle.italic)),
+                                  ],
+                                ),
+                              ),
                             ],
                             if (contrato.archivo?.isNotEmpty == true) ...[
-                              const SizedBox(height: 16),
-                              TextButton.icon(
+                              const SizedBox(height: 12),
+                              ElevatedButton.icon(
                                 onPressed: () async {
                                   final url = Uri.parse('${ApiConstants.baseUrl}${contrato.archivo}');
                                   if (await canLaunchUrl(url)) {
@@ -410,8 +522,16 @@ class _EmpleadoDetailScreenState extends State<EmpleadoDetailScreen>
                                     }
                                   }
                                 },
-                                icon: const Icon(Icons.attach_file, size: 16),
+                                icon: const Icon(Icons.attach_file, size: 14),
                                 label: const Text('Ver Documento Adjunto'),
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: Colors.grey.shade800,
+                                  foregroundColor: Colors.white,
+                                  elevation: 0,
+                                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                                  textStyle: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold),
+                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                                ),
                               )
                             ]
                           ],
@@ -639,7 +759,7 @@ class _EmpleadoDetailScreenState extends State<EmpleadoDetailScreen>
                                             IconButton(
                                               icon: const Icon(Icons.edit_outlined, color: Colors.blue),
                                               tooltip: 'Editar Vacación',
-                                              onPressed: () => _showVacacionDialog(context, ref, empleado.id, vacacionToEdit: vacacion),
+                                              onPressed: () => _showVacacionDialog(context, ref, empleado, vacacionToEdit: vacacion),
                                             ),
                                             IconButton(
                                               icon: const Icon(Icons.delete_outline, color: Colors.red),
@@ -725,7 +845,7 @@ class _EmpleadoDetailScreenState extends State<EmpleadoDetailScreen>
             error: (err, stack) => Center(child: Text('Error al cargar historial de vacaciones: $err')),
           ),
           floatingActionButton: FloatingActionButton.extended(
-            onPressed: () => _showVacacionDialog(context, ref, empleado.id),
+            onPressed: () => _showVacacionDialog(context, ref, empleado),
             icon: const Icon(Icons.add),
             label: const Text('Registrar Vacación'),
             tooltip: 'Registrar nueva vacación',
@@ -737,180 +857,15 @@ class _EmpleadoDetailScreenState extends State<EmpleadoDetailScreen>
     );
   }
 
-  void _showVacacionDialog(BuildContext context, WidgetRef ref, int empleadoId, {VacacionEmpleado? vacacionToEdit}) {
-    final formKey = GlobalKey<FormState>();
-    final periodoController = TextEditingController(text: vacacionToEdit?.periodo ?? '${DateTime.now().year}-${DateTime.now().year + 1}');
-    String? selectedTipoSolicitud = vacacionToEdit?.tipoSolicitud ?? 'Normal';
-    final tipoPermisoController = TextEditingController(text: vacacionToEdit?.tipoPermiso ?? '');
-    
-    final diasVacacionesController = TextEditingController(text: vacacionToEdit?.diasVacaciones.toString() ?? '0');
-    final diasPagadosController = TextEditingController(text: vacacionToEdit?.diasPagados.toString() ?? '0');
-    final diasPendientesController = TextEditingController(text: vacacionToEdit?.diasPendientes.toString() ?? '0');
-    
-    final fechaInicioController = TextEditingController(text: vacacionToEdit?.fechaInicio != null ? vacacionToEdit!.fechaInicio!.split('T')[0] : '');
-    final fechaFinalController = TextEditingController(text: vacacionToEdit?.fechaFinal != null ? vacacionToEdit!.fechaFinal!.split('T')[0] : '');
-    final fechaRegresoController = TextEditingController(text: vacacionToEdit?.fechaRegreso != null ? vacacionToEdit!.fechaRegreso!.split('T')[0] : '');
-    final observacionesController = TextEditingController(text: vacacionToEdit?.observaciones ?? '');
-
-    final tiposSolicitud = ['Normal', 'Adelantadas', 'Permiso'];
-    if (!tiposSolicitud.contains(selectedTipoSolicitud)) {
-      tiposSolicitud.add(selectedTipoSolicitud);
-    }
-
-    Future<void> selectDate(TextEditingController controller) async {
-      final DateTime? picked = await showDatePicker(
-        context: context,
-        initialDate: DateTime.now(),
-        firstDate: DateTime(2000),
-        lastDate: DateTime(2101),
-      );
-      if (picked != null) {
-        controller.text = "${picked.year}-${picked.month.toString().padLeft(2, '0')}-${picked.day.toString().padLeft(2, '0')}";
-      }
-    }
-
-    showDialog(
+  void _showVacacionDialog(BuildContext context, WidgetRef ref, Empleado empleado, {VacacionEmpleado? vacacionToEdit}) {
+    showModalBottomSheet(
       context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
       builder: (context) {
-        return StatefulBuilder(
-          builder: (context, setState) {
-            return AlertDialog(
-              title: Text(vacacionToEdit == null ? 'Registrar Vacación' : 'Editar Vacación'),
-              content: Form(
-                key: formKey,
-                child: SingleChildScrollView(
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      TextFormField(
-                        controller: periodoController,
-                        decoration: const InputDecoration(labelText: 'Periodo (Ej. 2023-2024)', border: OutlineInputBorder()),
-                        validator: (value) => value == null || value.isEmpty ? 'Requerido' : null,
-                      ),
-                      const SizedBox(height: 10),
-                      DropdownButtonFormField<String>(
-                        decoration: const InputDecoration(labelText: 'Tipo de Solicitud', border: OutlineInputBorder()),
-                        initialValue: selectedTipoSolicitud,
-                        items: tiposSolicitud.map((t) => DropdownMenuItem(value: t, child: Text(t))).toList(),
-                        onChanged: (v) => setState(() => selectedTipoSolicitud = v),
-                      ),
-                      const SizedBox(height: 10),
-                      if (selectedTipoSolicitud == 'Permiso') ...[
-                        TextFormField(
-                          controller: tipoPermisoController,
-                          decoration: const InputDecoration(labelText: 'Tipo de Permiso (Ej. Maternidad)', border: OutlineInputBorder()),
-                        ),
-                        const SizedBox(height: 10),
-                      ],
-                      Row(
-                        children: [
-                          Expanded(
-                            child: TextFormField(
-                              controller: diasVacacionesController,
-                              decoration: const InputDecoration(labelText: 'Días Vac/Disfrut.', border: OutlineInputBorder()),
-                              keyboardType: TextInputType.number,
-                            ),
-                          ),
-                          const SizedBox(width: 8),
-                          Expanded(
-                            child: TextFormField(
-                              controller: diasPagadosController,
-                              decoration: const InputDecoration(labelText: 'Días Pagados', border: OutlineInputBorder()),
-                              keyboardType: TextInputType.number,
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 10),
-                      TextFormField(
-                        controller: diasPendientesController,
-                        decoration: const InputDecoration(labelText: 'Días Pendientes', border: OutlineInputBorder()),
-                        keyboardType: TextInputType.number,
-                      ),
-                      const SizedBox(height: 10),
-                      TextFormField(
-                        controller: fechaInicioController,
-                        decoration: InputDecoration(
-                          labelText: 'Fecha Inicio',
-                          border: const OutlineInputBorder(),
-                          suffixIcon: IconButton(icon: const Icon(Icons.calendar_today), onPressed: () => selectDate(fechaInicioController)),
-                        ),
-                        readOnly: true,
-                        onTap: () => selectDate(fechaInicioController),
-                      ),
-                      const SizedBox(height: 10),
-                      TextFormField(
-                        controller: fechaFinalController,
-                        decoration: InputDecoration(
-                          labelText: 'Fecha Final',
-                          border: const OutlineInputBorder(),
-                          suffixIcon: IconButton(icon: const Icon(Icons.calendar_today), onPressed: () => selectDate(fechaFinalController)),
-                        ),
-                        readOnly: true,
-                        onTap: () => selectDate(fechaFinalController),
-                      ),
-                      const SizedBox(height: 10),
-                      TextFormField(
-                        controller: fechaRegresoController,
-                        decoration: InputDecoration(
-                          labelText: 'Fecha Regreso',
-                          border: const OutlineInputBorder(),
-                          suffixIcon: IconButton(icon: const Icon(Icons.calendar_today), onPressed: () => selectDate(fechaRegresoController)),
-                        ),
-                        readOnly: true,
-                        onTap: () => selectDate(fechaRegresoController),
-                      ),
-                      const SizedBox(height: 10),
-                      TextFormField(
-                        controller: observacionesController,
-                        decoration: const InputDecoration(labelText: 'Observaciones', border: OutlineInputBorder()),
-                        maxLines: 2,
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-              actions: [
-                TextButton(onPressed: () => Navigator.of(context).pop(), child: const Text('Cancelar')),
-                ElevatedButton(
-                  onPressed: () async {
-                    if (formKey.currentState!.validate()) {
-                      final repository = ref.read(vacacionRepositoryProvider);
-                      try {
-                        final data = {
-                          'empleado_id': empleadoId.toString(),
-                          'periodo': periodoController.text,
-                          'tipoSolicitud': selectedTipoSolicitud,
-                          'tipoPermiso': selectedTipoSolicitud == 'Permiso' ? tipoPermisoController.text : null,
-                          'diasVacaciones': diasVacacionesController.text,
-                          'diasPagados': diasPagadosController.text,
-                          'diasPendientes': diasPendientesController.text,
-                          'fechaInicio': fechaInicioController.text.isNotEmpty ? fechaInicioController.text : null,
-                          'fechaFinal': fechaFinalController.text.isNotEmpty ? fechaFinalController.text : null,
-                          'fechaRegreso': fechaRegresoController.text.isNotEmpty ? fechaRegresoController.text : null,
-                          'observaciones': observacionesController.text,
-                          'usuario_id': '1',
-                        };
-
-                        if (vacacionToEdit == null) {
-                          await repository.registrarVacacion(data, null);
-                          if (context.mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Vacaciones registradas con éxito')));
-                        } else {
-                          await repository.actualizarVacacion(vacacionToEdit.id, data, null);
-                          if (context.mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Vacaciones actualizadas con éxito')));
-                        }
-                        ref.invalidate(vacacionesEmpleadoProvider(empleadoId));
-                        if (context.mounted) Navigator.of(context).pop();
-                      } catch (e) {
-                        if (context.mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.toString())));
-                      }
-                    }
-                  },
-                  child: Text(vacacionToEdit == null ? 'Guardar' : 'Actualizar'),
-                ),
-              ],
-            );
-          },
+        return _VacacionBottomSheet(
+          empleado: empleado,
+          vacacionToEdit: vacacionToEdit,
         );
       },
     );
@@ -1911,5 +1866,716 @@ class _EmpleadoDetailScreenState extends State<EmpleadoDetailScreen>
         SnackBar(content: Text(message)),
       );
     }
+  }
+}
+
+class _VacacionBottomSheet extends ConsumerStatefulWidget {
+  final Empleado empleado;
+  final VacacionEmpleado? vacacionToEdit;
+
+  const _VacacionBottomSheet({
+    required this.empleado,
+    this.vacacionToEdit,
+  });
+
+  @override
+  ConsumerState<_VacacionBottomSheet> createState() => _VacacionBottomSheetState();
+}
+
+class _VacacionBottomSheetState extends ConsumerState<_VacacionBottomSheet> {
+  final _formKey = GlobalKey<FormState>();
+  
+  late TextEditingController tipoPermisoController;
+  late TextEditingController diasVacacionesController;
+  late TextEditingController diasPagadosController;
+  late TextEditingController diasPendientesController;
+  late TextEditingController fechaInicioController;
+  late TextEditingController fechaFinalController;
+  late TextEditingController fechaRegresoController;
+  late TextEditingController observacionesController;
+  
+  late TextEditingController fechaSolicitudController;
+  late TextEditingController diasCorrespondientesController;
+  late TextEditingController autorizadoPorController;
+
+  String? selectedTipoSolicitud;
+  String? selectedPeriodo;
+  PlatformFile? selectedDocument;
+  bool isSaving = false;
+
+  final List<String> tiposSolicitud = ['Normal', 'Adelantadas', 'Pagadas', 'Permiso Especial'];
+  List<String> periodosDisponibles = [];
+
+  @override
+  void initState() {
+    super.initState();
+    final v = widget.vacacionToEdit;
+    
+    selectedTipoSolicitud = v?.tipoSolicitud ?? 'Normal';
+    if (!tiposSolicitud.contains(selectedTipoSolicitud)) {
+      tiposSolicitud.add(selectedTipoSolicitud!);
+    }
+    
+    selectedPeriodo = v?.periodo;
+
+    tipoPermisoController = TextEditingController(text: v?.tipoPermiso ?? '');
+    diasVacacionesController = TextEditingController(text: v?.diasVacaciones.toString() ?? '0');
+    diasPagadosController = TextEditingController(text: v?.diasPagados.toString() ?? '0');
+    diasPendientesController = TextEditingController(text: v?.diasPendientes.toString() ?? '0');
+    
+    fechaInicioController = TextEditingController(text: v?.fechaInicio != null ? v!.fechaInicio!.split('T')[0] : '');
+    fechaFinalController = TextEditingController(text: v?.fechaFinal != null ? v!.fechaFinal!.split('T')[0] : '');
+    fechaRegresoController = TextEditingController(text: v?.fechaRegreso != null ? v!.fechaRegreso!.split('T')[0] : '');
+    observacionesController = TextEditingController(text: v?.observaciones ?? '');
+
+    fechaSolicitudController = TextEditingController(text: v?.fechaSolicitud != null ? v!.fechaSolicitud!.split('T')[0] : "${DateTime.now().year}-${DateTime.now().month.toString().padLeft(2, '0')}-${DateTime.now().day.toString().padLeft(2, '0')}");
+    diasCorrespondientesController = TextEditingController(text: v?.diasCorrespondientes.toString() ?? '0');
+    autorizadoPorController = TextEditingController(text: v?.autorizadoPor ?? '');
+  }
+
+  @override
+  void dispose() {
+    tipoPermisoController.dispose();
+    diasVacacionesController.dispose();
+    diasPagadosController.dispose();
+    diasPendientesController.dispose();
+    fechaInicioController.dispose();
+    fechaFinalController.dispose();
+    fechaRegresoController.dispose();
+    observacionesController.dispose();
+    fechaSolicitudController.dispose();
+    diasCorrespondientesController.dispose();
+    autorizadoPorController.dispose();
+    super.dispose();
+  }
+
+  void _calcularPeriodosDisponibles() {
+    final vacacionesAsync = ref.read(vacacionesEmpleadoProvider(widget.empleado.id));
+    final vacacionesEmpleado = vacacionesAsync.value ?? [];
+    
+    if (widget.empleado.fechaInicio == null) return;
+    DateTime inicio = widget.empleado.fechaInicio!;
+    int anioInicio = inicio.year;
+    int anioActual = DateTime.now().year;
+    List<String> periodos = [];
+    
+    DateTime hoy = DateTime.now();
+    int aniosLaboradosReales = hoy.year - inicio.year;
+    if (hoy.month < inicio.month || (hoy.month == inicio.month && hoy.day < inicio.day)) {
+      aniosLaboradosReales--;
+    }
+    
+    if (selectedTipoSolicitud == 'Adelantadas') {
+      int periodoAnioInicio = anioInicio + (aniosLaboradosReales > 0 ? aniosLaboradosReales : 0);
+      String periodoAdelantado = "$periodoAnioInicio-${periodoAnioInicio + 1}";
+      bool isRegistrado = vacacionesEmpleado.any((v) => v.periodo == periodoAdelantado && (widget.vacacionToEdit == null || v.id != widget.vacacionToEdit!.id));
+      if (!isRegistrado) periodos.add(periodoAdelantado);
+    } else if (selectedTipoSolicitud == 'Normal' || selectedTipoSolicitud == 'Pagadas') {
+      for (int i = 0; i < aniosLaboradosReales; i++) {
+        int periodoAnioInicio = anioInicio + i;
+        String periodo = "$periodoAnioInicio-${periodoAnioInicio + 1}";
+        bool isRegistrado = vacacionesEmpleado.any((v) => v.periodo == periodo && (widget.vacacionToEdit == null || v.id != widget.vacacionToEdit!.id));
+        if (!isRegistrado) periodos.add(periodo);
+      }
+    } else if (selectedTipoSolicitud == 'Permiso Especial') {
+      for (int i = anioInicio; i <= anioActual; i++) {
+        periodos.add("$i-${i + 1}");
+      }
+    } else {
+      for (int i = anioInicio; i <= anioActual; i++) {
+        String periodo = "$i-${i + 1}";
+        bool isRegistrado = vacacionesEmpleado.any((v) => v.periodo == periodo && (widget.vacacionToEdit == null || v.id != widget.vacacionToEdit!.id));
+        if (!isRegistrado) periodos.add(periodo);
+      }
+    }
+    
+    setState(() {
+      periodosDisponibles = periodos.reversed.toList();
+      if (selectedPeriodo != null && !periodosDisponibles.contains(selectedPeriodo)) {
+        periodosDisponibles.insert(0, selectedPeriodo!);
+      } else if (periodosDisponibles.isNotEmpty && selectedPeriodo == null) {
+        selectedPeriodo = periodosDisponibles.first;
+      }
+      _onPeriodoChanged();
+    });
+  }
+  int _aniosLaboradosCalculados() {
+    if (widget.empleado.fechaInicio == null) return 0;
+    DateTime inicio = widget.empleado.fechaInicio!;
+    if (selectedPeriodo != null && selectedPeriodo!.contains('-')) {
+      int anioFin = int.tryParse(selectedPeriodo!.split('-')[1]) ?? inicio.year;
+      return (anioFin - inicio.year) > 0 ? (anioFin - inicio.year) : 0;
+    } else {
+      DateTime hoy = DateTime.now();
+      int anios = hoy.year - inicio.year;
+      if (hoy.month < inicio.month || (hoy.month == inicio.month && hoy.day < inicio.day)) {
+        anios--;
+      }
+      return anios > 0 ? anios : 0;
+    }
+  }
+
+  int _diasCorrespondientesCalculados() {
+    int anios = _aniosLaboradosCalculados();
+    if (anios >= 4) return 20;
+    if (anios == 3) return 15;
+    if (anios == 2) return 12;
+    if (anios == 1) return 10;
+    return 0;
+  }
+
+  void _onPeriodoChanged() {
+    if (widget.vacacionToEdit == null) {
+      diasCorrespondientesController.text = _diasCorrespondientesCalculados().toString();
+      _calcularDiasPendientes();
+    }
+  }
+
+  bool _isUpdating = false;
+
+  void _calcularDiasPendientes() {
+    final correspondientes = double.tryParse(diasCorrespondientesController.text) ?? 0.0;
+    final tomados = double.tryParse(diasVacacionesController.text) ?? 0.0;
+    final pagados = double.tryParse(diasPagadosController.text) ?? 0.0;
+    
+    double pendientes;
+    if (selectedTipoSolicitud == 'Pagadas') {
+      pendientes = correspondientes - pagados - tomados;
+    } else {
+      pendientes = correspondientes - tomados;
+    }
+    
+    diasPendientesController.text = pendientes.toStringAsFixed(0);
+  }
+
+  void _calcularFechas() {
+    String inicioStr = fechaInicioController.text;
+    double dias = double.tryParse(diasVacacionesController.text) ?? 0.0;
+    
+    if (inicioStr.isNotEmpty && dias > 0) {
+      try {
+        DateTime dInicio = DateTime.parse(inicioStr);
+        int diasContados = 0;
+        DateTime fechaActual = dInicio;
+
+        if (fechaActual.weekday == DateTime.sunday) {
+          fechaActual = fechaActual.add(const Duration(days: 1));
+        }
+
+        while (diasContados < dias) {
+          if (fechaActual.weekday != DateTime.sunday) {
+            diasContados++;
+          }
+          if (diasContados < dias) {
+            fechaActual = fechaActual.add(const Duration(days: 1));
+          }
+        }
+
+        fechaFinalController.text = "${fechaActual.year}-${fechaActual.month.toString().padLeft(2, '0')}-${fechaActual.day.toString().padLeft(2, '0')}";
+
+        DateTime fRegreso = fechaActual.add(const Duration(days: 1));
+        while (fRegreso.weekday == DateTime.sunday) {
+          fRegreso = fRegreso.add(const Duration(days: 1));
+        }
+        fechaRegresoController.text = "${fRegreso.year}-${fRegreso.month.toString().padLeft(2, '0')}-${fRegreso.day.toString().padLeft(2, '0')}";
+
+        if (selectedTipoSolicitud == 'Permiso Especial' || selectedTipoSolicitud == 'Normal' || selectedTipoSolicitud == 'Adelantadas') {
+          diasPagadosController.text = '0';
+        } else if (selectedTipoSolicitud != 'Pagadas') {
+          diasPagadosController.text = dias.toStringAsFixed(0);
+        }
+        _calcularDiasPendientes();
+      } catch (e) {
+        // Ignore parse error
+      }
+    } else if (inicioStr.isEmpty) {
+      fechaFinalController.text = '';
+      fechaRegresoController.text = '';
+      if (selectedTipoSolicitud == 'Permiso Especial' || selectedTipoSolicitud == 'Normal' || selectedTipoSolicitud == 'Adelantadas') {
+        diasPagadosController.text = '0';
+      } else if (selectedTipoSolicitud != 'Pagadas') {
+        diasPagadosController.text = dias.toStringAsFixed(0);
+      }
+      _calcularDiasPendientes();
+    }
+  }
+
+  void _onDiasVacacionesChanged(String value) {
+    if (_isUpdating) return;
+    setState(() {
+      _isUpdating = true;
+      double val = double.tryParse(value) ?? 0.0;
+      if (val < 0) {
+        diasVacacionesController.text = '0';
+        val = 0;
+      }
+      
+      double correspondientes = double.tryParse(diasCorrespondientesController.text) ?? 0.0;
+
+      if (selectedTipoSolicitud == 'Permiso Especial') {
+        if (val > 4) {
+          diasVacacionesController.text = '4';
+          val = 4;
+        }
+        diasPagadosController.text = '0';
+      } else if (selectedTipoSolicitud == 'Normal' || selectedTipoSolicitud == 'Adelantadas') {
+        if (val > correspondientes) {
+          diasVacacionesController.text = correspondientes.toStringAsFixed(0);
+          val = correspondientes;
+        }
+        diasPagadosController.text = '0';
+      } else {
+        diasPagadosController.text = val.toStringAsFixed(0);
+      }
+      
+      _calcularFechas();
+      _calcularDiasPendientes();
+      _isUpdating = false;
+    });
+  }
+
+  void _onDiasPagadosChanged(String value) {
+    if (_isUpdating) return;
+    setState(() {
+      _isUpdating = true;
+      double val = double.tryParse(value) ?? 0.0;
+      if (val < 0) {
+        diasPagadosController.text = '0';
+        val = 0;
+      }
+      if (selectedTipoSolicitud == 'Pagadas') {
+        double correspondientes = double.tryParse(diasCorrespondientesController.text) ?? 0.0;
+        if (val > correspondientes) {
+          diasPagadosController.text = correspondientes.toStringAsFixed(0);
+        }
+      }
+      _calcularDiasPendientes();
+      _isUpdating = false;
+    });
+  }
+
+  void _onTipoSolicitudChanged() {
+    if (_isUpdating) return;
+    setState(() {
+      _isUpdating = true;
+      if (selectedTipoSolicitud == 'Permiso Especial') {
+        diasPagadosController.text = '0';
+        double val = double.tryParse(diasVacacionesController.text) ?? 0.0;
+        if (val > 4) diasVacacionesController.text = '4';
+      } else if (selectedTipoSolicitud == 'Normal' || selectedTipoSolicitud == 'Adelantadas') {
+        diasPagadosController.text = '0';
+      } else {
+        diasPagadosController.text = diasVacacionesController.text;
+      }
+      _calcularFechas();
+      _calcularDiasPendientes();
+      _isUpdating = false;
+    });
+  }
+
+  Future<void> _selectDate(TextEditingController controller) async {
+    final DateTime? picked = await showDatePicker(
+      context: context,
+      initialDate: DateTime.now(),
+      firstDate: DateTime(2000),
+      lastDate: DateTime(2101),
+      builder: (context, child) {
+        return Theme(
+          data: Theme.of(context).copyWith(
+            colorScheme: ColorScheme.light(
+              primary: Colors.blue.shade800,
+              onPrimary: Colors.white,
+              onSurface: Colors.black,
+            ),
+          ),
+          child: child!,
+        );
+      },
+    );
+    if (picked != null) {
+      setState(() {
+        controller.text = "${picked.year}-${picked.month.toString().padLeft(2, '0')}-${picked.day.toString().padLeft(2, '0')}";
+        if (controller == fechaInicioController) {
+          _calcularFechas();
+        }
+      });
+    }
+  }
+
+  Future<void> _pickDocument() async {
+    final result = await FilePicker.pickFiles(
+      type: FileType.custom,
+      allowedExtensions: ['pdf', 'png', 'jpg', 'jpeg'],
+    );
+    if (result != null) {
+      setState(() {
+        selectedDocument = result.files.first;
+      });
+    }
+  }
+
+  Future<void> _save() async {
+    if (!_formKey.currentState!.validate()) return;
+
+    setState(() => isSaving = true);
+    final repository = ref.read(vacacionRepositoryProvider);
+    
+    try {
+      final data = {
+        'empleado_id': widget.empleado.id.toString(),
+        'periodo': selectedPeriodo ?? '',
+        'tipoSolicitud': selectedTipoSolicitud,
+        'tipoPermiso': selectedTipoSolicitud == 'Permiso Especial' ? tipoPermisoController.text : null,
+        'diasCorrespondientes': diasCorrespondientesController.text,
+        'diasVacaciones': diasVacacionesController.text,
+        'diasPagados': diasPagadosController.text,
+        'diasPendientes': diasPendientesController.text,
+        'fechaSolicitud': fechaSolicitudController.text.isNotEmpty ? fechaSolicitudController.text : null,
+        'fechaInicio': fechaInicioController.text.isNotEmpty ? fechaInicioController.text : null,
+        'fechaFinal': fechaFinalController.text.isNotEmpty ? fechaFinalController.text : null,
+        'fechaRegreso': fechaRegresoController.text.isNotEmpty ? fechaRegresoController.text : null,
+        'observaciones': observacionesController.text,
+        'autorizadoPor': autorizadoPorController.text,
+      };
+
+      if (widget.vacacionToEdit == null) {
+        await repository.registrarVacacion(data, selectedDocument);
+        if (mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Vacaciones registradas con éxito', style: TextStyle(color: Colors.white)), backgroundColor: Colors.green));
+      } else {
+        await repository.actualizarVacacion(widget.vacacionToEdit!.id, data, selectedDocument);
+        if (mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Vacaciones actualizadas con éxito', style: TextStyle(color: Colors.white)), backgroundColor: Colors.green));
+      }
+      
+      ref.invalidate(vacacionesEmpleadoProvider(widget.empleado.id));
+      if (mounted) Navigator.of(context).pop();
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.toString(), style: const TextStyle(color: Colors.white)), backgroundColor: Colors.red));
+      }
+    } finally {
+      if (mounted) setState(() => isSaving = false);
+    }
+  }
+
+  Widget _buildTextField(String label, TextEditingController controller, {IconData? icon, bool readOnly = false, VoidCallback? onTap, TextInputType? keyboardType, bool isRequired = false, bool enabled = true, ValueChanged<String>? onChanged}) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 16.0),
+      child: TextFormField(
+        controller: controller,
+        readOnly: readOnly,
+        enabled: enabled,
+        onTap: onTap,
+        onChanged: onChanged,
+        keyboardType: keyboardType,
+        validator: isRequired ? (value) => value == null || value.isEmpty ? 'Requerido' : null : null,
+        decoration: InputDecoration(
+          labelText: label,
+          labelStyle: TextStyle(color: Colors.blueGrey.shade500, fontSize: 13, fontWeight: FontWeight.w600),
+          filled: true,
+          fillColor: enabled ? Colors.blueGrey.shade50 : Colors.blueGrey.shade100,
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide: BorderSide(color: Colors.blueGrey.shade200),
+          ),
+          enabledBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide: BorderSide(color: Colors.blueGrey.shade200),
+          ),
+          focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide: BorderSide(color: Colors.blue.shade500, width: 2),
+          ),
+          suffixIcon: icon != null ? IconButton(icon: Icon(icon, color: Colors.blue.shade500), onPressed: onTap) : null,
+          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+        ),
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: const BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      padding: EdgeInsets.only(
+        bottom: MediaQuery.of(context).viewInsets.bottom,
+      ),
+      constraints: BoxConstraints(
+        maxHeight: MediaQuery.of(context).size.height * 0.9,
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          // Header
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
+            decoration: BoxDecoration(
+              color: Colors.blue.shade800,
+              borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        widget.vacacionToEdit == null ? 'REGISTRAR VACACIONES' : 'EDITAR VACACIÓN',
+                        style: const TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.w900,
+                          color: Colors.white,
+                          letterSpacing: 1.2
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        'Gestión de vacaciones para el empleado',
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: Colors.blue.shade100,
+                          fontStyle: FontStyle.italic
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                IconButton(
+                  icon: const Icon(Icons.close, color: Colors.white),
+                  onPressed: () => Navigator.of(context).pop(),
+                ),
+              ],
+            ),
+          ),
+          // Body
+          Expanded(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.all(24),
+              child: Form(
+                key: _formKey,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _buildSectionTitle('DATOS DE VACACIONES'),
+                    
+                    Row(
+                      children: [
+                        Expanded(child: _buildTextField('Fecha Solicitud', fechaSolicitudController, icon: Icons.calendar_today, readOnly: true, onTap: () => _selectDate(fechaSolicitudController), isRequired: true)),
+                      ],
+                    ),
+                    
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Expanded(
+                          child: Padding(
+                            padding: const EdgeInsets.only(bottom: 16.0),
+                            child: DropdownButtonFormField<String>(
+                              isExpanded: true,
+                              initialValue: selectedTipoSolicitud,
+                              items: tiposSolicitud.map((t) => DropdownMenuItem(value: t, child: Text(t, overflow: TextOverflow.ellipsis))).toList(),
+                              onChanged: (v) {
+                                setState(() {
+                                  selectedTipoSolicitud = v;
+                                  selectedPeriodo = null;
+                                  _calcularPeriodosDisponibles();
+                                });
+                                _onTipoSolicitudChanged();
+                              },
+                              decoration: InputDecoration(
+                                labelText: 'Tipo Solicitud',
+                                labelStyle: TextStyle(color: Colors.blueGrey.shade500, fontSize: 13, fontWeight: FontWeight.w600),
+                                filled: true,
+                                fillColor: Colors.blueGrey.shade50,
+                                border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
+                              ),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Padding(
+                            padding: const EdgeInsets.only(bottom: 16.0),
+                            child: DropdownButtonFormField<String>(
+                              isExpanded: true,
+                              initialValue: selectedPeriodo,
+                              items: periodosDisponibles.map((p) => DropdownMenuItem(value: p, child: Text(p, overflow: TextOverflow.ellipsis))).toList(),
+                              onChanged: (v) {
+                                setState(() => selectedPeriodo = v);
+                                _onPeriodoChanged();
+                              },
+                              decoration: InputDecoration(
+                                labelText: 'Periodo',
+                                labelStyle: TextStyle(color: Colors.blueGrey.shade500, fontSize: 13, fontWeight: FontWeight.w600),
+                                filled: true,
+                                fillColor: Colors.blueGrey.shade50,
+                                border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
+                              ),
+                              validator: (val) => val == null || val.isEmpty ? 'Requerido' : null,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    
+                    if (selectedPeriodo != null || selectedTipoSolicitud == 'Permiso Especial') ...[
+                      if (selectedTipoSolicitud == 'Permiso Especial')
+                        _buildTextField('Tipo de Permiso (Ej. Maternidad)', tipoPermisoController),
+                      
+                      _buildSectionTitle('CÁLCULO DE DÍAS'),
+                      if (selectedTipoSolicitud != 'Permiso Especial') ...[
+                        Row(
+                          children: [
+                            Expanded(child: _buildTextField('Correspondientes', diasCorrespondientesController, keyboardType: TextInputType.number, enabled: selectedTipoSolicitud != 'Pagadas' && selectedTipoSolicitud != 'Adelantadas', onChanged: (_) => _calcularDiasPendientes())),
+                            const SizedBox(width: 12),
+                            if (selectedTipoSolicitud != 'Pagadas')
+                              Expanded(child: _buildTextField('Vac/Disfrutados', diasVacacionesController, keyboardType: TextInputType.number, onChanged: _onDiasVacacionesChanged))
+                            else
+                              const Spacer(),
+                          ],
+                        ),
+                        Row(
+                          children: [
+                            if (selectedTipoSolicitud == 'Pagadas')
+                              Expanded(child: _buildTextField('Pagados', diasPagadosController, keyboardType: TextInputType.number, onChanged: _onDiasPagadosChanged))
+                            else
+                              const Spacer(),
+                            const SizedBox(width: 12),
+                            Expanded(child: _buildTextField('Pendientes', diasPendientesController, keyboardType: TextInputType.number, enabled: !(selectedTipoSolicitud == 'Normal' || selectedTipoSolicitud == 'Pagadas' || selectedTipoSolicitud == 'Adelantadas'))),
+                          ],
+                        ),
+                      ] else ...[
+                        Row(
+                          children: [
+                            Expanded(child: _buildTextField('Días a Tomar', diasVacacionesController, keyboardType: TextInputType.number, onChanged: _onDiasVacacionesChanged)),
+                          ],
+                        ),
+                      ],
+  
+                      _buildSectionTitle('FECHAS DE AUSENCIA'),
+                      if (selectedTipoSolicitud != 'Pagadas') ...[
+                        Row(
+                          children: [
+                            Expanded(child: _buildTextField('Inicio', fechaInicioController, icon: Icons.calendar_today, readOnly: true, onTap: () => _selectDate(fechaInicioController))),
+                            const SizedBox(width: 12),
+                            Expanded(child: _buildTextField('Final', fechaFinalController, icon: Icons.calendar_today, readOnly: true, onTap: () => _selectDate(fechaFinalController))),
+                          ]
+                        ),
+                        _buildTextField('Fecha Regreso', fechaRegresoController, icon: Icons.calendar_today, readOnly: true, onTap: () => _selectDate(fechaRegresoController)),
+                      ],
+  
+                      _buildSectionTitle('AUTORIZACIÓN Y OBSERVACIONES'),
+                      _buildTextField('Autorizado Por', autorizadoPorController, isRequired: true),
+                      _buildTextField('Observaciones', observacionesController),
+                      
+                      // Documento
+                      const SizedBox(height: 8),
+                      Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          color: Colors.blueGrey.shade50,
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(color: Colors.blueGrey.shade200, style: BorderStyle.solid),
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text('Documento Adjunto (Opcional)', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: Colors.blueGrey)),
+                            const SizedBox(height: 12),
+                            Row(
+                              children: [
+                                ElevatedButton.icon(
+                                  onPressed: _pickDocument,
+                                  icon: const Icon(Icons.upload_file, size: 18),
+                                  label: const Text('Seleccionar'),
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: Colors.white,
+                                    foregroundColor: Colors.blue.shade600,
+                                    elevation: 0,
+                                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8), side: BorderSide(color: Colors.blue.shade200)),
+                                  ),
+                                ),
+                                const SizedBox(width: 12),
+                                Expanded(
+                                  child: Text(
+                                    selectedDocument?.name ?? (widget.vacacionToEdit?.documento != null ? 'Documento actual guardado' : 'Ningún archivo seleccionado'),
+                                    style: TextStyle(fontSize: 12, color: Colors.blueGrey.shade500, fontStyle: FontStyle.italic),
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ],
+                ),
+              ),
+            ),
+          ),
+          // Footer
+          Container(
+            padding: const EdgeInsets.all(24),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              border: Border(top: BorderSide(color: Colors.blueGrey.shade100)),
+              boxShadow: [
+                BoxShadow(color: Colors.black.withAlpha(10), blurRadius: 10, offset: const Offset(0, -5))
+              ],
+            ),
+            child: Row(
+              children: [
+                Expanded(
+                  child: OutlinedButton(
+                    onPressed: () => Navigator.of(context).pop(),
+                    style: OutlinedButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      side: BorderSide(color: Colors.blueGrey.shade300),
+                    ),
+                    child: Text('Cancelar', style: TextStyle(color: Colors.blueGrey.shade600, fontWeight: FontWeight.bold)),
+                  ),
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: ElevatedButton(
+                    onPressed: isSaving ? null : _save,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.blue.shade800,
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      elevation: 0,
+                    ),
+                    child: isSaving
+                        ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
+                        : Text(widget.vacacionToEdit == null ? 'Guardar' : 'Actualizar', style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16)),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSectionTitle(String title) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 16.0, top: 8.0),
+      child: Text(
+        title, 
+        style: TextStyle(
+          fontSize: 11, 
+          fontWeight: FontWeight.w900, 
+          color: Colors.blue.shade800, 
+          letterSpacing: 1.5
+        )
+      ),
+    );
   }
 }

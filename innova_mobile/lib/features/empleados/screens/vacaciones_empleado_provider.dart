@@ -16,6 +16,10 @@ class VacacionEmpleado {
   final String? fechaFinal;
   final String? fechaRegreso;
   final String? observaciones;
+  final String? fechaSolicitud;
+  final double diasCorrespondientes;
+  final String? autorizadoPor;
+  final String? documento;
   final String? creadoPorNombre;
   final String? fechaCreacion;
   final String? modificadoPorNombre;
@@ -33,6 +37,10 @@ class VacacionEmpleado {
     this.fechaFinal,
     this.fechaRegreso,
     this.observaciones,
+    this.fechaSolicitud,
+    this.diasCorrespondientes = 0.0,
+    this.autorizadoPor,
+    this.documento,
     this.creadoPorNombre,
     this.fechaCreacion,
     this.modificadoPorNombre,
@@ -52,6 +60,10 @@ class VacacionEmpleado {
       fechaFinal: json['fechaFinal'] ?? json['fecha_final'],
       fechaRegreso: json['fechaRegreso'] ?? json['fecha_regreso'],
       observaciones: json['observaciones'],
+      fechaSolicitud: json['fechaSolicitud'] ?? json['fecha_solicitud'],
+      diasCorrespondientes: double.tryParse(json['diasCorrespondientes']?.toString() ?? '0') ?? 0.0,
+      autorizadoPor: json['autorizadoPor'] ?? json['autorizado_por'],
+      documento: json['documento'],
       creadoPorNombre: json['creadoPorNombre'],
       fechaCreacion: json['fechaCreacion'] ?? json['fecha_creacion'],
       modificadoPorNombre: json['modificadoPorNombre'],

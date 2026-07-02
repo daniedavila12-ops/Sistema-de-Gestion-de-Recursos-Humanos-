@@ -172,10 +172,13 @@
               <td class="p-5 text-sm text-slate-500">
                 {{ emp.fecha_inicio ? new Date(emp.fecha_inicio).toLocaleDateString('es-HN') : 'N/A' }}
               </td>
-              <td class="p-5 text-center">
+              <td class="p-5 text-center flex justify-center gap-2">
                 <NuxtLink :to="`/empleados/${emp.id}`" class="inline-block bg-blue-100 text-blue-600 hover:bg-blue-600 hover:text-white px-4 py-2 rounded-lg text-xs font-bold transition-colors">
                   Ver Detalle
                 </NuxtLink>
+                <button @click="eliminarEmpleado(emp.id)" class="inline-block bg-red-100 text-red-600 hover:bg-red-600 hover:text-white px-4 py-2 rounded-lg text-xs font-bold transition-colors">
+                  Eliminar
+                </button>
               </td>
             </tr>
           </tbody>
@@ -184,7 +187,7 @@
     </main>
 
     <!-- Modal Nuevo Empleado -->
-    <div v-if="mostrarModalNuevo" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4 overflow-y-auto">
+    <div v-if="mostrarModalNuevo" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-md p-4 overflow-y-auto">
       <div class="bg-white rounded-3xl shadow-2xl border border-slate-100 w-full max-w-7xl my-8 flex flex-col max-h-[90vh]">
         <header class="p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50 rounded-t-3xl shrink-0">
           <div>
@@ -211,8 +214,15 @@
                 <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
                   <div v-for="field in camposPersonales" :key="field.id">
                     <label class="block text-[9px] font-black text-slate-400 uppercase mb-1.5 ml-1">{{ field.label }}</label>
-                    <input v-model="form[field.id]" :type="field.type" :placeholder="field.placeholder" required
-                      class="w-full px-3 py-2.5 text-sm bg-white border border-slate-200 rounded-xl text-slate-800 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all shadow-sm">
+                    <div class="relative">
+                      <input v-if="field.mask" v-model="form[field.id]" :type="field.type" :placeholder="field.placeholder" required v-maska :data-maska="field.mask"
+                        :class="[ 'w-full px-3 py-2.5 text-sm bg-white border rounded-xl text-slate-800 focus:ring-2 focus:ring-blue-500/20 outline-none transition-all shadow-sm', (field.id === 'codigo_empleado' && errorCodigo) || (field.id === 'identidad' && errorIdentidad) ? 'border-red-500 focus:border-red-500' : 'border-slate-200 focus:border-blue-500' ]">
+                      <input v-else v-model="form[field.id]" :type="field.type" :placeholder="field.placeholder" required
+                        :class="[ 'w-full px-3 py-2.5 text-sm bg-white border rounded-xl text-slate-800 focus:ring-2 focus:ring-blue-500/20 outline-none transition-all shadow-sm', (field.id === 'codigo_empleado' && errorCodigo) || (field.id === 'identidad' && errorIdentidad) ? 'border-red-500 focus:border-red-500' : 'border-slate-200 focus:border-blue-500' ]">
+                      
+                      <div v-if="field.id === 'codigo_empleado' && errorCodigo" class="text-red-500 text-[10px] font-bold mt-1">{{ errorCodigo }}</div>
+                      <div v-if="field.id === 'identidad' && errorIdentidad" class="text-red-500 text-[10px] font-bold mt-1">{{ errorIdentidad }}</div>
+                    </div>
                   </div>
                   <div>
                     <label class="block text-[9px] font-black text-slate-400 uppercase mb-1.5 ml-1">Género</label>
@@ -269,6 +279,8 @@
                       <option value="" disabled>Seleccione...</option>
                       <option v-for="opt in field.options" :key="opt" :value="opt">{{ opt }}</option>
                     </select>
+                    <input v-else-if="field.mask" v-model="form[field.id]" :type="field.type" :placeholder="field.placeholder" required v-maska :data-maska="field.mask"
+                      class="w-full px-3 py-2.5 text-sm bg-white border border-orange-200/50 rounded-xl text-slate-800 focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 outline-none transition-all shadow-sm">
                     <input v-else v-model="form[field.id]" :type="field.type" :placeholder="field.placeholder" required
                       class="w-full px-3 py-2.5 text-sm bg-white border border-orange-200/50 rounded-xl text-slate-800 focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 outline-none transition-all shadow-sm">
                   </div>
@@ -284,6 +296,8 @@
                       <option value="" disabled>Seleccione...</option>
                       <option v-for="opt in field.options" :key="opt" :value="opt">{{ opt }}</option>
                     </select>
+                    <input v-else-if="field.mask" v-model="form[field.id]" :type="field.type" :placeholder="field.placeholder" v-maska :data-maska="field.mask"
+                      class="w-full px-3 py-2.5 text-sm bg-white border border-slate-200 rounded-xl text-slate-800 focus:ring-2 focus:ring-slate-500/20 focus:border-slate-500 outline-none transition-all shadow-sm">
                     <input v-else v-model="form[field.id]" :type="field.type" :placeholder="field.placeholder"
                       class="w-full px-3 py-2.5 text-sm bg-white border border-slate-200 rounded-xl text-slate-800 focus:ring-2 focus:ring-slate-500/20 focus:border-slate-500 outline-none transition-all shadow-sm">
                   </div>
@@ -352,8 +366,14 @@
 </template>
 
 <script setup>
+import { ref, onMounted, computed, onUnmounted, watch } from 'vue'
+import { useRouter, useRoute } from 'vue-router'
 import axios from 'axios'
-import { ref, computed, onMounted } from 'vue'
+import { io } from 'socket.io-client'
+import { vMaska } from 'maska/vue'
+
+const router = useRouter()
+const route = useRoute()
 
 // Lógica Modal Perfil
 const dropdownPerfilAbierto = ref(false)
@@ -448,12 +468,12 @@ const form = ref({
 
 const camposPersonales = [
   { id: 'codigo_empleado', label: 'Código Empleado', type: 'text', placeholder: 'Ej: EMP-001' },
-  { id: 'identidad', label: 'Identidad', type: 'text', placeholder: '0000-0000-00000' },
+  { id: 'identidad', label: 'Identidad', type: 'text', placeholder: '0000-0000-00000', mask: '####-####-#####' },
   { id: 'nombre', label: 'Nombres', type: 'text', placeholder: 'Ej: Juan Alberto' },
   { id: 'apellido', label: 'Apellidos', type: 'text', placeholder: 'Ej: Perez Flores' },
   { id: 'fecha_nacimiento', label: 'F. Nacimiento', type: 'date' },
   { id: 'correo', label: 'Correo Personal', type: 'email', placeholder: 'empleado@correo.com' },
-  { id: 'telefono', label: 'Teléfono', type: 'text', placeholder: '+504 0000-0000' }
+  { id: 'telefono', label: 'Teléfono', type: 'text', placeholder: '+504 0000-0000', mask: '+504 ####-####' }
 ]
 
 const camposLaborales = [
@@ -465,14 +485,49 @@ const camposLaborales = [
 const camposEmergencia = [
   { id: 'emergencia_parentesco', label: 'Parentesco', type: 'select', options: ['Padre', 'Madre', 'Conyuge', 'Hermano(a)', 'Tio(a)', 'Otro (a)'] },
   { id: 'emergencia_nombre', label: 'Nombre Completo', type: 'text' },
-  { id: 'emergencia_telefono', label: 'Teléfono Emergencia', type: 'text' }
+  { id: 'emergencia_telefono', label: 'Teléfono Emergencia', type: 'text', mask: '+504 ####-####' }
 ]
 
 const camposEmergencia2 = [
   { id: 'emergencia_parentesco_2', label: 'Parentesco', type: 'select', options: ['Padre', 'Madre', 'Conyuge', 'Hermano(a)', 'Tio(a)', 'Otro (a)'] },
   { id: 'emergencia_nombre_2', label: 'Nombre Completo', type: 'text' },
-  { id: 'emergencia_telefono_2', label: 'Teléfono Emergencia', type: 'text' }
+  { id: 'emergencia_telefono_2', label: 'Teléfono Emergencia', type: 'text', mask: '+504 ####-####' }
 ]
+
+const errorCodigo = ref(null)
+const errorIdentidad = ref(null)
+let timeoutCodigo = null
+let timeoutIdentidad = null
+
+watch(() => form.value.codigo_empleado, (newVal) => {
+  errorCodigo.value = null
+  if (timeoutCodigo) clearTimeout(timeoutCodigo)
+  if (!newVal || newVal.trim() === '') return
+  
+  timeoutCodigo = setTimeout(async () => {
+    try {
+      const { data } = await axios.get(`http://localhost:3007/api/empleados/validar-codigo/${newVal.trim()}`)
+      if (data.existe) errorCodigo.value = 'Este código ya está en uso'
+    } catch (e) {
+      console.error(e)
+    }
+  }, 600)
+})
+
+watch(() => form.value.identidad, (newVal) => {
+  errorIdentidad.value = null
+  if (timeoutIdentidad) clearTimeout(timeoutIdentidad)
+  if (!newVal || newVal.trim() === '') return
+  
+  timeoutIdentidad = setTimeout(async () => {
+    try {
+      const { data } = await axios.get(`http://localhost:3007/api/empleados/validar-identidad/${newVal.trim()}`)
+      if (data.existe) errorIdentidad.value = 'Este número de identidad ya está registrado'
+    } catch (e) {
+      console.error(e)
+    }
+  }, 600)
+})
 
 const filteredEmpleados = computed(() => {
   let empleados = listaEmpleados.value;
@@ -526,6 +581,10 @@ const cerrarModalNuevo = () => {
 }
 
 const guardarEmpleado = async () => {
+  if (errorCodigo.value || errorIdentidad.value) {
+    alert('❌ Por favor, corrija los errores en el formulario')
+    return
+  }
   try {
     loadingGuardar.value = true
     const res = await axios.post('http://localhost:3007/api/empleados/crear', form.value)
@@ -542,7 +601,24 @@ const guardarEmpleado = async () => {
   }
 }
 
+const eliminarEmpleado = async (id) => {
+  if (confirm('¿Estás seguro que deseas eliminar este empleado? Esta acción no se puede deshacer.')) {
+    try {
+      const res = await axios.delete(`http://localhost:3007/api/empleados/${id}`)
+      alert('✅ Empleado eliminado correctamente')
+      await cargarEmpleados()
+    } catch (error) {
+      alert('❌ Error al eliminar el empleado: ' + (error.response?.data?.error || error.message))
+    }
+  }
+}
+
 onMounted(async () => {
+  if (route.query.nuevo === 'true') {
+    abrirModalNuevo()
+    router.replace('/empleados')
+  }
+
   nombreUsuario.value = localStorage.getItem('usuarioNombre') || 'Invitado'
   fotoUsuario.value = localStorage.getItem('usuarioFoto') || null
   rolID.value = localStorage.getItem('usuarioRol') || 2
@@ -556,7 +632,7 @@ onMounted(async () => {
   }
   
   try {
-    const m = await axios.get(`http://localhost:3007/api/menu/${rolID.value}`)
+    const m = await axios.get(`http://localhost:3007/api/menu/${rolID.value}?usuario_id=${localStorage.getItem('usuarioID')}`)
     menuUsuario.value = m.data
   } catch (err) {
     console.error("Error cargando menu", err)
@@ -568,6 +644,23 @@ onMounted(async () => {
     departamentos.value = res.data
   } catch (error) {
     console.error("Error cargando departamentos:", error)
+  }
+
+  // Socket.io for real-time updates
+  socketInstance = io('http://localhost:3007')
+  socketInstance.on('nueva_notificacion', () => {
+    cargarEmpleados()
+  })
+  socketInstance.on('refresh_empleados', () => {
+    cargarEmpleados()
+  })
+})
+
+let socketInstance = null
+
+onUnmounted(() => {
+  if (socketInstance) {
+    socketInstance.disconnect()
   }
 })
 </script>

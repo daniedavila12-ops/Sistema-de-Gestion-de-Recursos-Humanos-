@@ -129,59 +129,59 @@
 
     <div v-else class="w-full grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
       <div v-for="doc in documentosFiltrados" :key="doc.id" 
-        class="bg-white rounded-3xl overflow-hidden shadow-xl group hover:translate-y-[-5px] transition-all duration-300 relative">
-        <div class="h-3 bg-amber-600"></div>
+        class="bg-white rounded-2xl overflow-hidden shadow-sm border border-slate-200 group hover:shadow-md hover:-translate-y-1 transition-all duration-300 relative flex flex-col">
+        <div class="h-1.5 bg-gradient-to-r from-amber-500 to-amber-600"></div>
         
         <!-- Botones Acción -->
-        <div class="absolute top-6 right-6 flex gap-3">
-          <button @click="abrirModalEdicion(doc)" class="text-slate-300 hover:text-blue-500 transition-colors" title="Editar documento">
-            ✏️
+        <div class="absolute top-4 right-4 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+          <button @click="abrirModalEdicion(doc)" class="p-1.5 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors" title="Editar documento">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/></svg>
           </button>
-          <button @click="eliminarDocumento(doc.id)" class="text-slate-300 hover:text-red-500 transition-colors" title="Eliminar documento">
-             🗑️
+          <button @click="eliminarDocumento(doc.id)" class="p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors" title="Eliminar documento">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
           </button>
         </div>
 
-        <div class="p-8">
-          <div class="flex justify-between items-start mb-4 pr-6">
-            <span class="px-3 py-1 bg-amber-50 text-amber-700 text-[10px] font-black uppercase rounded-full tracking-widest border border-amber-200">
+        <div class="p-5 flex-1 flex flex-col">
+          <div class="mb-3 pr-16">
+            <span class="inline-flex items-center px-2 py-0.5 bg-amber-50 text-amber-700 text-[9px] font-bold uppercase rounded-md tracking-widest border border-amber-200">
               {{ doc.categoria || 'General' }}
             </span>
           </div>
-          <h3 class="text-xl font-black text-slate-800 mb-2">{{ doc.titulo }}</h3>
-          <p class="text-slate-500 text-sm leading-relaxed mb-4 italic line-clamp-3">{{ doc.descripcion || 'Sin descripción' }}</p>
+          <h3 class="text-[15px] font-bold text-slate-800 mb-1.5 leading-snug group-hover:text-amber-600 transition-colors">{{ doc.titulo }}</h3>
+          <p class="text-slate-500 text-[11px] leading-relaxed mb-4 line-clamp-2 flex-1">{{ doc.descripcion || 'Sin descripción' }}</p>
           
-          <div class="flex justify-between items-center text-xs text-slate-400 font-medium mb-6">
-            <span>Subido: {{ new Date(doc.fecha_creacion).toLocaleDateString() }}</span>
-            <span v-if="doc.creadoPorNombre">Por: {{ doc.creadoPorNombre }}</span>
+          <div class="flex justify-between items-center text-[10px] text-slate-400 font-medium mb-4 border-t border-slate-100 pt-3">
+            <span class="flex items-center gap-1"><svg class="w-3 h-3" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg> {{ new Date(doc.fecha_creacion).toLocaleDateString() }}</span>
+            <span v-if="doc.creadoPorNombre" class="truncate max-w-[100px]" :title="doc.creadoPorNombre">Por: {{ doc.creadoPorNombre }}</span>
           </div>
 
-          <div class="flex flex-col gap-2 mb-2">
+          <div class="flex flex-col gap-1.5 mt-auto">
             <!-- Legacy File -->
             <button v-if="doc.archivo && (!doc.archivos || doc.archivos.length === 0)" @click="descargarUrl(doc.archivo)" 
-              class="w-full py-3 bg-slate-100 text-slate-700 rounded-xl font-bold uppercase text-xs tracking-widest hover:bg-amber-600 hover:text-white transition-colors flex items-center justify-center gap-3 shadow-sm border border-slate-200">
-              <span>📥</span> Descargar (Legacy) <span class="text-[10px] text-slate-500">{{ doc.tamano }}</span>
+              class="w-full py-2 bg-slate-50 text-slate-600 rounded-lg font-bold uppercase text-[10px] tracking-widest hover:bg-amber-50 hover:text-amber-700 hover:border-amber-200 transition-all flex items-center justify-center gap-2 border border-slate-200">
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg> Descargar (Legacy) <span class="font-normal opacity-70">{{ doc.tamano }}</span>
             </button>
             
             <!-- Multiple Files -->
             <div v-for="(arch, idx) in doc.archivos" :key="'arch-'+arch.id" class="flex flex-col gap-1">
               <button @click="descargarUrl(arch.archivo_url)" 
-                class="w-full py-3 bg-slate-100 text-slate-700 rounded-xl font-bold uppercase text-xs tracking-widest hover:bg-amber-600 hover:text-white transition-colors flex items-center justify-center gap-3 shadow-sm border border-slate-200">
-                <span>📥</span> Archivo {{ idx + 1 }} <span class="text-[10px] text-slate-500">{{ arch.tamano }}</span>
+                class="w-full py-2 bg-slate-50 text-slate-600 rounded-lg font-bold uppercase text-[10px] tracking-widest hover:bg-amber-50 hover:text-amber-700 hover:border-amber-200 transition-all flex items-center justify-center gap-2 border border-slate-200">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg> Archivo {{ idx + 1 }} <span class="font-normal opacity-70">{{ arch.tamano }}</span>
               </button>
             </div>
 
             <!-- Legacy Link -->
             <a v-if="doc.link_web && (!doc.links || doc.links.length === 0)" :href="doc.link_web" target="_blank"
-              class="w-full py-3 bg-slate-50 text-slate-700 rounded-xl font-bold uppercase text-xs tracking-widest hover:bg-amber-500 hover:text-white transition-colors flex items-center justify-center gap-3 shadow-sm border border-slate-200">
-              <span>🔗</span> Link (Legacy)
+              class="w-full py-2 bg-slate-50 text-slate-600 rounded-lg font-bold uppercase text-[10px] tracking-widest hover:bg-blue-50 hover:text-blue-700 hover:border-blue-200 transition-all flex items-center justify-center gap-2 border border-slate-200">
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/></svg> Link (Legacy)
             </a>
 
             <!-- Multiple Links -->
             <div v-for="(l, idx) in doc.links" :key="'link-'+l.id" class="flex flex-col gap-1">
               <a :href="l.link_url" target="_blank"
-                class="w-full py-3 bg-slate-50 text-slate-700 rounded-xl font-bold uppercase text-xs tracking-widest hover:bg-amber-500 hover:text-white transition-colors flex items-center justify-center gap-3 shadow-sm border border-slate-200">
-                <span>🔗</span> Link {{ idx + 1 }}
+                class="w-full py-2 bg-slate-50 text-slate-600 rounded-lg font-bold uppercase text-[10px] tracking-widest hover:bg-blue-50 hover:text-blue-700 hover:border-blue-200 transition-all flex items-center justify-center gap-2 border border-slate-200">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/></svg> Link {{ idx + 1 }}
               </a>
             </div>
           </div>

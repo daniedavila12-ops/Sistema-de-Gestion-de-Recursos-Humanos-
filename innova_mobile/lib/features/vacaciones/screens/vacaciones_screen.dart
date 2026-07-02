@@ -4,6 +4,7 @@ import 'package:dio/dio.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:go_router/go_router.dart';
 import '../../../core/api/api_client.dart';
 import 'package:innova_mobile/core/constants/api_constants.dart';
 
@@ -704,6 +705,18 @@ class _VacacionesScreenState extends ConsumerState<VacacionesScreen> {
         title: const Text('Registrar Vacaciones', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 18)),
         backgroundColor: Colors.blue[900],
         iconTheme: const IconThemeData(color: Colors.white),
+        actions: [
+          TextButton.icon(
+            onPressed: () {
+              context.push('/reportes-vacaciones');
+            },
+            icon: const Text('📄', style: TextStyle(fontSize: 14)),
+            label: const Text('REPORTES VACACIONES', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 11)),
+            style: TextButton.styleFrom(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+            ),
+          )
+        ],
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16.0),

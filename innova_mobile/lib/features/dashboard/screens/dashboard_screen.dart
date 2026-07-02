@@ -302,30 +302,81 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
   }
 
   Widget _buildStatCard(String title, String value, String icon, Color bgColor, Color textColor, {VoidCallback? onTap}) {
-    final card = Card(
-      elevation: 2,
-      color: bgColor,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      child: Padding(
-        padding: const EdgeInsets.all(12.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Text(icon, style: const TextStyle(fontSize: 24)),
-            const Spacer(),
-            Text(value, style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: textColor)),
-            Text(title, style: TextStyle(fontSize: 12, color: textColor.withValues(alpha: 0.8))),
-          ],
-        ),
+    LinearGradient gradient;
+    if (textColor == Colors.blue.shade900) {
+      gradient = const LinearGradient(colors: [Color(0xFF3B82F6), Color(0xFF4F46E5)], begin: Alignment.topLeft, end: Alignment.bottomRight); 
+    } else if (textColor == Colors.orange.shade900) {
+      gradient = const LinearGradient(colors: [Color(0xFFFBBF24), Color(0xFFF97316)], begin: Alignment.topLeft, end: Alignment.bottomRight); 
+    } else if (textColor == Colors.red.shade900) {
+      gradient = const LinearGradient(colors: [Color(0xFFF87171), Color(0xFFDC2626)], begin: Alignment.topLeft, end: Alignment.bottomRight); 
+    } else if (textColor == Colors.pink.shade900) {
+      gradient = const LinearGradient(colors: [Color(0xFFF472B6), Color(0xFFDB2777)], begin: Alignment.topLeft, end: Alignment.bottomRight); 
+    } else if (textColor == Colors.purple.shade900) {
+      gradient = const LinearGradient(colors: [Color(0xFFA855F7), Color(0xFF9333EA)], begin: Alignment.topLeft, end: Alignment.bottomRight); 
+    } else {
+      gradient = const LinearGradient(colors: [Color(0xFF34D399), Color(0xFF14B8A6)], begin: Alignment.topLeft, end: Alignment.bottomRight); 
+    }
+
+    final card = Container(
+      decoration: BoxDecoration(
+        gradient: gradient,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: gradient.colors.last.withValues(alpha: 0.3),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          )
+        ],
+      ),
+      child: Stack(
+        children: [
+          Positioned(
+            right: -15,
+            top: -15,
+            child: Opacity(
+              opacity: 0.15,
+              child: Text(icon, style: const TextStyle(fontSize: 70)),
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.all(12.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Expanded(child: Text(title.toUpperCase(), style: const TextStyle(fontSize: 9, fontWeight: FontWeight.w900, color: Colors.white, letterSpacing: 1.2), maxLines: 1, overflow: TextOverflow.ellipsis)),
+                    Container(
+                      padding: const EdgeInsets.all(6),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withValues(alpha: 0.2),
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: Text(icon, style: const TextStyle(fontSize: 14)),
+                    )
+                  ],
+                ),
+                const Spacer(),
+                Text(value, style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.white)),
+                Text(title, style: TextStyle(fontSize: 10, color: Colors.white.withValues(alpha: 0.8), fontWeight: FontWeight.bold), maxLines: 1, overflow: TextOverflow.ellipsis),
+              ],
+            ),
+          ),
+        ],
       ),
     );
 
     if (onTap != null) {
-      return InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(12),
-        child: card,
+      return Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(16),
+          child: card,
+        ),
       );
     }
     return card;
@@ -393,24 +444,30 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
         }
       },
       child: ListTile(
-        leading: CircleAvatar(
-          backgroundColor: isToday ? Colors.pink.shade100 : Colors.blue.shade50,
-          backgroundImage: foto != null ? NetworkImage('${ApiConstants.baseUrl}$foto') : null,
-          child: foto == null
-              ? Text(
-                  title.isNotEmpty ? title[0].toUpperCase() : 'U',
-                  style: TextStyle(color: isToday ? Colors.pink.shade900 : Colors.blue.shade900, fontWeight: FontWeight.bold),
-                )
-              : null,
+        visualDensity: VisualDensity.compact,
+        contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 0),
+        leading: SizedBox(
+          width: 32,
+          height: 32,
+          child: CircleAvatar(
+            backgroundColor: isToday ? Colors.pink.shade100 : Colors.blue.shade50,
+            backgroundImage: foto != null ? NetworkImage('${ApiConstants.baseUrl}$foto') : null,
+            child: foto == null
+                ? Text(
+                    title.isNotEmpty ? title[0].toUpperCase() : 'U',
+                    style: TextStyle(color: isToday ? Colors.pink.shade900 : Colors.blue.shade900, fontWeight: FontWeight.bold, fontSize: 12),
+                  )
+                : null,
+          ),
         ),
-        title: Text(title, style: const TextStyle(fontWeight: FontWeight.bold)),
-        subtitle: Text(subtitle),
+        title: Text(title, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
+        subtitle: Text(subtitle, style: const TextStyle(fontSize: 11)),
         trailing: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-          decoration: BoxDecoration(color: trailingColor.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(8)),
+          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+          decoration: BoxDecoration(color: trailingColor.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(6)),
           child: Text(
             trailing,
-            style: TextStyle(color: trailingColor, fontWeight: FontWeight.bold, fontSize: 12),
+            style: TextStyle(color: trailingColor, fontWeight: FontWeight.bold, fontSize: 10),
           ),
         ),
       ),
@@ -439,18 +496,24 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
           }
         },
         child: ListTile(
-          leading: CircleAvatar(
-            backgroundColor: statusColor.withValues(alpha: 0.1),
-            backgroundImage: foto != null ? NetworkImage('${ApiConstants.baseUrl}$foto') : null,
-            child: foto == null
-                ? Text(
-                    nombre.isNotEmpty ? nombre.substring(0, 1).toUpperCase() : 'U',
-                    style: TextStyle(color: statusColor, fontWeight: FontWeight.bold),
-                  )
-                : null,
+          visualDensity: VisualDensity.compact,
+          contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 0),
+          leading: SizedBox(
+            width: 32,
+            height: 32,
+            child: CircleAvatar(
+              backgroundColor: statusColor.withValues(alpha: 0.1),
+              backgroundImage: foto != null ? NetworkImage('${ApiConstants.baseUrl}$foto') : null,
+              child: foto == null
+                  ? Text(
+                      nombre.isNotEmpty ? nombre.substring(0, 1).toUpperCase() : 'U',
+                      style: TextStyle(color: statusColor, fontWeight: FontWeight.bold, fontSize: 12),
+                    )
+                  : null,
+            ),
           ),
-          title: Text(nombre, style: const TextStyle(fontWeight: FontWeight.bold)),
-          subtitle: Text(codigo),
+          title: Text(nombre, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
+          subtitle: Text(codigo, style: const TextStyle(fontSize: 11)),
         ),
       );
     }).toList());

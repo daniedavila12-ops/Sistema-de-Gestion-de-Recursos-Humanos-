@@ -32,10 +32,11 @@ router.post('/crear', upload.single('archivo'), (req, res) => {
     const archivo = req.file ? `/uploads/tickets/${req.file.filename}` : null;
 
     if (identidad) {
-        db.query('SELECT id FROM empleados WHERE identidad = ?', [identidad], (err, results) => {
+        db.query('SELECT id, nombre, apellido FROM empleados WHERE identidad = ?', [identidad], (err, results) => {
             if (err) return res.status(500).json({ error: err.message });
             
             const empleado_id = results.length > 0 ? results[0].id : null;
+            const empleado_nombre = results.length > 0 ? `${results[0].nombre} ${results[0].apellido}` : 'Un empleado';
             
             const query = 'INSERT INTO tickets (usuario_id, empleado_id, identidad, Categoria, descripcion, tema, prioridad, archivo) VALUES (?, ?, ?, ?, ?, ?, ?, ?)';
             db.execute(query, [usuario_id || null, empleado_id, identidad, tipo, descripcion, tema || null, prioridad || 'Media', archivo], (err, result) => {
@@ -48,7 +49,7 @@ router.post('/crear', upload.single('archivo'), (req, res) => {
                 db.query('SELECT id FROM usuarios WHERE rol_id IN (1, 2)', (err, users) => {
                     if (!err && users && users.length > 0) {
                         const notifQuery = 'INSERT INTO notificaciones (usuario_id, titulo, mensaje, tipo) VALUES ?';
-                        const notifValues = users.map(u => [u.id, 'Nuevo Ticket Pendiente', `Se ha recibido un nuevo ticket: ${tema || tipo}`, 'info']);
+                        const notifValues = users.map(u => [u.id, 'Nuevo Ticket Pendiente', `${empleado_nombre} creó un nuevo ticket #${result.insertId}: ${tema || tipo}`, 'info']);
                         db.query(notifQuery, [notifValues]);
                     }
                 });
@@ -67,7 +68,7 @@ router.post('/crear', upload.single('archivo'), (req, res) => {
             db.query('SELECT id FROM usuarios WHERE rol_id IN (1, 2)', (err, users) => {
                 if (!err && users && users.length > 0) {
                     const notifQuery = 'INSERT INTO notificaciones (usuario_id, titulo, mensaje, tipo) VALUES ?';
-                    const notifValues = users.map(u => [u.id, 'Nuevo Ticket Pendiente', `Se ha recibido un nuevo ticket: ${tema || tipo}`, 'info']);
+                    const notifValues = users.map(u => [u.id, 'Nuevo Ticket Pendiente', `Un empleado creó un nuevo ticket #${result.insertId}: ${tema || tipo}`, 'info']);
                     db.query(notifQuery, [notifValues]);
                 }
             });
@@ -329,6 +330,36 @@ router.post('/:id/respuestas', upload.single('archivo'), (req, res) => {
                 }
                 
                 res.json({ mensaje: 'Respuesta añadida con éxito', respuestaId: result.insertId });
+            });
+        });
+    });
+});
+
+// Ruta para eliminar un ticket
+router.delete('/:id', (req, res) => {
+    const ticketId = req.params.id;
+    const fs = require('fs');
+
+    // Primero obtener el archivo adjunto si existe
+    db.query('SELECT archivo FROM tickets WHERE id = ?', [ticketId], (err, results) => {
+        if (err) return res.status(500).json({ error: err.message });
+
+        if (results.length > 0 && results[0].archivo) {
+            const filePath = path.join(__dirname, '../../', results[0].archivo);
+            if (fs.existsSync(filePath)) {
+                try { fs.unlinkSync(filePath); } catch(e) { console.error('Error eliminando archivo:', e); }
+            }
+        }
+
+        // Eliminar respuestas asociadas
+        db.query('DELETE FROM ticket_respuestas WHERE ticket_id = ?', [ticketId], (err) => {
+            if (err) console.error('Error eliminando respuestas:', err);
+
+            db.query('DELETE FROM tickets WHERE id = ?', [ticketId], (err, result) => {
+                if (err) return res.status(500).json({ error: err.message });
+                const io = req.app.get('io');
+                if (io) io.emit('tickets_actualizados');
+                res.json({ mensaje: 'Ticket eliminado con éxito' });
             });
         });
     });
