@@ -6,6 +6,7 @@ import 'package:printing/printing.dart';
 import 'package:intl/intl.dart';
 import '../models/ticket_model.dart';
 import 'package:innova_mobile/core/constants/api_constants.dart';
+import '../../empleados/models/empleado_model.dart';
 
 class PdfTicketGenerator {
   static const String baseUrl = ApiConstants.baseUrl;
@@ -22,9 +23,26 @@ class PdfTicketGenerator {
     return null;
   }
 
-  static Future<void> generarPdfTicket(Ticket ticket, List<RespuestaTicket> respuestas) async {
+  static Future<void> generarPdfTicket(Ticket ticket, List<RespuestaTicket> respuestas, List<Empleado> requesters) async {
     final pdf = pw.Document();
     final logo = await _fetchImage('$baseUrl/uploads/Logo/Logo.png');
+
+    // Fetch avatars and attachment
+    final Map<String, pw.ImageProvider> avatars = {};
+    for (final req in requesters) {
+      if (req.foto != null) {
+        final img = await _fetchImage('$baseUrl${req.foto}');
+        if (img != null) avatars[req.foto!] = img;
+      }
+    }
+    
+    pw.ImageProvider? attachmentImage;
+    if (ticket.archivo != null) {
+      final url = ticket.archivo!.toLowerCase();
+      if (url.endsWith('.png') || url.endsWith('.jpg') || url.endsWith('.jpeg') || url.endsWith('.gif') || url.endsWith('.webp')) {
+         attachmentImage = await _fetchImage('$baseUrl${ticket.archivo}');
+      }
+    }
 
     pdf.addPage(
       pw.MultiPage(
@@ -37,9 +55,9 @@ class PdfTicketGenerator {
             pw.SizedBox(height: 20),
             _buildGeneralInfoTable(ticket),
             pw.SizedBox(height: 10),
-            _buildEmployeeInfoTable(ticket),
+            _buildEmployeeInfoTable(requesters, avatars),
             pw.SizedBox(height: 20),
-            _buildDescription(ticket),
+            _buildDescription(ticket, attachmentImage),
             pw.SizedBox(height: 20),
             _buildConversacion(respuestas),
           ];
@@ -109,25 +127,65 @@ class PdfTicketGenerator {
     );
   }
 
-  static pw.Widget _buildEmployeeInfoTable(Ticket ticket) {
-    return pw.TableHelper.fromTextArray(
-      headers: ['Datos del Solicitante', ''],
-      data: [
-        ['Nombre', ticket.solicitanteNombre],
-        ['Teléfono', ticket.empleadoTelefono ?? 'N/A'],
-      ],
-      border: pw.TableBorder.all(color: PdfColor.fromHex('#e2e8f0')),
-      headerStyle: pw.TextStyle(fontWeight: pw.FontWeight.bold, color: PdfColor.fromHex('#0f172a')),
-      headerDecoration: pw.BoxDecoration(color: PdfColor.fromHex('#f1f5f9')),
-      cellPadding: const pw.EdgeInsets.all(6),
-      columnWidths: {
-        0: const pw.FixedColumnWidth(150),
-        1: const pw.FlexColumnWidth(),
-      },
+  static pw.Widget _buildEmployeeInfoTable(List<Empleado> requesters, Map<String, pw.ImageProvider> avatars) {
+    // Collect all names and phones
+    final List<String> names = [];
+    final List<String> phones = [];
+    
+    for (final req in requesters) {
+      names.add('${req.nombre} ${req.apellido}'.trim());
+      phones.add(req.telefono ?? 'N/A');
+    }
+
+    // Build avatars row
+    final List<pw.Widget> avatarWidgets = requesters.map((req) {
+      if (req.foto != null && avatars.containsKey(req.foto)) {
+        return pw.Container(
+          width: 40,
+          height: 40,
+          margin: const pw.EdgeInsets.only(right: 8),
+          decoration: pw.BoxDecoration(
+            shape: pw.BoxShape.circle,
+            image: pw.DecorationImage(image: avatars[req.foto!]!, fit: pw.BoxFit.cover)
+          ),
+        );
+      }
+      return pw.Container(
+        width: 40,
+        height: 40,
+        margin: const pw.EdgeInsets.only(right: 8),
+        decoration: pw.BoxDecoration(shape: pw.BoxShape.circle, color: PdfColor.fromHex('#e2e8f0')),
+        child: pw.Center(child: pw.Text(req.nombre.isNotEmpty ? req.nombre[0].toUpperCase() : '?', style: pw.TextStyle(fontWeight: pw.FontWeight.bold, fontSize: 18)))
+      );
+    }).toList();
+
+    return pw.Column(
+      crossAxisAlignment: pw.CrossAxisAlignment.start,
+      children: [
+        if (avatarWidgets.isNotEmpty) ...[
+           pw.Row(children: avatarWidgets),
+           pw.SizedBox(height: 8),
+        ],
+        pw.TableHelper.fromTextArray(
+          headers: ['Datos del Solicitante', ''],
+          data: [
+            ['Nombres', names.join(', ')],
+            ['Teléfonos', phones.join(', ')],
+          ],
+          border: pw.TableBorder.all(color: PdfColor.fromHex('#e2e8f0')),
+          headerStyle: pw.TextStyle(fontWeight: pw.FontWeight.bold, color: PdfColor.fromHex('#0f172a')),
+          headerDecoration: pw.BoxDecoration(color: PdfColor.fromHex('#f1f5f9')),
+          cellPadding: const pw.EdgeInsets.all(6),
+          columnWidths: {
+            0: const pw.FixedColumnWidth(150),
+            1: const pw.FlexColumnWidth(),
+          },
+        )
+      ]
     );
   }
 
-  static pw.Widget _buildDescription(Ticket ticket) {
+  static pw.Widget _buildDescription(Ticket ticket, pw.ImageProvider? attachmentImage) {
     return pw.Column(
       crossAxisAlignment: pw.CrossAxisAlignment.start,
       children: [
@@ -137,6 +195,19 @@ class PdfTicketGenerator {
           ticket.descripcion.isEmpty ? 'Sin descripción.' : ticket.descripcion,
           style: pw.TextStyle(fontSize: 10, color: PdfColor.fromHex('#334155')),
         ),
+        if (attachmentImage != null) ...[
+          pw.SizedBox(height: 10),
+          pw.Text('Evidencia Adjunta:', style: pw.TextStyle(fontSize: 12, fontWeight: pw.FontWeight.bold, color: PdfColor.fromHex('#0f172a'))),
+          pw.SizedBox(height: 6),
+          pw.Container(
+             width: 400,
+             height: 200,
+             decoration: pw.BoxDecoration(
+               border: pw.Border.all(color: PdfColor.fromHex('#e2e8f0')),
+               image: pw.DecorationImage(image: attachmentImage, fit: pw.BoxFit.contain)
+             )
+          )
+        ]
       ],
     );
   }

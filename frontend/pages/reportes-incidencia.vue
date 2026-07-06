@@ -47,7 +47,7 @@
           </div>
         </div>
         <div class="flex items-center gap-3">
-          <button v-if="permisosModulo.puedeCrear" @click="abrirModalNuevo"
+          <button @click="abrirModalNuevo"
             class="flex items-center gap-2 bg-gradient-to-r from-red-500 to-rose-600 text-white px-5 py-2.5 rounded-xl font-bold text-xs uppercase tracking-wider hover:shadow-lg hover:shadow-red-500/25 hover:-translate-y-0.5 transition-all duration-200">
             <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" d="M12 5v14m-7-7h14"/></svg>
             Nuevo Reporte
@@ -320,11 +320,21 @@
                     <h3 class="text-slate-800 font-semibold text-[14px] leading-snug group-hover:text-red-600 transition-colors truncate mb-1">
                       {{ reporte.tema || 'Sin tema' }}
                     </h3>
-                    <p class="text-slate-400 text-xs leading-relaxed line-clamp-1">
-                      <span class="font-medium text-slate-500">{{ reporte.empleado_nombre || 'Desconocido' }} {{ reporte.empleado_apellido || '' }}</span>
-                      <span class="mx-1.5 text-slate-300">·</span>
-                      {{ reporte.descripcion }}
-                    </p>
+                    <div class="flex items-center gap-2 mb-1 mt-1">
+                      <div class="flex -space-x-2 shrink-0">
+                        <div v-for="emp in (reporte.empleados_detalles || [{nombre: reporte.empleado_nombre, foto: reporte.empleado_foto}])" :key="emp.identidad || Math.random()" 
+                             class="w-6 h-6 rounded-full overflow-hidden border-2 border-white bg-slate-100 flex items-center justify-center font-bold text-slate-500 text-[9px] shadow-sm relative z-10" 
+                             :title="emp.nombre">
+                          <img v-if="emp.foto" :src="`http://localhost:3007${emp.foto}`" class="w-full h-full object-cover" />
+                          <span v-else>{{ emp.nombre ? emp.nombre.charAt(0) : '?' }}</span>
+                        </div>
+                      </div>
+                      <p class="text-slate-400 text-xs leading-relaxed line-clamp-1">
+                        <span class="font-medium text-slate-500">{{ reporte.empleado_nombre || 'Desconocido' }} {{ reporte.empleado_apellido || '' }}</span>
+                        <span class="mx-1.5 text-slate-300">·</span>
+                        {{ reporte.descripcion }}
+                      </p>
+                    </div>
                   </div>
 
                   <!-- Meta Right -->
@@ -458,8 +468,17 @@
           <form @submit.prevent="crearReporte" class="space-y-5">
             <div>
               <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5 pl-0.5">Número de Identidad (Reportado)</label>
-              <input v-model="nuevoReporte.identidad" type="text" placeholder="Ej: 0801-1990-12345" required
-                class="w-full p-3.5 bg-slate-50/80 border border-slate-200 rounded-xl outline-none focus:border-red-400 focus:ring-3 focus:ring-red-500/10 text-slate-800 font-semibold text-sm transition-all placeholder:text-slate-400">
+              <div v-for="(id, index) in nuevoReporte.identidades" :key="index" class="flex gap-2 mb-2">
+                <input :value="nuevoReporte.identidades[index]" type="text" placeholder="Ej: 0801-1990-12345" required
+                  @input="e => formatIdentidad(e, index)" maxlength="15"
+                  class="flex-1 p-3.5 bg-slate-50/80 border border-slate-200 rounded-xl outline-none focus:border-red-400 focus:ring-3 focus:ring-red-500/10 text-slate-800 font-semibold text-sm transition-all placeholder:text-slate-400">
+                <button v-if="nuevoReporte.identidades.length > 1" type="button" @click="nuevoReporte.identidades.splice(index, 1)" class="px-3 bg-slate-100 text-red-500 rounded-xl hover:bg-red-50 transition-colors font-bold flex items-center justify-center">
+                  &times;
+                </button>
+              </div>
+              <button type="button" @click="nuevoReporte.identidades.push('')" class="text-[10px] text-blue-500 font-bold hover:text-blue-600 transition-colors uppercase tracking-widest mt-1">
+                + Agregar otra persona
+              </button>
             </div>
             <div class="grid grid-cols-2 gap-4">
               <div>
@@ -517,13 +536,16 @@
 </template>
 
 <script setup>
-import { ref, computed, watch, onMounted } from 'vue'
+import { ref, computed, watch, onMounted, onUnmounted } from 'vue'
 import axios from 'axios'
 import { useRouter } from 'vue-router'
 import jsPDF from 'jspdf'
 import 'jspdf-autotable'
 import Swal from 'sweetalert2'
 import TicketDetailReportesIncidencia from '~/pages/TicketDetailReportesIncidencia.vue'
+import { io } from 'socket.io-client'
+
+let socketInstance = null
 
 const selectedTicketId = ref(null)
 const cerrarDetalle = () => {
@@ -653,7 +675,7 @@ const cambiarPagina = (pag) => {
 }
 
 const nuevoReporte = ref({
-  identidad: '',
+  identidades: [''],
   categoria: '',
   prioridad: 'Media',
   tema: '',
@@ -661,6 +683,19 @@ const nuevoReporte = ref({
 })
 const archivoReporte = ref(null)
 const fileInputRef = ref(null)
+
+const formatIdentidad = (event, index) => {
+  let val = event.target.value.replace(/\D/g, '')
+  if (val.length > 13) val = val.slice(0, 13)
+  
+  if (val.length > 8) {
+    val = val.slice(0, 4) + '-' + val.slice(4, 8) + '-' + val.slice(8)
+  } else if (val.length > 4) {
+    val = val.slice(0, 4) + '-' + val.slice(4)
+  }
+  
+  nuevoReporte.value.identidades[index] = val
+}
 
 const filtroActivo = ref('todas')
 const searchTrm = ref('')
@@ -773,7 +808,7 @@ const abrirModalNuevo = () => {
 const cerrarModal = () => {
   mostrarModal.value = false
   nuevoReporte.value = {
-    identidad: '',
+    identidades: [''],
     categoria: categoriasActivas.value.length > 0 ? categoriasActivas.value[0].nombre : '',
     prioridad: 'Media',
     tema: '',
@@ -791,7 +826,27 @@ const fetchReportes = async () => {
   try {
     loadingFetch.value = true
     const response = await axios.get('http://localhost:3007/api/reportes-incidencia/lista')
-    const data = response.data
+    let data = response.data
+
+    try {
+      const empRes = await axios.get('http://localhost:3007/api/empleados/lista')
+      const empleados = empRes.data
+      data = data.map(r => {
+        if (!r.empleado_nombre && r.identidad) {
+          const ids = r.identidad.split(',').map(i => i.trim())
+          const emps = empleados.filter(e => ids.includes(e.identidad))
+          if (emps.length > 0) {
+            r.empleado_nombre = emps.map(e => e.nombre).join(', ')
+            r.empleado_apellido = emps.map(e => e.apellido).join(', ')
+            r.empleados_detalles = emps
+          }
+        }
+        return r
+      })
+    } catch (err) {
+      console.error("Error al cargar empleados para nombres en lista:", err)
+    }
+
     todosLosReportes.value = data
 
     let countsData = data
@@ -831,7 +886,8 @@ const crearReporte = async () => {
     
     const formData = new FormData()
     formData.append('jefe_reporta', nombreUsuario.value)
-    formData.append('identidad', nuevoReporte.value.identidad)
+    const identidadesValidas = nuevoReporte.value.identidades.filter(i => i.trim() !== '').join(', ')
+    formData.append('identidad', identidadesValidas)
     formData.append('categoria', nuevoReporte.value.categoria)
     formData.append('prioridad', nuevoReporte.value.prioridad)
     formData.append('tema', nuevoReporte.value.tema)
@@ -1065,6 +1121,18 @@ onMounted(async () => {
   }
 
   await fetchReportes()
+
+  // Socket.io for real-time updates
+  socketInstance = io('http://localhost:3007')
+  socketInstance.on('reportes_actualizados', () => {
+    fetchReportes()
+  })
+})
+
+onUnmounted(() => {
+  if (socketInstance) {
+    socketInstance.disconnect()
+  }
 })
 
 const logout = () => { 

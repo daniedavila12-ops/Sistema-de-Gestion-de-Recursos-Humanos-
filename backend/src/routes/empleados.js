@@ -114,7 +114,12 @@ router.get('/validar-identidad/:identidad', (req, res) => {
 
 router.get('/lista', (req, res) => {
     const db = req.app.get('db');
-    const sql = "SELECT * FROM empleados ORDER BY id DESC";
+    const sql = `
+        SELECT e.*, d.nombre AS departamento_nombre 
+        FROM empleados e 
+        LEFT JOIN departamentos d ON e.departamento_id = d.id 
+        ORDER BY e.id DESC
+    `;
     db.query(sql, (err, results) => {
         if (err) return res.status(500).json(err);
         res.json(results);

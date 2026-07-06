@@ -7,6 +7,8 @@ import '../models/reporte_incidencia_model.dart';
 
 import '../providers/reporte_incidencia_provider.dart';
 import '../../auth/providers/auth_provider.dart';
+import '../../empleados/providers/empleado_provider.dart';
+import '../../empleados/models/empleado_model.dart';
 import '../utils/pdf_reporte_generator.dart';
 import 'package:innova_mobile/core/constants/api_constants.dart';
 
@@ -102,9 +104,23 @@ class _ReporteIncidenciaDetalleScreenState extends ConsumerState<ReporteIncidenc
     }
   }
 
+  List<Empleado> _getEmpleadosReportados() {
+    final empleadosAsync = ref.read(empleadosProvider);
+    if (empleadosAsync is AsyncData) {
+      final empleados = empleadosAsync.value!;
+      final r = widget.reporte;
+      if (r.identidad != null && r.identidad!.isNotEmpty) {
+        final identidadesArr = r.identidad!.split(',').map((e) => e.trim()).toList();
+        return empleados.where((e) => identidadesArr.contains(e.identidad)).toList();
+      }
+    }
+    return [];
+  }
+
   Future<void> _generarPDFBasico() async {
     try {
-      await PdfReporteGenerator.generarPdfBasico(widget.reporte);
+      final empleadosReportados = _getEmpleadosReportados();
+      await PdfReporteGenerator.generarPdfBasico(widget.reporte, empleadosReportados);
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error al generar PDF: $e')));
@@ -115,7 +131,8 @@ class _ReporteIncidenciaDetalleScreenState extends ConsumerState<ReporteIncidenc
     try {
       final respuestasAsync = ref.read(respuestasReporteProvider(widget.reporte.id));
       final respuestas = respuestasAsync.value ?? [];
-      await PdfReporteGenerator.generarPdfResoluciones(widget.reporte, respuestas);
+      final empleadosReportados = _getEmpleadosReportados();
+      await PdfReporteGenerator.generarPdfResoluciones(widget.reporte, respuestas, empleadosReportados);
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error al generar PDF: $e')));
@@ -209,36 +226,65 @@ class _ReporteIncidenciaDetalleScreenState extends ConsumerState<ReporteIncidenc
 
   Widget _buildInfoCard() {
     final r = widget.reporte;
+    final empleadosAsync = ref.watch(empleadosProvider);
+    
+    List<String> identidadesArr = [];
+    if (r.identidad != null && r.identidad!.isNotEmpty) {
+      identidadesArr = r.identidad!.split(',').map((e) => e.trim()).toList();
+    }
+
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(16), border: Border.all(color: Colors.grey.shade200)),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text('Información del Solicitante', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.grey, letterSpacing: 1)),
+          const Text('EMPLEADO(S) REPORTADO(S)', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.grey, letterSpacing: 1)),
           const SizedBox(height: 12),
-          Row(
-            children: [
-              CircleAvatar(
-                radius: 20,
-                backgroundColor: Colors.grey.shade200,
-                backgroundImage: r.empleadoFoto != null ? NetworkImage('${ApiConstants.baseUrl}${r.empleadoFoto}') : null,
-                onBackgroundImageError: r.empleadoFoto != null ? (e, s) {} : null,
-                child: r.empleadoFoto == null ? Text(r.empleadoNombre != null && r.empleadoNombre!.isNotEmpty ? r.empleadoNombre![0].toUpperCase() : '?', style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.grey)) : null,
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text('${r.empleadoNombre ?? 'Desconocido'} ${r.empleadoApellido ?? ''}', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-                    const SizedBox(height: 2),
-                    Text(r.identidad ?? 'Sin Identidad', style: TextStyle(color: Colors.grey.shade600, fontSize: 13)),
-                  ],
-                ),
-              ),
-            ],
+          
+          empleadosAsync.when(
+            data: (empleados) {
+              final empleadosReportados = empleados.where((e) => identidadesArr.contains(e.identidad)).toList();
+              
+              if (empleadosReportados.isNotEmpty) {
+                return Column(
+                  children: empleadosReportados.map((emp) {
+                    return Padding(
+                      padding: const EdgeInsets.only(bottom: 12),
+                      child: Row(
+                        children: [
+                          CircleAvatar(
+                            radius: 20,
+                            backgroundColor: Colors.grey.shade200,
+                            backgroundImage: emp.foto != null ? NetworkImage('${ApiConstants.baseUrl}${emp.foto}') : null,
+                            onBackgroundImageError: emp.foto != null ? (e, s) {} : null,
+                            child: emp.foto == null ? Text(emp.nombre.isNotEmpty ? emp.nombre[0].toUpperCase() : '?', style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.grey)) : null,
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text('${emp.nombre} ${emp.apellido}', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: Colors.black87)),
+                                const SizedBox(height: 2),
+                                Text('IDENTIDAD: ${emp.identidad}', style: TextStyle(color: Colors.grey.shade500, fontSize: 10, fontWeight: FontWeight.w800, letterSpacing: 0.5)),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    );
+                  }).toList(),
+                );
+              }
+              
+              // Fallback
+              return _buildFallbackEmpleado(r);
+            },
+            loading: () => const Center(child: CircularProgressIndicator(strokeWidth: 2)),
+            error: (err, stack) => _buildFallbackEmpleado(r),
           ),
+          
           const Divider(height: 32),
           _buildInfoRow(Icons.person, 'Reportado por', r.jefeReporta ?? 'N/A'),
           const SizedBox(height: 8),
@@ -265,6 +311,31 @@ class _ReporteIncidenciaDetalleScreenState extends ConsumerState<ReporteIncidenc
           ]
         ],
       ),
+    );
+  }
+
+  Widget _buildFallbackEmpleado(ReporteIncidencia r) {
+    return Row(
+      children: [
+        CircleAvatar(
+          radius: 20,
+          backgroundColor: Colors.grey.shade200,
+          backgroundImage: r.empleadoFoto != null ? NetworkImage('${ApiConstants.baseUrl}${r.empleadoFoto}') : null,
+          onBackgroundImageError: r.empleadoFoto != null ? (e, s) {} : null,
+          child: r.empleadoFoto == null ? Text(r.empleadoNombre != null && r.empleadoNombre!.isNotEmpty ? r.empleadoNombre![0].toUpperCase() : '?', style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.grey)) : null,
+        ),
+        const SizedBox(width: 12),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text('${r.empleadoNombre ?? 'Desconocido'} ${r.empleadoApellido ?? ''}', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+              const SizedBox(height: 2),
+              Text(r.identidad ?? 'Sin Identidad', style: TextStyle(color: Colors.grey.shade600, fontSize: 13)),
+            ],
+          ),
+        ),
+      ],
     );
   }
 

@@ -20,8 +20,6 @@ class _PermisosDialogState extends ConsumerState<PermisosDialog> {
   @override
   void initState() {
     super.initState();
-    // We get the data using the provider directly inside the build method,
-    // but we need a local copy to edit before saving.
   }
 
   void _onPuedeVerChange(Permiso p, bool? val) {
@@ -49,6 +47,23 @@ class _PermisosDialogState extends ConsumerState<PermisosDialog> {
         puedeCrear: type == 'crear' ? valBool : p.puedeCrear,
         puedeEditar: type == 'editar' ? valBool : p.puedeEditar,
         puedeEliminar: type == 'eliminar' ? valBool : p.puedeEliminar,
+      );
+    });
+  }
+
+  bool _todosSeleccionados(Permiso p) {
+    return p.puedeVer && p.puedeCrear && p.puedeEditar && p.puedeEliminar;
+  }
+
+  void _toggleTodos(Permiso p, bool? val) {
+    setState(() {
+      final index = _permisosForm!.indexOf(p);
+      bool valBool = val ?? false;
+      _permisosForm![index] = p.copyWith(
+        puedeVer: valBool,
+        puedeCrear: valBool,
+        puedeEditar: valBool,
+        puedeEliminar: valBool,
       );
     });
   }
@@ -81,94 +96,89 @@ class _PermisosDialogState extends ConsumerState<PermisosDialog> {
     final permisosAsync = ref.watch(permisosRolProvider(widget.rol.id));
 
     return Scaffold(
+      backgroundColor: Colors.grey[100],
       appBar: AppBar(
-        title: const Text('Permisos del Rol'),
-        backgroundColor: Colors.purple,
+        title: const Text('PERMISOS DEL ROL', style: TextStyle(fontWeight: FontWeight.w900, letterSpacing: 1.0)),
+        backgroundColor: Colors.purple.shade800,
         foregroundColor: Colors.white,
+        elevation: 0,
       ),
       body: permisosAsync.when(
         data: (permisosData) {
-          // Inicializar la copia local
           _permisosForm ??= List.from(permisosData);
 
           if (_permisosForm!.isEmpty) {
-            return const Center(child: Text('No hay módulos configurados.'));
+            return const Center(child: Text('No hay módulos configurados.', style: TextStyle(color: Colors.grey, fontStyle: FontStyle.italic)));
           }
 
           return Column(
             children: [
               Container(
                 width: double.infinity,
-                padding: const EdgeInsets.all(16),
-                color: Colors.purple.shade50,
-                child: Text(
-                  'Configurando accesos para: ${widget.rol.nombre}',
-                  style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.purple),
+                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                color: Colors.purple.shade800,
+                child: RichText(
+                  text: TextSpan(
+                    style: TextStyle(color: Colors.purple.shade100, fontSize: 14),
+                    children: [
+                      const TextSpan(text: 'Configurando accesos para: '),
+                      TextSpan(text: widget.rol.nombre, style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.white)),
+                    ],
+                  ),
                 ),
               ),
               Expanded(
                 child: ListView.builder(
-                  padding: const EdgeInsets.all(8),
+                  padding: const EdgeInsets.all(16),
                   itemCount: _permisosForm!.length,
                   itemBuilder: (context, index) {
                     final permiso = _permisosForm![index];
-                    return Card(
-                      margin: const EdgeInsets.only(bottom: 8),
+                    return Container(
+                      margin: const EdgeInsets.only(bottom: 12),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(color: Colors.blueGrey.shade200),
+                        boxShadow: const [BoxShadow(color: Colors.black12, blurRadius: 2, offset: Offset(0, 1))],
+                      ),
                       child: Padding(
-                        padding: const EdgeInsets.all(12.0),
+                        padding: const EdgeInsets.all(16.0),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text(
-                              permiso.moduloNombre,
-                              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Text(
+                                  permiso.moduloNombre,
+                                  style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w900, color: Color(0xFF1E293B)),
+                                ),
+                                Row(
+                                  children: [
+                                    const Text('TODOS', style: TextStyle(fontSize: 10, fontWeight: FontWeight.w900, color: Colors.purple)),
+                                    Checkbox(
+                                      value: _todosSeleccionados(permiso),
+                                      onChanged: (v) => _toggleTodos(permiso, v),
+                                      activeColor: Colors.purple,
+                                      visualDensity: VisualDensity.compact,
+                                    ),
+                                  ],
+                                ),
+                              ],
                             ),
                             const Divider(),
-                            Wrap(
-                              spacing: 20,
+                            Column(
                               children: [
                                 Row(
-                                  mainAxisSize: MainAxisSize.min,
                                   children: [
-                                    const Text('Ver'),
-                                    Checkbox(
-                                      value: permiso.puedeVer,
-                                      onChanged: (v) => _onPuedeVerChange(permiso, v),
-                                      activeColor: Colors.purple,
-                                    ),
+                                    Expanded(child: _buildCheckbox('Ver', permiso.puedeVer, (v) => _onPuedeVerChange(permiso, v))),
+                                    Expanded(child: _buildCheckbox('Crear', permiso.puedeCrear, (v) => _onAccionChange(permiso, v, 'crear'))),
                                   ],
                                 ),
                                 Row(
-                                  mainAxisSize: MainAxisSize.min,
                                   children: [
-                                    const Text('Crear'),
-                                    Checkbox(
-                                      value: permiso.puedeCrear,
-                                      onChanged: (v) => _onAccionChange(permiso, v, 'crear'),
-                                      activeColor: Colors.purple,
-                                    ),
-                                  ],
-                                ),
-                                Row(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    const Text('Editar'),
-                                    Checkbox(
-                                      value: permiso.puedeEditar,
-                                      onChanged: (v) => _onAccionChange(permiso, v, 'editar'),
-                                      activeColor: Colors.purple,
-                                    ),
-                                  ],
-                                ),
-                                Row(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    const Text('Eliminar'),
-                                    Checkbox(
-                                      value: permiso.puedeEliminar,
-                                      onChanged: (v) => _onAccionChange(permiso, v, 'eliminar'),
-                                      activeColor: Colors.purple,
-                                    ),
+                                    Expanded(child: _buildCheckbox('Editar', permiso.puedeEditar, (v) => _onAccionChange(permiso, v, 'editar'))),
+                                    Expanded(child: _buildCheckbox('Eliminar', permiso.puedeEliminar, (v) => _onAccionChange(permiso, v, 'eliminar'))),
                                   ],
                                 ),
                               ],
@@ -181,19 +191,35 @@ class _PermisosDialogState extends ConsumerState<PermisosDialog> {
                 ),
               ),
               Container(
-                padding: const EdgeInsets.all(16),
+                padding: const EdgeInsets.all(20),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  border: Border(top: BorderSide(color: Colors.blueGrey.shade100)),
+                ),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.end,
                   children: [
                     TextButton(
                       onPressed: _isLoading ? null : () => Navigator.pop(context),
-                      child: const Text('Cancelar'),
+                      style: TextButton.styleFrom(
+                        foregroundColor: Colors.blueGrey.shade600,
+                        textStyle: const TextStyle(fontWeight: FontWeight.bold, letterSpacing: 1.0, fontSize: 12),
+                        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                      ),
+                      child: const Text('CANCELAR'),
                     ),
-                    const SizedBox(width: 8),
+                    const SizedBox(width: 12),
                     ElevatedButton(
-                      style: ElevatedButton.styleFrom(backgroundColor: Colors.purple, foregroundColor: Colors.white),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.purple.shade600,
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                        textStyle: const TextStyle(fontWeight: FontWeight.w900, letterSpacing: 1.0, fontSize: 12),
+                        elevation: 4,
+                      ),
                       onPressed: _isLoading ? null : _guardarPermisos,
-                      child: _isLoading ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(color: Colors.white)) : const Text('Guardar Permisos'),
+                      child: _isLoading ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2)) : const Text('GUARDAR PERMISOS'),
                     ),
                   ],
                 ),
@@ -204,6 +230,21 @@ class _PermisosDialogState extends ConsumerState<PermisosDialog> {
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (err, _) => Center(child: Text('Error: $err')),
       ),
+    );
+  }
+
+  Widget _buildCheckbox(String label, bool value, ValueChanged<bool?> onChanged) {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Text(label, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: Colors.black87)),
+        Checkbox(
+          value: value,
+          onChanged: onChanged,
+          activeColor: Colors.purple,
+          visualDensity: VisualDensity.compact,
+        ),
+      ],
     );
   }
 }

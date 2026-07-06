@@ -70,14 +70,14 @@
               <div class="bg-white rounded-2xl border border-slate-100 overflow-hidden shadow-sm">
                 <div class="p-6">
                   <div class="flex items-start gap-4 mb-5">
-                    <div v-if="ticket.requester.avatar" class="w-12 h-12 rounded-full overflow-hidden border border-slate-200 shrink-0">
-                      <img :src="ticket.requester.avatar" alt="Avatar" class="w-full h-full object-cover" />
+                    <div v-if="ticket.requesters[0].avatar" class="w-12 h-12 rounded-full overflow-hidden border border-slate-200 shrink-0">
+                      <img :src="ticket.requesters[0].avatar" alt="Avatar" class="w-full h-full object-cover" />
                     </div>
-                    <div v-else class="w-12 h-12 rounded-full bg-slate-100 text-slate-500 font-bold flex items-center justify-center shrink-0 uppercase border border-slate-200">
-                      {{ ticket.requester.name ? ticket.requester.name.charAt(0) : '?' }}
+                    <div v-else class="w-12 h-12 rounded-full bg-slate-200 text-slate-500 font-bold flex items-center justify-center shrink-0 uppercase border border-slate-300">
+                      {{ ticket.requesters[0].name ? ticket.requesters[0].name.charAt(0) : '?' }}
                     </div>
                     <div>
-                      <h3 class="text-sm font-bold text-slate-900">{{ ticket.requester.name }}</h3>
+                      <h3 class="text-sm font-bold text-slate-900">{{ ticket.requesters[0].name }} <span v-if="ticket.requesters.length > 1" class="text-xs font-normal text-slate-500">y otros</span></h3>
                       <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-0.5">{{ ticket.timeAgo }}</p>
                     </div>
                   </div>
@@ -87,11 +87,18 @@
                   </div>
 
                   <!-- Archivo Adjunto -->
-                  <div v-if="ticket.attachment" class="mt-6 ml-16 inline-flex items-center gap-3 px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl hover:border-purple-300 transition-colors">
-                    <span class="text-purple-500">📎</span>
-                    <a :href="ticket.attachment.url" target="_blank" class="text-xs font-bold text-slate-700 hover:text-purple-600 transition-colors">
-                      {{ ticket.attachment.name || 'captura_de_pantalla.png' }}
-                    </a>
+                  <div v-if="ticket.attachment" class="mt-6 ml-16">
+                    <div v-if="isImage(ticket.attachment.url)" class="mt-2 rounded-xl overflow-hidden border border-slate-200 inline-block max-w-sm">
+                      <a :href="ticket.attachment.url" target="_blank">
+                        <img :src="ticket.attachment.url" alt="Evidencia" class="w-full h-auto object-contain max-h-64" />
+                      </a>
+                    </div>
+                    <div v-else class="inline-flex items-center gap-3 px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl hover:border-purple-300 transition-colors">
+                      <span class="text-purple-500">📎</span>
+                      <a :href="ticket.attachment.url" target="_blank" class="text-xs font-bold text-slate-700 hover:text-purple-600 transition-colors">
+                        {{ ticket.attachment.name || 'documento_adjunto' }}
+                      </a>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -118,9 +125,16 @@
                   
                   <p class="text-sm text-slate-600 leading-relaxed whitespace-pre-line pl-14">{{ res.mensaje }}</p>
                   
-                  <div v-if="res.archivo" class="mt-4 ml-14 inline-flex items-center gap-2 px-3 py-1.5 bg-white border border-slate-200 rounded-lg text-xs hover:border-indigo-300 transition-colors">
-                    <span>📎</span>
-                    <a :href="res.archivo" target="_blank" class="text-indigo-600 font-bold truncate max-w-[200px] hover:underline">{{ res.archivo_nombre || 'Documento adjunto' }}</a>
+                  <div v-if="res.archivo" class="mt-4 ml-14">
+                    <div v-if="isImage(res.archivo)" class="mt-2 rounded-xl overflow-hidden border border-slate-200 inline-block max-w-xs">
+                      <a :href="res.archivo" target="_blank">
+                        <img :src="res.archivo" alt="Evidencia de Respuesta" class="w-full h-auto object-contain max-h-48" />
+                      </a>
+                    </div>
+                    <div v-else class="inline-flex items-center gap-2 px-3 py-1.5 bg-white border border-slate-200 rounded-lg text-xs hover:border-indigo-300 transition-colors">
+                      <span>📎</span>
+                      <a :href="res.archivo" target="_blank" class="text-indigo-600 font-bold truncate max-w-[200px] hover:underline">{{ res.archivo_nombre || 'Documento adjunto' }}</a>
+                    </div>
                   </div>
                 </div>
 
@@ -171,29 +185,33 @@
         <!-- Tarjeta Información del Solicitante -->
         <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-5">
           <h3 class="text-xs font-bold text-gray-500 uppercase tracking-wider mb-4 border-b border-gray-100 pb-2">Información del Solicitante</h3>
-          <div class="flex items-center gap-3 mb-4">
-            <div v-if="ticket.requester.avatar" class="w-10 h-10 rounded-full overflow-hidden border border-gray-200 shrink-0">
-              <img :src="ticket.requester.avatar" alt="Avatar Solicitante" class="w-full h-full object-cover" />
+          
+          <div v-for="(req, idx) in ticket.requesters" :key="idx" class="mb-4 last:mb-0 pb-4 last:pb-0 border-b border-gray-100 last:border-0">
+            <div class="flex items-center gap-3 mb-4">
+              <div v-if="req.avatar" class="w-10 h-10 rounded-full overflow-hidden border border-gray-200 shrink-0">
+                <img :src="req.avatar" alt="Avatar Solicitante" class="w-full h-full object-cover" />
+              </div>
+              <div v-else class="w-10 h-10 rounded-full bg-slate-200 text-slate-500 font-bold flex items-center justify-center shrink-0 uppercase border border-gray-200">
+                {{ req.name ? req.name.charAt(0) : '?' }}
+              </div>
+              <div>
+                <p class="text-sm font-bold text-gray-900">{{ req.name }}</p>
+                <p class="text-xs text-gray-500 flex items-center mt-0.5">
+                  <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"></path></svg>
+                  {{ req.phone }}
+                </p>
+              </div>
             </div>
-            <div v-else class="w-10 h-10 rounded-full bg-slate-200 text-slate-500 font-bold flex items-center justify-center shrink-0 uppercase border border-gray-200">
-              {{ ticket.requester.name ? ticket.requester.name.charAt(0) : '?' }}
-            </div>
-            <div>
-              <p class="text-sm font-bold text-gray-900">{{ ticket.requester.name }}</p>
-              <p class="text-xs text-gray-500 flex items-center mt-0.5">
-                <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"></path></svg>
-                {{ ticket.requester.phone }}
-              </p>
-            </div>
-          </div>
-          <div class="grid grid-cols-2 gap-3">
-            <div class="bg-blue-50 border border-blue-200 rounded-lg p-3 text-center">
-              <p class="text-[10px] font-bold text-blue-700 uppercase tracking-wide">Total de entradas</p>
-              <p class="text-xl font-extrabold text-blue-800">{{ ticket.requester.totalTickets }}</p>
-            </div>
-            <div class="bg-green-50 border border-green-200 rounded-lg p-3 text-center">
-              <p class="text-[10px] font-bold text-green-700 uppercase tracking-wide">Entradas resueltas</p>
-              <p class="text-xl font-extrabold text-green-800">{{ ticket.requester.resolvedTickets }}</p>
+            
+            <div class="grid grid-cols-2 gap-3" v-if="ticket.requesters.length === 1">
+              <div class="bg-blue-50 border border-blue-200 rounded-lg p-3 text-center">
+                <p class="text-[10px] font-bold text-blue-700 uppercase tracking-wide">Total de entradas</p>
+                <p class="text-xl font-extrabold text-blue-800">{{ req.totalTickets }}</p>
+              </div>
+              <div class="bg-green-50 border border-green-200 rounded-lg p-3 text-center">
+                <p class="text-[10px] font-bold text-green-700 uppercase tracking-wide">Entradas resueltas</p>
+                <p class="text-xl font-extrabold text-green-800">{{ req.resolvedTickets }}</p>
+              </div>
             </div>
           </div>
         </div>
@@ -254,7 +272,7 @@
                 <p class="text-sm font-bold text-gray-800">Entrada creada</p>
                 <p class="text-[10px] text-gray-500 font-medium">{{ ticket.dateCreated }}</p>
               </div>
-              <p class="text-xs text-gray-500 mb-2">{{ ticket.timeAgo }} por <span class="font-bold">{{ ticket.requester.name }}</span></p>
+              <p class="text-xs text-gray-500 mb-2">{{ ticket.timeAgo }} por <span class="font-bold">{{ ticket.requesters[0].name }}</span></p>
               
               <div class="bg-gray-50 p-3 rounded-lg border border-gray-100 space-y-2 text-xs mt-3">
                 <div class="flex flex-wrap items-center gap-2">
@@ -352,6 +370,11 @@ const enviandoRespuesta = ref(false);
 const archivoSeleccionado = ref(null);
 const archivoRespuesta = ref(null);
 
+const isImage = (url) => {
+  if (!url) return false;
+  return /\.(jpeg|jpg|gif|png|webp)(\?.*)?$/i.test(url);
+};
+
 const fetchRespuestas = async (ticketId) => {
   try {
     const { data } = await axios.get(`http://localhost:3007/api/tickets/${ticketId}/respuestas`);
@@ -425,6 +448,13 @@ const fetchTicket = async () => {
     
     // Fetch respuestas
     await fetchRespuestas(id);
+    
+    if (employeesList.value.length === 0) {
+      try {
+        const resE = await axios.get('http://localhost:3007/api/empleados/lista');
+        employeesList.value = resE.data;
+      } catch(e) { console.error(e) }
+    }
 
     
     // Formatear la fecha
@@ -475,6 +505,29 @@ const fetchTicket = async () => {
       updatedTimeAgoStr = `Hace ${diffDaysUpdated} días`;
     }
 
+    // Procesar los solicitantes
+    let requesters = [];
+    if (data.identidad && data.identidad.includes(',')) {
+      const identidadesArr = data.identidad.split(',').map(i => i.trim());
+      requesters = employeesList.value.filter(e => identidadesArr.includes(e.identidad)).map(e => ({
+        name: `${e.nombre} ${e.apellido}`,
+        avatar: e.foto ? `http://localhost:3007${e.foto}` : null,
+        phone: e.telefono || 'N/D',
+        totalTickets: data.tickets_totales || 0, // Fallback, no es 100% preciso por empleado individual
+        resolvedTickets: data.tickets_resueltos || 0
+      }));
+    }
+    
+    if (requesters.length === 0) {
+      requesters = [{
+        name: data.empleado_nombre ? `${data.empleado_nombre} ${data.empleado_apellido || ''}` : 'Externo',
+        avatar: data.empleado_foto ? `http://localhost:3007${data.empleado_foto}` : null,
+        phone: data.empleado_telefono || 'N/D',
+        totalTickets: data.tickets_totales || 0,
+        resolvedTickets: data.tickets_resueltos || 0
+      }];
+    }
+
     ticket.value = {
       id: `#TKT-${data.id.toString().padStart(3, '0')}`,
       title: data.tema || data.Categoria || data.tipo,
@@ -491,13 +544,7 @@ const fetchTicket = async () => {
         name: data.archivo.split('/').pop(),
         url: `http://localhost:3007${data.archivo}`
       } : null,
-      requester: {
-        name: data.empleado_nombre ? `${data.empleado_nombre} ${data.empleado_apellido || ''}` : 'Externo',
-        avatar: data.empleado_foto ? `http://localhost:3007${data.empleado_foto}` : null,
-        phone: data.empleado_telefono || 'N/D',
-        totalTickets: data.tickets_totales || 0,
-        resolvedTickets: data.tickets_resueltos || 0
-      },
+      requesters: requesters,
       assignedTo: {
         name: assignedName,
         avatar: assignedAvatar
@@ -649,12 +696,41 @@ const generarPDFTicket = async () => {
 
     // --- DATOS DEL SOLICITANTE ---
     currentY = doc.lastAutoTable.finalY + 10;
+    
+    let currentX = 14;
+    for (const req of ticket.value.requesters) {
+      if (req.avatar) {
+        try {
+          const avatarImg = new Image();
+          avatarImg.crossOrigin = "Anonymous";
+          avatarImg.src = req.avatar;
+          await new Promise((resolve) => {
+            avatarImg.onload = resolve;
+            avatarImg.onerror = resolve;
+          });
+          if (avatarImg.complete && avatarImg.naturalWidth > 0) {
+            doc.addImage(avatarImg, 'JPEG', currentX, currentY, 20, 20);
+            currentX += 25;
+          }
+        } catch (e) {
+          console.log('Error cargando avatar', e);
+        }
+      }
+    }
+
+    if (currentX > 14) {
+      currentY += 25;
+    }
+
+    const nombresStr = ticket.value.requesters.map(r => r.name || 'N/A').join(', ');
+    const telefonosStr = ticket.value.requesters.map(r => r.phone || 'N/A').join(', ');
+
     autoTable(doc, {
       startY: currentY,
       head: [['Datos del Solicitante', '']],
       body: [
-        ['Nombre', ticket.value.requester?.name || 'N/A'],
-        ['Teléfono', ticket.value.requester?.phone || 'N/A'],
+        ['Nombre', nombresStr],
+        ['Teléfono', telefonosStr],
       ],
       theme: 'grid',
       headStyles: { fillColor: [241, 245, 249], textColor: [15, 23, 42], fontStyle: 'bold' },
@@ -675,6 +751,47 @@ const generarPDFTicket = async () => {
     const splitDesc = doc.splitTextToSize(ticket.value.description || 'Sin descripción.', 180);
     doc.text(splitDesc, 14, currentY + 7);
     currentY += 10 + (splitDesc.length * 5);
+
+    // --- EVIDENCIA ADJUNTA ---
+    if (ticket.value.attachment?.url) {
+      doc.setFontSize(12);
+      doc.setTextColor(15, 23, 42);
+      doc.setFont('helvetica', 'bold');
+      doc.text('Evidencia Adjunta del Incidente:', 14, currentY + 5);
+      currentY += 12;
+      
+      if (isImage(ticket.value.attachment.url)) {
+        try {
+          const evidenceImg = new Image();
+          evidenceImg.crossOrigin = "Anonymous";
+          evidenceImg.src = ticket.value.attachment.url;
+          await new Promise((resolve) => {
+            evidenceImg.onload = resolve;
+            evidenceImg.onerror = resolve;
+          });
+          if (evidenceImg.complete && evidenceImg.naturalWidth > 0) {
+            const maxWidth = 80;
+            const maxHeight = 60;
+            const ratio = Math.min(maxWidth / evidenceImg.naturalWidth, maxHeight / evidenceImg.naturalHeight);
+            const w = evidenceImg.naturalWidth * ratio;
+            const h = evidenceImg.naturalHeight * ratio;
+            
+            doc.setDrawColor(203, 213, 225);
+            doc.roundedRect(14, currentY, w + 4, h + 4, 2, 2, 'S');
+            doc.addImage(evidenceImg, 'JPEG', 16, currentY + 2, w, h);
+            currentY += h + 15;
+          }
+        } catch (e) {
+          console.log('Error cargando evidencia', e);
+        }
+      } else {
+        doc.setFontSize(10);
+        doc.setTextColor(79, 70, 229);
+        doc.setFont('helvetica', 'normal');
+        doc.text(`Archivo de documento adjunto: ${ticket.value.attachment.name || 'documento'}`, 14, currentY);
+        currentY += 10;
+      }
+    }
 
     // --- RESPUESTAS / CONVERSACIÓN ---
     if (respuestas.value && respuestas.value.length > 0) {

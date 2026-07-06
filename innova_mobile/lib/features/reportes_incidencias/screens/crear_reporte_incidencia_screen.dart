@@ -5,6 +5,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:mask_text_input_formatter/mask_text_input_formatter.dart';
+import 'dart:convert';
 import '../providers/reporte_incidencia_provider.dart';
 
 class CrearReporteIncidenciaScreen extends ConsumerStatefulWidget {
@@ -16,9 +18,37 @@ class CrearReporteIncidenciaScreen extends ConsumerStatefulWidget {
 
 class _CrearReporteIncidenciaScreenState extends ConsumerState<CrearReporteIncidenciaScreen> {
   final _formKey = GlobalKey<FormState>();
-  final _identidadController = TextEditingController();
+  final List<TextEditingController> _identidadControllers = [TextEditingController()];
+  
+  MaskTextInputFormatter _crearFormatter() {
+    return MaskTextInputFormatter(
+      mask: '####-####-#####',
+      filter: {"#": RegExp(r'[0-9]')},
+      type: MaskAutoCompletionType.lazy,
+    );
+  }
+  
+  late final List<MaskTextInputFormatter> _identidadFormatters = [_crearFormatter()];
+  
   final _temaController = TextEditingController();
   final _descripcionController = TextEditingController();
+
+  void _agregarPersona() {
+    setState(() {
+      _identidadControllers.add(TextEditingController());
+      _identidadFormatters.add(_crearFormatter());
+    });
+  }
+
+  void _removerPersona(int index) {
+    if (_identidadControllers.length > 1) {
+      setState(() {
+        _identidadControllers[index].dispose();
+        _identidadControllers.removeAt(index);
+        _identidadFormatters.removeAt(index);
+      });
+    }
+  }
 
   String _prioridadSeleccionada = 'Media';
   String _categoriaSeleccionada = 'General';
@@ -27,7 +57,6 @@ class _CrearReporteIncidenciaScreenState extends ConsumerState<CrearReporteIncid
   String _jefeReporta = 'Usuario';
 
   final List<String> _prioridades = ['Baja', 'Media', 'Alta', 'Urgente'];
-  final List<String> _categorias = ['General', 'Asistencia', 'Comportamiento', 'Infraestructura', 'Hardware/Software']; // Simulación de categorías
 
   @override
   void initState() {
@@ -38,13 +67,39 @@ class _CrearReporteIncidenciaScreenState extends ConsumerState<CrearReporteIncid
   Future<void> _loadUserInfo() async {
     final prefs = await SharedPreferences.getInstance();
     setState(() {
-      _jefeReporta = prefs.getString('usuario_nombre') ?? 'Usuario';
+      String userName = 'Usuario';
+      String rolNombre = '';
+      
+      try {
+        final userDataString = prefs.getString('user_data');
+        if (userDataString != null) {
+          final userData = jsonDecode(userDataString);
+          userName = userData['nombre'] ?? 'Usuario';
+          
+          final rolId = userData['rol'] ?? userData['rol_id'];
+          if (rolId == 1) {
+            rolNombre = ' - Administrador IT';
+          } else if (rolId == 2) {
+            rolNombre = ' - Recursos Humanos';
+          } else if (rolId == 3) {
+            rolNombre = ' - Empleado';
+          }
+        } else {
+          userName = prefs.getString('usuarioNombre') ?? 'Usuario';
+        }
+      } catch (e) {
+        userName = prefs.getString('usuarioNombre') ?? 'Usuario';
+      }
+      
+      _jefeReporta = '$userName$rolNombre';
     });
   }
 
   @override
   void dispose() {
-    _identidadController.dispose();
+    for (var controller in _identidadControllers) {
+      controller.dispose();
+    }
     _temaController.dispose();
     _descripcionController.dispose();
     super.dispose();
@@ -67,9 +122,14 @@ class _CrearReporteIncidenciaScreenState extends ConsumerState<CrearReporteIncid
     try {
       final repository = ref.read(reporteIncidenciaRepositoryProvider);
       
+      final identidades = _identidadControllers
+          .map((c) => c.text)
+          .where((t) => t.isNotEmpty)
+          .join(', ');
+
       final success = await repository.createReporte(
         jefeReporta: _jefeReporta,
-        identidad: _identidadController.text,
+        identidad: identidades,
         categoria: _categoriaSeleccionada,
         prioridad: _prioridadSeleccionada,
         tema: _temaController.text,
@@ -105,28 +165,77 @@ class _CrearReporteIncidenciaScreenState extends ConsumerState<CrearReporteIncid
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              TextFormField(
-                controller: _identidadController,
-                decoration: InputDecoration(
-                  labelText: 'Número de Identidad (Reportado)',
-                  prefixIcon: const Icon(Icons.badge),
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
-                  filled: true,
-                  fillColor: Colors.grey.shade50,
+              ListView.builder(
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                itemCount: _identidadControllers.length,
+                itemBuilder: (context, index) {
+                  return Padding(
+                    padding: const EdgeInsets.only(bottom: 12.0),
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Expanded(
+                          child: TextFormField(
+                            controller: _identidadControllers[index],
+                            inputFormatters: [_identidadFormatters[index]],
+                            keyboardType: TextInputType.number,
+                            decoration: InputDecoration(
+                              labelText: 'Número de Identidad (Reportado ${index + 1})',
+                              hintText: 'Ej: 0801-1990-12345',
+                              prefixIcon: const Icon(Icons.badge),
+                              border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                              filled: true,
+                              fillColor: Colors.grey.shade50,
+                            ),
+                            validator: (value) {
+                              if (value == null || value.isEmpty) return 'Campo requerido';
+                              if (value.length < 15) return 'Formato incompleto';
+                              return null;
+                            },
+                          ),
+                        ),
+                        if (_identidadControllers.length > 1)
+                          IconButton(
+                            icon: const Icon(Icons.remove_circle, color: Colors.red),
+                            onPressed: () => _removerPersona(index),
+                          ),
+                      ],
+                    ),
+                  );
+                },
+              ),
+              Align(
+                alignment: Alignment.centerLeft,
+                child: TextButton.icon(
+                  onPressed: _agregarPersona,
+                  icon: const Icon(Icons.add),
+                  label: const Text('Agregar otra persona'),
                 ),
-                validator: (value) => value == null || value.isEmpty ? 'Campo requerido' : null,
               ),
               const SizedBox(height: 16),
               
-              DropdownButtonFormField<String>(
-                initialValue: _categoriaSeleccionada,
-                decoration: InputDecoration(
-                  labelText: 'Categoría',
-                  prefixIcon: const Icon(Icons.folder),
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
-                ),
-                items: _categorias.map((c) => DropdownMenuItem(value: c, child: Text(c))).toList(),
-                onChanged: (val) => setState(() => _categoriaSeleccionada = val!),
+              ref.watch(categoriasReporteProvider).when(
+                data: (categoriasList) {
+                  final categoriasActivas = categoriasList.where((c) => c.activa).map((c) => c.nombre).toList();
+                  final val = categoriasActivas.contains(_categoriaSeleccionada) ? _categoriaSeleccionada : (categoriasActivas.isNotEmpty ? categoriasActivas.first : null);
+                  return DropdownButtonFormField<String>(
+                    initialValue: val,
+                    decoration: InputDecoration(
+                      labelText: 'Categoría',
+                      prefixIcon: const Icon(Icons.folder),
+                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                    ),
+                    items: categoriasActivas.map((c) => DropdownMenuItem(value: c, child: Text(c))).toList(),
+                    onChanged: (newVal) {
+                      if (newVal != null) {
+                        setState(() => _categoriaSeleccionada = newVal);
+                      }
+                    },
+                  );
+                },
+                loading: () => const LinearProgressIndicator(),
+                error: (err, stack) => Text('Error cargando categorías', style: TextStyle(color: Colors.red)),
               ),
               const SizedBox(height: 16),
               

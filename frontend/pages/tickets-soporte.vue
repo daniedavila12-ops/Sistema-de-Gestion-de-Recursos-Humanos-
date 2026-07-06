@@ -10,9 +10,19 @@
 
       <form @submit.prevent="crearTicket" class="space-y-6">
         <div>
-          <label class="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1 pl-1">Número de Identidad</label>
-          <input v-model="identidad" type="text" required placeholder="Ej: 0801-1990-12345"
-            class="w-full px-5 py-4 bg-slate-50 border border-slate-200 rounded-2xl text-slate-900 focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 outline-none transition-all duration-200">
+          <div v-for="(idObj, index) in identidades" :key="index" class="mb-4">
+            <label class="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1 pl-1">Número de Identidad {{ index + 1 }}</label>
+            <div class="flex items-center gap-2">
+              <input v-model="idObj.value" type="text" required placeholder="Ej: 0801-1990-12345"
+                class="w-full px-5 py-4 bg-slate-50 border border-slate-200 rounded-2xl text-slate-900 focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 outline-none transition-all duration-200">
+              <button v-if="identidades.length > 1" type="button" @click="removeIdentidad(index)" class="p-3 text-red-500 hover:bg-red-50 rounded-xl transition-colors" title="Eliminar">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+              </button>
+            </div>
+          </div>
+          <button type="button" @click="addIdentidad" class="inline-flex items-center gap-2 px-3 py-1.5 text-xs text-blue-600 font-bold bg-blue-50 border border-blue-100 rounded-lg hover:bg-blue-100 transition-colors">
+            <span>+ Agregar otra persona</span>
+          </button>
         </div>
 
         <div class="grid grid-cols-2 gap-4">
@@ -70,7 +80,7 @@
 import { ref, onMounted } from 'vue'
 import axios from 'axios'
 
-const identidad = ref('')
+const identidades = ref([{ value: '' }])
 const categoria = ref('Soporte IT')
 const prioridad = ref('Media')
 const tema = ref('')
@@ -97,8 +107,17 @@ const handleFileUpload = (event) => {
   archivoTicket.value = event.target.files[0]
 }
 
+const addIdentidad = () => {
+  identidades.value.push({ value: '' })
+}
+
+const removeIdentidad = (index) => {
+  identidades.value.splice(index, 1)
+}
+
 const crearTicket = async () => {
-  if (!identidad.value.trim() || !tema.value.trim() || !descripcion.value.trim()) {
+  const isIdentidadesValid = identidades.value.every(i => i.value.trim() !== '')
+  if (!isIdentidadesValid || !tema.value.trim() || !descripcion.value.trim()) {
     alert("Por favor completa todos los campos requeridos.")
     return
   }
@@ -108,7 +127,10 @@ const crearTicket = async () => {
     
     const formData = new FormData()
     formData.append('usuario_id', '') // Nulo ya que es externo
-    formData.append('identidad', identidad.value.trim())
+    
+    // Unir todas las identidades separadas por coma
+    const identidadesString = identidades.value.map(i => i.value.trim()).join(',')
+    formData.append('identidad', identidadesString)
     formData.append('tipo', categoria.value)
     formData.append('prioridad', prioridad.value)
     formData.append('tema', tema.value.trim())
@@ -126,7 +148,7 @@ const crearTicket = async () => {
     const formattedId = `TKT-${String(newTicketId).padStart(3, '0')}`;
     alert(`✅ Su ticket fue enviado.\n\nPor favor copie este número de ticket para su seguimiento en "Reporte SMS":\n\n📌 ${formattedId}`);
     
-    identidad.value = ''
+    identidades.value = [{ value: '' }]
     tema.value = ''
     descripcion.value = ''
     categoria.value = 'Soporte IT'

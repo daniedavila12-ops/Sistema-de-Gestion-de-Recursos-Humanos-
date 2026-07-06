@@ -32,11 +32,16 @@ router.post('/crear', upload.single('archivo'), (req, res) => {
     const archivo = req.file ? `/uploads/tickets/${req.file.filename}` : null;
 
     if (identidad) {
-        db.query('SELECT id, nombre, apellido FROM empleados WHERE identidad = ?', [identidad], (err, results) => {
-            if (err) return res.status(500).json({ error: err.message });
-            
-            const empleado_id = results.length > 0 ? results[0].id : null;
-            const empleado_nombre = results.length > 0 ? `${results[0].nombre} ${results[0].apellido}` : 'Un empleado';
+        const identidadesArray = identidad.split(',').map(i => i.trim()).filter(i => i);
+        if (identidadesArray.length > 0) {
+            const placeholders = identidadesArray.map(() => '?').join(',');
+            db.query(`SELECT id, nombre, apellido FROM empleados WHERE identidad IN (${placeholders})`, identidadesArray, (err, results) => {
+                if (err) return res.status(500).json({ error: err.message });
+                
+                const empleado_id = results.length > 0 ? results[0].id : null;
+                const empleado_nombre = results.length > 0 
+                    ? results.map(r => `${r.nombre} ${r.apellido}`).join(', ') 
+                    : 'Un empleado';
             
             const query = 'INSERT INTO tickets (usuario_id, empleado_id, identidad, Categoria, descripcion, tema, prioridad, archivo) VALUES (?, ?, ?, ?, ?, ?, ?, ?)';
             db.execute(query, [usuario_id || null, empleado_id, identidad, tipo, descripcion, tema || null, prioridad || 'Media', archivo], (err, result) => {
@@ -56,6 +61,7 @@ router.post('/crear', upload.single('archivo'), (req, res) => {
                 res.json({ mensaje: "Ticket enviado con éxito", ticketId: result.insertId });
             });
         });
+        }
     } else {
         const query = 'INSERT INTO tickets (usuario_id, Categoria, descripcion, tema, prioridad, archivo) VALUES (?, ?, ?, ?, ?, ?)';
         db.execute(query, [usuario_id || null, tipo, descripcion, tema || null, prioridad || 'Media', archivo], (err, result) => {

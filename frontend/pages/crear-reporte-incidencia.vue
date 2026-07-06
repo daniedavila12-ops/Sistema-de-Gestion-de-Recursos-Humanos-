@@ -17,8 +17,16 @@
 
         <div>
           <label class="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1 pl-1">Identidad del Empleado Reportado</label>
-          <input v-model="identidad" type="text" required placeholder="Ej: 0801-1990-12345"
-            class="w-full px-5 py-4 bg-slate-50 border border-slate-200 rounded-2xl text-slate-900 focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 outline-none transition-all duration-200">
+          <div v-for="(id, index) in identidades" :key="index" class="flex gap-2 mb-2">
+            <input v-model="identidades[index]" type="text" required placeholder="Ej: 0801-1990-12345"
+              class="flex-1 px-5 py-4 bg-slate-50 border border-slate-200 rounded-2xl text-slate-900 focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 outline-none transition-all duration-200">
+            <button v-if="identidades.length > 1" type="button" @click="removerIdentidad(index)" class="px-4 bg-red-100 text-red-600 rounded-2xl hover:bg-red-200 transition-colors font-bold text-xl flex items-center justify-center">
+              &times;
+            </button>
+          </div>
+          <button type="button" @click="agregarIdentidad" class="text-xs text-blue-600 font-bold hover:text-blue-800 transition-colors uppercase tracking-widest mt-1 inline-block">
+            + Agregar otra persona
+          </button>
         </div>
 
         <div class="grid grid-cols-2 gap-4">
@@ -79,8 +87,11 @@ import axios from 'axios'
 import Swal from 'sweetalert2'
 
 const jefe_reporta = ref('')
-const identidad = ref('')
+const identidades = ref([''])
 const categoria = ref('')
+
+const agregarIdentidad = () => identidades.value.push('')
+const removerIdentidad = (index) => { if (identidades.value.length > 1) identidades.value.splice(index, 1) }
 const prioridad = ref('Media')
 const tema = ref('')
 const descripcion = ref('')
@@ -106,7 +117,8 @@ const handleFileUpload = (event) => {
 }
 
 const crearReporte = async () => {
-  if (!jefe_reporta.value || !identidad.value || !tema.value || !descripcion.value) {
+  const identidadesValidas = identidades.value.filter(i => i.trim() !== '').join(', ');
+  if (!jefe_reporta.value || !identidadesValidas || !tema.value || !descripcion.value) {
     Swal.fire('Error', 'Todos los campos obligatorios deben estar llenos.', 'error');
     return;
   }
@@ -115,7 +127,7 @@ const crearReporte = async () => {
     loading.value = true;
     const formData = new FormData();
     formData.append('jefe_reporta', jefe_reporta.value);
-    formData.append('identidad', identidad.value);
+    formData.append('identidad', identidadesValidas);
     formData.append('categoria', categoria.value);
     formData.append('prioridad', prioridad.value);
     formData.append('tema', tema.value);
@@ -135,7 +147,7 @@ const crearReporte = async () => {
       confirmButtonColor: '#3085d6',
     }).then(() => {
       jefe_reporta.value = '';
-      identidad.value = '';
+      identidades.value = [''];
       tema.value = '';
       descripcion.value = '';
       if (fileInputRef.value) fileInputRef.value.value = '';

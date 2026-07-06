@@ -10,6 +10,7 @@ import 'package:innova_mobile/features/empleados/screens/vacaciones_empleado_pro
 import 'package:innova_mobile/features/empleados/screens/faltas_empleado_provider.dart';
 import 'package:innova_mobile/features/empleados/screens/notas_empleado_provider.dart';
 import 'package:innova_mobile/features/empleados/screens/documentos_empleado_provider.dart';
+import 'package:innova_mobile/features/reportes_incidencias/providers/reporte_incidencia_provider.dart';
 
 class SocketService {
   static final SocketService _instance = SocketService._internal();
@@ -70,6 +71,10 @@ class SocketService {
           ref.invalidate(documentosEmpleadoProvider(id));
         }
       }
+    });
+
+    _socket.on('reportes_actualizados', (_) {
+      ref.invalidate(reportesIncidenciaProvider);
     });
   }
 }

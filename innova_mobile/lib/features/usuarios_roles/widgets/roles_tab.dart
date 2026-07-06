@@ -13,10 +13,11 @@ class RolesTab extends ConsumerWidget {
     final rolesAsync = ref.watch(rolesProvider);
 
     return Scaffold(
+      backgroundColor: Colors.transparent,
       body: rolesAsync.when(
         data: (roles) {
           if (roles.isEmpty) {
-            return const Center(child: Text('No hay roles registrados.'));
+            return const Center(child: Text('No hay roles registrados.', style: TextStyle(color: Colors.grey, fontStyle: FontStyle.italic)));
           }
           return RefreshIndicator(
             onRefresh: () async {
@@ -35,82 +36,159 @@ class RolesTab extends ConsumerWidget {
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (err, stack) => Center(child: Text('Error: $err')),
       ),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: () {
-          showDialog(
-            context: context,
-            builder: (_) => const RolFormDialog(),
-          );
-        },
-        label: const Text('Crear Rol'),
-        icon: const Icon(Icons.security),
-      ),
     );
   }
 
   Widget _buildRolCard(BuildContext context, WidgetRef ref, Rol rol) {
-    return Card(
-      margin: const EdgeInsets.only(bottom: 12.0),
-      child: ListTile(
-        leading: CircleAvatar(
-          backgroundColor: Colors.purple.withValues(alpha: 0.2),
-          child: Text(rol.id.toString(), style: const TextStyle(color: Colors.purple, fontWeight: FontWeight.bold)),
-        ),
-        title: Text(rol.nombre, style: const TextStyle(fontWeight: FontWeight.bold)),
-        trailing: Row(
-          mainAxisSize: MainAxisSize.min,
+    return Container(
+      margin: const EdgeInsets.only(bottom: 16.0),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(color: Colors.blueGrey.shade100),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.blueGrey.shade200.withValues(alpha: 0.5),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(20.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            IconButton(
-              icon: const Icon(Icons.shield, color: Colors.purple),
-              tooltip: 'Gestionar Permisos',
-              onPressed: () {
-                Navigator.of(context).push(
-                  MaterialPageRoute(builder: (_) => PermisosDialog(rol: rol)),
-                );
-              },
-            ),
-            IconButton(
-              icon: const Icon(Icons.edit, color: Colors.blue),
-              tooltip: 'Editar Nombre',
-              onPressed: () {
-                showDialog(
-                  context: context,
-                  builder: (_) => RolFormDialog(rol: rol),
-                );
-              },
-            ),
-            IconButton(
-              icon: const Icon(Icons.delete, color: Colors.red),
-              tooltip: 'Eliminar Rol',
-              onPressed: () async {
-                final confirm = await showDialog<bool>(
-                  context: context,
-                  builder: (ctx) => AlertDialog(
-                    title: const Text('Eliminar Rol'),
-                    content: Text('¿Está seguro de eliminar el rol "${rol.nombre}"?'),
-                    actions: [
-                      TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Cancelar')),
-                      TextButton(onPressed: () => Navigator.pop(ctx, true), child: const Text('Eliminar', style: TextStyle(color: Colors.red))),
-                    ],
+            Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  decoration: BoxDecoration(
+                    color: Colors.blueGrey.shade100,
+                    borderRadius: BorderRadius.circular(12),
                   ),
-                );
-
-                if (confirm == true) {
-                  try {
-                    final repo = ref.read(usuariosRolesRepositoryProvider);
-                    await repo.deleteRol(rol.id);
-                    ref.invalidate(rolesProvider);
-                  } catch (e) {
-                    if (context.mounted) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(content: Text('Error al eliminar rol: $e')),
-                      );
-                    }
-                  }
-                }
-              },
+                  child: Text(
+                    'ID: ${rol.id}',
+                    style: TextStyle(
+                      color: Colors.blueGrey.shade600,
+                      fontWeight: FontWeight.w900,
+                      fontSize: 12,
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Text(
+                    rol.nombre,
+                    style: const TextStyle(
+                      fontWeight: FontWeight.w900,
+                      fontSize: 18,
+                      color: Color(0xFF1E293B),
+                    ),
+                  ),
+                ),
+              ],
             ),
+            const SizedBox(height: 20),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
+                _buildActionButton(
+                  icon: Icons.edit,
+                  color: Colors.blue,
+                  tooltip: 'Editar',
+                  onTap: () {
+                    showDialog(
+                      context: context,
+                      builder: (_) => RolFormDialog(rol: rol),
+                    );
+                  },
+                ),
+                const SizedBox(width: 8),
+                Material(
+                  color: Colors.purple.shade50,
+                  borderRadius: BorderRadius.circular(10),
+                  child: InkWell(
+                    borderRadius: BorderRadius.circular(10),
+                    onTap: () {
+                      Navigator.of(context).push(
+                        MaterialPageRoute(builder: (_) => PermisosDialog(rol: rol)),
+                      );
+                    },
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                      child: Row(
+                        children: [
+                          Icon(Icons.shield, color: Colors.purple.shade600, size: 18),
+                          const SizedBox(width: 6),
+                          Text(
+                            'Permisos',
+                            style: TextStyle(
+                              color: Colors.purple.shade600,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 12,
+                            ),
+                          )
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                _buildActionButton(
+                  icon: Icons.delete,
+                  color: Colors.red,
+                  tooltip: 'Eliminar',
+                  onTap: () async {
+                    final confirm = await showDialog<bool>(
+                      context: context,
+                      builder: (ctx) => AlertDialog(
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                        title: const Text('Eliminar Rol', style: TextStyle(fontWeight: FontWeight.bold)),
+                        content: Text('¿Está seguro de eliminar el rol "${rol.nombre}"?'),
+                        actions: [
+                          TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Cancelar', style: TextStyle(color: Colors.grey))),
+                          TextButton(
+                            onPressed: () => Navigator.pop(ctx, true), 
+                            child: const Text('Eliminar', style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold))
+                          ),
+                        ],
+                      ),
+                    );
+
+                    if (confirm == true) {
+                      try {
+                        final repo = ref.read(usuariosRolesRepositoryProvider);
+                        await repo.deleteRol(rol.id);
+                        ref.invalidate(rolesProvider);
+                      } catch (e) {
+                        if (context.mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(content: Text('Error al eliminar rol: $e')),
+                          );
+                        }
+                      }
+                    }
+                  },
+                ),
+              ],
+            )
           ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildActionButton({required IconData icon, required MaterialColor color, required String tooltip, required VoidCallback onTap}) {
+    return Material(
+      color: color.shade50,
+      borderRadius: BorderRadius.circular(10),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(10),
+        onTap: onTap,
+        child: Padding(
+          padding: const EdgeInsets.all(10.0),
+          child: Icon(icon, color: color.shade600, size: 18),
         ),
       ),
     );

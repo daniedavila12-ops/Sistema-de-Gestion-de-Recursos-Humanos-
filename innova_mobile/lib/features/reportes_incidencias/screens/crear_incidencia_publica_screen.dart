@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:mask_text_input_formatter/mask_text_input_formatter.dart';
 import 'package:go_router/go_router.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
@@ -16,9 +17,37 @@ class _CrearIncidenciaPublicaScreenState extends State<CrearIncidenciaPublicaScr
   final String _apiUrl = '${ApiConstants.baseUrl}/api/reportes-incidencia';
 
   final TextEditingController _jefeController = TextEditingController();
-  final TextEditingController _identidadController = TextEditingController();
+  final List<TextEditingController> _identidadControllers = [TextEditingController()];
+  
+  MaskTextInputFormatter _crearFormatter() {
+    return MaskTextInputFormatter(
+      mask: '####-####-#####',
+      filter: {"#": RegExp(r'[0-9]')},
+      type: MaskAutoCompletionType.lazy,
+    );
+  }
+  
+  late final List<MaskTextInputFormatter> _identidadFormatters = [_crearFormatter()];
+
   final TextEditingController _temaController = TextEditingController();
   final TextEditingController _descripcionController = TextEditingController();
+
+  void _agregarPersona() {
+    setState(() {
+      _identidadControllers.add(TextEditingController());
+      _identidadFormatters.add(_crearFormatter());
+    });
+  }
+
+  void _removerPersona(int index) {
+    if (_identidadControllers.length > 1) {
+      setState(() {
+        _identidadControllers[index].dispose();
+        _identidadControllers.removeAt(index);
+        _identidadFormatters.removeAt(index);
+      });
+    }
+  }
 
   String _categoria = 'General';
   String _prioridad = 'Media';
@@ -29,6 +58,17 @@ class _CrearIncidenciaPublicaScreenState extends State<CrearIncidenciaPublicaScr
   void initState() {
     super.initState();
     _fetchCategorias();
+  }
+
+  @override
+  void dispose() {
+    for (var controller in _identidadControllers) {
+      controller.dispose();
+    }
+    _jefeController.dispose();
+    _temaController.dispose();
+    _descripcionController.dispose();
+    super.dispose();
   }
 
   Future<void> _fetchCategorias() async {
@@ -56,7 +96,13 @@ class _CrearIncidenciaPublicaScreenState extends State<CrearIncidenciaPublicaScr
     try {
       var request = http.MultipartRequest('POST', Uri.parse('$_apiUrl/crear'));
       request.fields['jefe_reporta'] = _jefeController.text.trim();
-      request.fields['identidad'] = _identidadController.text.trim();
+      
+      final identidades = _identidadControllers
+          .map((c) => c.text.trim())
+          .where((t) => t.isNotEmpty)
+          .join(', ');
+          
+      request.fields['identidad'] = identidades;
       request.fields['categoria'] = _categoria;
       request.fields['prioridad'] = _prioridad;
       request.fields['tema'] = _temaController.text.trim();
@@ -122,10 +168,51 @@ class _CrearIncidenciaPublicaScreenState extends State<CrearIncidenciaPublicaScr
                   validator: (v) => v!.isEmpty ? 'Requerido' : null,
                 ),
                 const SizedBox(height: 16),
-                TextFormField(
-                  controller: _identidadController,
-                  decoration: const InputDecoration(labelText: 'Identidad Empleado Reportado', border: OutlineInputBorder()),
-                  validator: (v) => v!.isEmpty ? 'Requerido' : null,
+                const Text('Identidad(es) Empleado(s) Reportado(s)', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
+                const SizedBox(height: 8),
+                ListView.builder(
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  itemCount: _identidadControllers.length,
+                  itemBuilder: (context, index) {
+                    return Padding(
+                      padding: const EdgeInsets.only(bottom: 8.0),
+                      child: Row(
+                        children: [
+                          Expanded(
+                            child: TextFormField(
+                              controller: _identidadControllers[index],
+                              inputFormatters: [_identidadFormatters[index]],
+                              keyboardType: TextInputType.number,
+                              decoration: const InputDecoration(
+                                labelText: 'Número de Identidad',
+                                hintText: 'Ej: 0801-1990-12345',
+                                border: OutlineInputBorder(),
+                              ),
+                              validator: (v) {
+                                if (v == null || v.isEmpty) return 'Requerido';
+                                if (v.length < 15) return 'Incompleto';
+                                return null;
+                              },
+                            ),
+                          ),
+                          if (_identidadControllers.length > 1)
+                            IconButton(
+                              icon: const Icon(Icons.remove_circle, color: Colors.red),
+                              onPressed: () => _removerPersona(index),
+                            ),
+                        ],
+                      ),
+                    );
+                  },
+                ),
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: TextButton.icon(
+                    onPressed: _agregarPersona,
+                    icon: const Icon(Icons.add),
+                    label: const Text('Agregar otra persona'),
+                  ),
                 ),
                 const SizedBox(height: 16),
                 DropdownButtonFormField<String>(

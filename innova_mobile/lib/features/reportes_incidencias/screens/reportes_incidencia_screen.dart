@@ -232,7 +232,7 @@ class ReportesIncidenciaScreen extends ConsumerWidget {
       floatingActionButton: FloatingActionButton.extended(
         backgroundColor: Colors.red.shade600,
         icon: const Icon(Icons.add, color: Colors.white),
-        label: const Text('NUEVO', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+        label: const Text('Nuevo Reporte', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
         onPressed: () {
           context.push('/crear-reporte-incidencia').then((_) {
             ref.invalidate(reportesIncidenciaProvider);
@@ -378,7 +378,7 @@ class _ReporteCard extends StatelessWidget {
                         text: TextSpan(
                           style: TextStyle(color: Colors.grey.shade500, fontSize: 10),
                           children: [
-                            TextSpan(text: '${reporte.empleadoNombre ?? 'Desconocido'} ${reporte.empleadoApellido ?? ''}', style: const TextStyle(fontWeight: FontWeight.bold)),
+                            TextSpan(text: 'Reportado por: ${reporte.jefeReporta ?? 'Usuario'}', style: const TextStyle(fontWeight: FontWeight.bold)),
                             const TextSpan(text: ' · '),
                             TextSpan(text: reporte.descripcion),
                           ],
@@ -387,14 +387,19 @@ class _ReporteCard extends StatelessWidget {
                       const SizedBox(height: 8),
                       
                       // Footer row
-                      Row(
-                        children: [
-                          Expanded(child: _IconTextBadge(icon: Icons.folder_outlined, text: reporte.categoria)),
-                          const SizedBox(width: 4),
-                          Expanded(flex: 2, child: _IconTextBadge(icon: Icons.access_time, text: _formatDate(reporte.fechaCreacion))),
-                          const SizedBox(width: 4),
-                          _IconTextBadge(icon: Icons.chat_bubble_outline, text: '${reporte.respuestasCount ?? 0}'),
-                        ],
+                      SingleChildScrollView(
+                        scrollDirection: Axis.horizontal,
+                        child: Row(
+                          children: [
+                            _IconTextBadge(icon: Icons.person_outline, text: reporte.empleadoNombre?.isNotEmpty == true ? '${reporte.empleadoNombre} ${reporte.empleadoApellido ?? ''}'.trim() : (reporte.identidad ?? 'Sin identificar')),
+                            const SizedBox(width: 8),
+                            _IconTextBadge(icon: Icons.folder_outlined, text: reporte.categoria),
+                            const SizedBox(width: 8),
+                            _IconTextBadge(icon: Icons.access_time, text: _formatDate(reporte.fechaCreacion)),
+                            const SizedBox(width: 8),
+                            _IconTextBadge(icon: Icons.chat_bubble_outline, text: '${reporte.respuestasCount ?? 0}'),
+                          ],
+                        ),
                       )
                     ],
                   ),

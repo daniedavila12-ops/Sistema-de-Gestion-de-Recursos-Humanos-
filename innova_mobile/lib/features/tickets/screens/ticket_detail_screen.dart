@@ -8,6 +8,8 @@ import '../../auth/providers/auth_provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../utils/pdf_ticket_generator.dart';
 import 'package:innova_mobile/core/constants/api_constants.dart';
+import '../../empleados/models/empleado_model.dart';
+import '../../empleados/providers/empleado_provider.dart';
 
 class TicketDetailScreen extends ConsumerStatefulWidget {
   final Ticket ticket;
@@ -118,11 +120,29 @@ class _TicketDetailScreenState extends ConsumerState<TicketDetailScreen> {
     }
   }
 
-  Future<void> _generarPDFTicket() async {
+  List<Empleado> _getRequesters(Ticket ticket, List<Empleado>? allEmpleados) {
+    if (allEmpleados == null || allEmpleados.isEmpty) {
+       return [
+         Empleado(id: 0, nombre: ticket.solicitanteNombre, apellido: '', estado: 1, foto: ticket.empleadoFoto, telefono: ticket.empleadoTelefono)
+       ];
+    }
+    
+    if (ticket.identidad != null && ticket.identidad!.contains(',')) {
+       final ids = ticket.identidad!.split(',').map((e) => e.trim()).toList();
+       final found = allEmpleados.where((e) => e.identidad != null && ids.contains(e.identidad)).toList();
+       if (found.isNotEmpty) return found;
+    }
+    
+    return [
+         Empleado(id: 0, nombre: ticket.solicitanteNombre, apellido: '', estado: 1, foto: ticket.empleadoFoto, telefono: ticket.empleadoTelefono)
+    ];
+  }
+
+  Future<void> _generarPDFTicket(List<Empleado> requesters) async {
     try {
       final respuestasAsync = ref.read(ticketRespuestasProvider(widget.ticket.id));
       final respuestas = respuestasAsync.value ?? [];
-      await PdfTicketGenerator.generarPdfTicket(widget.ticket, respuestas);
+      await PdfTicketGenerator.generarPdfTicket(widget.ticket, respuestas, requesters);
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error al generar PDF: $e')));
@@ -133,21 +153,23 @@ class _TicketDetailScreenState extends ConsumerState<TicketDetailScreen> {
   Widget build(BuildContext context) {
     final ticketAsync = ref.watch(ticketDetailProvider(widget.ticket.id));
     final respuestasAsync = ref.watch(ticketRespuestasProvider(widget.ticket.id));
+    final empleadosAsync = ref.watch(empleadosProvider);
 
     return Scaffold(
       backgroundColor: Colors.grey[50],
       appBar: AppBar(
         title: Text('Ticket #${widget.ticket.id}'),
-        backgroundColor: Colors.white,
-        foregroundColor: Colors.black87,
-        elevation: 1,
+        centerTitle: true,
       ),
       body: ticketAsync.when(
         data: (fullTicket) {
+          final requesters = _getRequesters(fullTicket, empleadosAsync.value);
+          
           return RefreshIndicator(
             onRefresh: () async {
               ref.invalidate(ticketDetailProvider(widget.ticket.id));
               ref.invalidate(ticketRespuestasProvider(widget.ticket.id));
+              ref.invalidate(empleadosProvider);
             },
             child: SingleChildScrollView(
               padding: const EdgeInsets.all(16.0),
@@ -155,13 +177,13 @@ class _TicketDetailScreenState extends ConsumerState<TicketDetailScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  _buildMainTicketCard(fullTicket),
+                  _buildMainTicketCard(fullTicket, requesters),
                   const SizedBox(height: 16),
                   _buildDetailsCard(fullTicket),
                   const SizedBox(height: 16),
                   _buildStatusChangeCard(fullTicket),
                   const SizedBox(height: 16),
-                  _buildRequesterCard(fullTicket),
+                  _buildRequesterCard(fullTicket, requesters),
                   const SizedBox(height: 16),
                   _buildRespuestasSection(respuestasAsync),
                 ],
@@ -175,7 +197,7 @@ class _TicketDetailScreenState extends ConsumerState<TicketDetailScreen> {
     );
   }
 
-  Widget _buildMainTicketCard(Ticket ticket) {
+  Widget _buildMainTicketCard(Ticket ticket, List<Empleado> requesters) {
     return Container(
       width: double.infinity,
       decoration: BoxDecoration(
@@ -257,7 +279,7 @@ class _TicketDetailScreenState extends ConsumerState<TicketDetailScreen> {
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                       padding: const EdgeInsets.symmetric(vertical: 12),
                     ),
-                    onPressed: _generarPDFTicket,
+                    onPressed: () => _generarPDFTicket(requesters),
                   ),
                 ),
                 const SizedBox(height: 16),
@@ -265,11 +287,11 @@ class _TicketDetailScreenState extends ConsumerState<TicketDetailScreen> {
                   children: [
                     CircleAvatar(
                       backgroundColor: Colors.grey[300],
-                      backgroundImage: ticket.empleadoFoto != null 
-                        ? NetworkImage('${ApiConstants.baseUrl}${ticket.empleadoFoto}') 
+                      backgroundImage: requesters.first.foto != null 
+                        ? NetworkImage('${ApiConstants.baseUrl}${requesters.first.foto}') 
                         : null,
-                      child: ticket.empleadoFoto == null 
-                        ? Text(ticket.solicitanteNombre.isNotEmpty ? ticket.solicitanteNombre[0].toUpperCase() : '?')
+                      child: requesters.first.foto == null 
+                        ? Text(requesters.first.nombre.isNotEmpty ? requesters.first.nombre[0].toUpperCase() : '?')
                         : null,
                     ),
                     const SizedBox(width: 12),
@@ -277,7 +299,7 @@ class _TicketDetailScreenState extends ConsumerState<TicketDetailScreen> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(ticket.solicitanteNombre, style: const TextStyle(fontWeight: FontWeight.bold)),
+                          Text('${requesters.first.nombre} ${requesters.first.apellido}'.trim() + (requesters.length > 1 ? ' y otros' : ''), style: const TextStyle(fontWeight: FontWeight.bold)),
                           Text(_formatDate(ticket.fechaCreacion), style: const TextStyle(fontSize: 12, color: Colors.grey)),
                         ],
                       ),
@@ -300,28 +322,52 @@ class _TicketDetailScreenState extends ConsumerState<TicketDetailScreen> {
                 ),
                 if (ticket.archivo != null) ...[
                   const SizedBox(height: 16),
-                  Container(
-                    padding: const EdgeInsets.all(12),
-                    decoration: BoxDecoration(
-                      border: Border.all(color: Colors.grey[300]!, style: BorderStyle.solid),
-                      borderRadius: BorderRadius.circular(8),
-                      color: Colors.grey[50],
-                    ),
-                    child: Row(
-                      children: [
-                        const Icon(Icons.attach_file, color: Colors.purple),
-                        const SizedBox(width: 8),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(ticket.archivo!.split('/').last, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
-                              const Text('Documento Adjunto', style: TextStyle(fontSize: 11, color: Colors.grey)),
-                            ],
-                          ),
+                  Builder(
+                    builder: (context) {
+                      final url = ticket.archivo!.toLowerCase();
+                      final isImage = url.endsWith('.png') || url.endsWith('.jpg') || url.endsWith('.jpeg') || url.endsWith('.gif') || url.endsWith('.webp');
+                      
+                      return Container(
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          border: Border.all(color: Colors.grey[300]!, style: BorderStyle.solid),
+                          borderRadius: BorderRadius.circular(8),
+                          color: Colors.grey[50],
                         ),
-                      ],
-                    ),
+                        child: isImage
+                          ? Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                const Text('Evidencia Adjunta:', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
+                                const SizedBox(height: 8),
+                                ClipRRect(
+                                  borderRadius: BorderRadius.circular(8),
+                                  child: Image.network(
+                                    '${ApiConstants.baseUrl}${ticket.archivo}',
+                                    fit: BoxFit.cover,
+                                    width: double.infinity,
+                                    errorBuilder: (context, error, stackTrace) => const Icon(Icons.broken_image, size: 50, color: Colors.grey),
+                                  ),
+                                ),
+                              ],
+                            )
+                          : Row(
+                              children: [
+                                const Icon(Icons.attach_file, color: Colors.purple),
+                                const SizedBox(width: 8),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Text(ticket.archivo!.split('/').last, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
+                                      const Text('Documento Adjunto', style: TextStyle(fontSize: 11, color: Colors.grey)),
+                                    ],
+                                  ),
+                                ),
+                              ],
+                            ),
+                      );
+                    }
                   ),
                 ],
               ],
@@ -401,7 +447,7 @@ class _TicketDetailScreenState extends ConsumerState<TicketDetailScreen> {
     );
   }
 
-  Widget _buildRequesterCard(Ticket ticket) {
+  Widget _buildRequesterCard(Ticket ticket, List<Empleado> requesters) {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(16),
@@ -415,47 +461,52 @@ class _TicketDetailScreenState extends ConsumerState<TicketDetailScreen> {
         children: [
           const Text('INFORMACIÓN DEL SOLICITANTE', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.grey)),
           const Divider(),
-          Row(
-            children: [
-              CircleAvatar(
-                backgroundColor: Colors.grey[300],
-                backgroundImage: ticket.empleadoFoto != null 
-                  ? NetworkImage('${ApiConstants.baseUrl}${ticket.empleadoFoto}') 
-                  : null,
-                child: ticket.empleadoFoto == null 
-                  ? Text(ticket.solicitanteNombre.isNotEmpty ? ticket.solicitanteNombre[0].toUpperCase() : '?')
-                  : null,
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(ticket.solicitanteNombre, style: const TextStyle(fontWeight: FontWeight.bold)),
-                    Row(
+          ...requesters.map((req) {
+            return Padding(
+              padding: const EdgeInsets.only(bottom: 12.0),
+              child: Row(
+                children: [
+                  CircleAvatar(
+                    backgroundColor: Colors.grey[300],
+                    backgroundImage: req.foto != null 
+                      ? NetworkImage('${ApiConstants.baseUrl}${req.foto}') 
+                      : null,
+                    child: req.foto == null 
+                      ? Text(req.nombre.isNotEmpty ? req.nombre[0].toUpperCase() : '?')
+                      : null,
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Icon(Icons.phone, size: 12, color: Colors.grey),
-                        const SizedBox(width: 4),
-                        Text(ticket.empleadoTelefono ?? 'N/D', style: const TextStyle(fontSize: 12, color: Colors.grey)),
+                        Text('${req.nombre} ${req.apellido}'.trim(), style: const TextStyle(fontWeight: FontWeight.bold)),
+                        Row(
+                          children: [
+                            const Icon(Icons.phone, size: 12, color: Colors.grey),
+                            const SizedBox(width: 4),
+                            Text(req.telefono ?? 'N/D', style: const TextStyle(fontSize: 12, color: Colors.grey)),
+                          ],
+                        ),
                       ],
                     ),
-                  ],
-                ),
+                  ),
+                  if (req.telefono != null && req.telefono!.isNotEmpty) ...[
+                    IconButton(
+                      icon: const Icon(Icons.phone, color: Colors.green),
+                      tooltip: 'Llamar',
+                      onPressed: () => _makePhoneCall(req.telefono!),
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.chat, color: Colors.teal),
+                      tooltip: 'WhatsApp',
+                      onPressed: () => _openWhatsApp(req.telefono!),
+                    ),
+                  ]
+                ],
               ),
-              if (ticket.empleadoTelefono != null && ticket.empleadoTelefono!.isNotEmpty) ...[
-                IconButton(
-                  icon: const Icon(Icons.phone, color: Colors.green),
-                  tooltip: 'Llamar',
-                  onPressed: () => _makePhoneCall(ticket.empleadoTelefono!),
-                ),
-                IconButton(
-                  icon: const Icon(Icons.chat, color: Colors.teal),
-                  tooltip: 'WhatsApp',
-                  onPressed: () => _openWhatsApp(ticket.empleadoTelefono!),
-                ),
-              ],
-            ],
-          ),
+            );
+          }),
           const SizedBox(height: 16),
           Row(
             children: [

@@ -179,23 +179,39 @@
 
               <!-- Tarjeta Información del Empleado Reportado -->
               <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-5 printable-card">
-                <h3 class="text-xs font-bold text-gray-500 uppercase tracking-wider mb-4 border-b border-gray-100 pb-2">Empleado Reportado</h3>
-                <div class="flex items-center gap-3 mb-4">
-                  <div class="w-10 h-10 rounded-full overflow-hidden border border-gray-200 shrink-0 bg-slate-100 flex items-center justify-center font-bold text-slate-500">
-                    <img v-if="reporte.empleado_foto" :src="`http://localhost:3007${reporte.empleado_foto}`" alt="Avatar Solicitante" class="w-full h-full object-cover" />
-                    <span v-else>{{ reporte.empleado_nombre ? reporte.empleado_nombre.charAt(0) : '?' }}</span>
-                  </div>
-                  <div>
-                    <p class="text-sm font-bold text-gray-900">{{ reporte.empleado_nombre }} {{ reporte.empleado_apellido }}</p>
-                    <p class="text-[10px] text-gray-500 font-bold uppercase tracking-widest mt-0.5">
-                      {{ reporte.departamento_nombre || 'Sin Departamento' }}
-                    </p>
+                <h3 class="text-xs font-bold text-gray-500 uppercase tracking-wider mb-4 border-b border-gray-100 pb-2">Empleado(s) Reportado(s)</h3>
+                
+                <div v-if="empleadosReportados.length > 0" class="space-y-4">
+                  <div v-for="emp in empleadosReportados" :key="emp.identidad" class="flex items-center gap-3 border-b border-gray-50 pb-3 last:border-0 last:pb-0">
+                    <div class="w-10 h-10 rounded-full overflow-hidden border border-gray-200 shrink-0 bg-slate-100 flex items-center justify-center font-bold text-slate-500">
+                      <img v-if="emp.foto" :src="`http://localhost:3007${emp.foto}`" alt="Avatar Empleado" class="w-full h-full object-cover" />
+                      <span v-else>{{ emp.nombre ? emp.nombre.charAt(0) : '?' }}</span>
+                    </div>
+                    <div>
+                      <p class="text-sm font-bold text-gray-900">{{ emp.nombre }} {{ emp.apellido }}</p>
+                      <p class="text-[10px] text-gray-500 font-bold uppercase tracking-widest mt-0.5">Identidad: {{ emp.identidad }}</p>
+                    </div>
                   </div>
                 </div>
-                <div class="space-y-2 mt-4">
-                  <div class="flex justify-between items-center text-xs">
-                    <span class="text-gray-500 font-medium">Identidad</span>
-                    <span class="font-bold text-gray-800">{{ reporte.identidad }}</span>
+
+                <div v-else>
+                  <div class="flex items-center gap-3 mb-4">
+                    <div class="w-10 h-10 rounded-full overflow-hidden border border-gray-200 shrink-0 bg-slate-100 flex items-center justify-center font-bold text-slate-500">
+                      <img v-if="reporte.empleado_foto" :src="`http://localhost:3007${reporte.empleado_foto}`" alt="Avatar Empleado" class="w-full h-full object-cover" />
+                      <span v-else>{{ reporte.empleado_nombre ? reporte.empleado_nombre.charAt(0) : '?' }}</span>
+                    </div>
+                    <div>
+                      <p class="text-sm font-bold text-gray-900">{{ reporte.empleado_nombre || 'Desconocido' }} {{ reporte.empleado_apellido || '' }}</p>
+                      <p class="text-[10px] text-gray-500 font-bold uppercase tracking-widest mt-0.5">
+                        {{ reporte.departamento_nombre || 'Sin Departamento' }}
+                      </p>
+                    </div>
+                  </div>
+                  <div class="space-y-2 mt-4">
+                    <div class="flex justify-between items-center text-xs">
+                      <span class="text-gray-500 font-medium">Identidad</span>
+                      <span class="font-bold text-gray-800">{{ reporte.identidad }}</span>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -258,6 +274,7 @@ const router = useRouter()
 const reporteId = props.id || route.query.id
 const reporte = ref(null)
 const respuestas = ref([])
+const empleadosReportados = ref([])
 const loading = ref(true)
 
 // Formularios
@@ -315,7 +332,7 @@ const generarPDF = async () => {
 
     // Información del Reporte
     autoTable(doc, {
-      startY: 48,
+      startY: 46,
       head: [['Información General', '']],
       body: [
         ['Tema / Asunto', reporte.value.tema || 'N/A'],
@@ -328,30 +345,43 @@ const generarPDF = async () => {
       columnStyles: { 0: { fontStyle: 'bold', cellWidth: 50 } }
     });
 
-    // Cargar foto del empleado reportado
-    let startYEmpTable = doc.lastAutoTable.finalY + 10;
+    // Cargar fotos de empleados reportados
+    let startYEmpTable = doc.lastAutoTable.finalY + 4;
     
-    if (reporte.value.empleado_foto) {
-      const imgEmp = new Image();
-      imgEmp.crossOrigin = 'Anonymous';
-      imgEmp.src = `http://localhost:3007${reporte.value.empleado_foto}`;
-      await new Promise((resolve) => { imgEmp.onload = resolve; imgEmp.onerror = resolve; });
-      try {
-        const imgWidth = 30;
-        const imgHeight = 30;
-        const imgX = 14;
-        const imgY = doc.lastAutoTable.finalY + 10;
-        
-        doc.setFillColor(241, 245, 249);
-        doc.roundedRect(imgX - 1, imgY - 1, imgWidth + 2, imgHeight + 2, 2, 2, 'F');
-        const ext = imgEmp.src.toUpperCase().includes('.PNG') ? 'PNG' : 'JPEG';
-        doc.addImage(imgEmp, ext, imgX, imgY, imgWidth, imgHeight);
-        doc.setDrawColor(203, 213, 225);
-        doc.setLineWidth(0.3);
-        doc.roundedRect(imgX - 1, imgY - 1, imgWidth + 2, imgHeight + 2, 2, 2, 'S');
-        
-        startYEmpTable = imgY + imgHeight + 6;
-      } catch(e) {}
+    const empleadosConFoto = empleadosReportados.value.length > 0 
+      ? empleadosReportados.value.filter(e => e.foto) 
+      : (reporte.value.empleado_foto ? [{ foto: reporte.value.empleado_foto }] : []);
+
+    if (empleadosConFoto.length > 0) {
+      let currentX = 14;
+      const imgY = doc.lastAutoTable.finalY + 4;
+      const imgWidth = 30;
+      const imgHeight = 30;
+      let fotosAgregadas = false;
+
+      for (let i = 0; i < empleadosConFoto.length; i++) {
+        if (currentX + imgWidth > 196) break;
+        const imgEmp = new Image();
+        imgEmp.crossOrigin = 'Anonymous';
+        imgEmp.src = `http://localhost:3007${empleadosConFoto[i].foto}`;
+        await new Promise((resolve) => { imgEmp.onload = resolve; imgEmp.onerror = resolve; });
+        try {
+          doc.setFillColor(241, 245, 249);
+          doc.roundedRect(currentX - 1, imgY - 1, imgWidth + 2, imgHeight + 2, 2, 2, 'F');
+          const ext = imgEmp.src.toUpperCase().includes('.PNG') ? 'PNG' : 'JPEG';
+          doc.addImage(imgEmp, ext, currentX, imgY, imgWidth, imgHeight);
+          doc.setDrawColor(203, 213, 225);
+          doc.setLineWidth(0.3);
+          doc.roundedRect(currentX - 1, imgY - 1, imgWidth + 2, imgHeight + 2, 2, 2, 'S');
+          
+          currentX += imgWidth + 5;
+          fotosAgregadas = true;
+        } catch(e) {}
+      }
+      
+      if (fotosAgregadas) {
+        startYEmpTable = imgY + imgHeight + 3;
+      }
     }
 
     // Información del Empleado
@@ -369,7 +399,7 @@ const generarPDF = async () => {
     });
 
     // Descripción
-    const startYDesc = doc.lastAutoTable.finalY + 15;
+    const startYDesc = doc.lastAutoTable.finalY + 8;
     doc.setFontSize(12);
     doc.setTextColor(15, 23, 42);
     doc.setFont('helvetica', 'bold');
@@ -398,7 +428,69 @@ const generarPDF = async () => {
     
     // Ajuste de texto para evitar salir del margen derecho
     const splitDesc = doc.splitTextToSize(reporte.value.descripcion || 'Sin descripción.', 180);
-    doc.text(splitDesc, 14, startYDesc + 7);
+    doc.text(splitDesc, 14, startYDesc + 6);
+
+    let currentY = startYDesc + 6 + splitDesc.length * 5;
+
+    // --- Evidencia Adjunta ---
+    if (reporte.value.archivo) {
+      const isImg = isImage(reporte.value.archivo);
+      const neededSpace = isImg ? 65 : 30;
+      if (currentY + neededSpace > 255) { 
+        doc.addPage(); 
+        currentY = 20; 
+      }
+      
+      doc.setFontSize(12);
+      doc.setTextColor(15, 23, 42);
+      doc.setFont('helvetica', 'bold');
+      doc.text('Evidencia Adjunta del Incidente:', 14, currentY);
+      currentY += 8;
+      
+      if (isImg) {
+        try {
+          const imgEvi = new Image();
+          imgEvi.crossOrigin = "Anonymous";
+          imgEvi.src = `http://localhost:3007${reporte.value.archivo}`;
+          await new Promise((resolve) => {
+            imgEvi.onload = resolve;
+            imgEvi.onerror = resolve;
+          });
+          const extEvi = imgEvi.src.toUpperCase().includes('.PNG') ? 'PNG' : 'JPEG';
+          
+          const maxWidth = 55;
+          const maxHeight = 45;
+          let width = imgEvi.width || 80;
+          let height = imgEvi.height || 80;
+          
+          if (width > maxWidth) {
+            height = Math.round((height * maxWidth) / width);
+            width = maxWidth;
+          }
+          if (height > maxHeight) {
+            width = Math.round((width * maxHeight) / height);
+            height = maxHeight;
+          }
+
+          const frameWidth = width + 6;
+          const frameHeight = height + 6;
+          
+          doc.setFillColor(248, 250, 252);
+          doc.setDrawColor(203, 213, 225);
+          doc.setLineWidth(0.5);
+          doc.roundedRect(14, currentY, frameWidth, frameHeight, 2, 2, 'FD');
+          
+          doc.addImage(imgEvi, extEvi, 17, currentY + 3, width, height);
+          currentY += frameHeight + 10;
+        } catch(e) {}
+      } else {
+        doc.setFontSize(10);
+        doc.setFont('helvetica', 'normal');
+        doc.setTextColor(59, 130, 246);
+        doc.text('Documento adjunto disponible en el sistema (PDF/Doc)', 14, currentY);
+        currentY += 10;
+      }
+    }
 
     // --- PIE DE PÁGINA (Firma) en todas las hojas ---
     const totalPages = doc.internal.getNumberOfPages();
@@ -479,9 +571,48 @@ const generarPDFResoluciones = async () => {
       columnStyles: { 0: { fontStyle: 'bold', cellWidth: 50 } }
     });
 
+    // --- Cargar fotos del Empleado ---
+    let startYEmpTableRes = doc.lastAutoTable.finalY + 8;
+    
+    const empleadosConFotoRes = empleadosReportados.value.length > 0 
+      ? empleadosReportados.value.filter(e => e.foto) 
+      : (reporte.value.empleado_foto ? [{ foto: reporte.value.empleado_foto }] : []);
+
+    if (empleadosConFotoRes.length > 0) {
+      let currentX = 14;
+      const imgY = doc.lastAutoTable.finalY + 8;
+      const imgWidth = 30;
+      const imgHeight = 30;
+      let fotosAgregadas = false;
+
+      for (let i = 0; i < empleadosConFotoRes.length; i++) {
+        if (currentX + imgWidth > 196) break;
+        const imgEmp = new Image();
+        imgEmp.crossOrigin = 'Anonymous';
+        imgEmp.src = `http://localhost:3007${empleadosConFotoRes[i].foto}`;
+        await new Promise((resolve) => { imgEmp.onload = resolve; imgEmp.onerror = resolve; });
+        try {
+          doc.setFillColor(241, 245, 249);
+          doc.roundedRect(currentX - 1, imgY - 1, imgWidth + 2, imgHeight + 2, 2, 2, 'F');
+          const ext = imgEmp.src.toUpperCase().includes('.PNG') ? 'PNG' : 'JPEG';
+          doc.addImage(imgEmp, ext, currentX, imgY, imgWidth, imgHeight);
+          doc.setDrawColor(203, 213, 225);
+          doc.setLineWidth(0.3);
+          doc.roundedRect(currentX - 1, imgY - 1, imgWidth + 2, imgHeight + 2, 2, 2, 'S');
+          
+          currentX += imgWidth + 5;
+          fotosAgregadas = true;
+        } catch(e) {}
+      }
+      
+      if (fotosAgregadas) {
+        startYEmpTableRes = imgY + imgHeight + 6;
+      }
+    }
+
     // --- Información del Empleado ---
     autoTable(doc, {
-      startY: doc.lastAutoTable.finalY + 8,
+      startY: startYEmpTableRes,
       head: [['Datos del Empleado Reportado', '']],
       body: [
         ['Nombre', `${reporte.value.empleado_nombre || ''} ${reporte.value.empleado_apellido || ''}`.trim() || 'N/A'],
@@ -512,7 +643,12 @@ const generarPDFResoluciones = async () => {
 
     // --- Evidencia Adjunta del Reporte Inicial ---
     if (reporte.value.archivo) {
-      if (currentY > 230) { doc.addPage(); currentY = 20; }
+      const isImg = isImage(reporte.value.archivo);
+      const neededSpace = isImg ? 65 : 30;
+      if (currentY + neededSpace > 255) { 
+        doc.addPage(); 
+        currentY = 20; 
+      }
       
       doc.setFontSize(12);
       doc.setTextColor(15, 23, 42);
@@ -520,7 +656,7 @@ const generarPDFResoluciones = async () => {
       doc.text('Evidencia Adjunta del Incidente:', 14, currentY);
       currentY += 8;
       
-      if (isImage(reporte.value.archivo)) {
+      if (isImg) {
         try {
           const imgEvi = new Image();
           imgEvi.crossOrigin = "Anonymous";
@@ -529,9 +665,32 @@ const generarPDFResoluciones = async () => {
             imgEvi.onload = resolve;
             imgEvi.onerror = resolve;
           });
+          const extEvi = imgEvi.src.toUpperCase().includes('.PNG') ? 'PNG' : 'JPEG';
           
-          doc.addImage(imgEvi, 'JPEG', 14, currentY, 80, 80);
-          currentY += 85;
+          const maxWidth = 55;
+          const maxHeight = 45;
+          let width = imgEvi.width || 80;
+          let height = imgEvi.height || 80;
+          
+          if (width > maxWidth) {
+            height = Math.round((height * maxWidth) / width);
+            width = maxWidth;
+          }
+          if (height > maxHeight) {
+            width = Math.round((width * maxHeight) / height);
+            height = maxHeight;
+          }
+
+          const frameWidth = width + 6;
+          const frameHeight = height + 6;
+          
+          doc.setFillColor(248, 250, 252);
+          doc.setDrawColor(203, 213, 225);
+          doc.setLineWidth(0.5);
+          doc.roundedRect(14, currentY, frameWidth, frameHeight, 2, 2, 'FD');
+          
+          doc.addImage(imgEvi, extEvi, 17, currentY + 3, width, height);
+          currentY += frameHeight + 10;
         } catch (e) {
           doc.setFontSize(10);
           doc.setFont('helvetica', 'normal');
@@ -632,6 +791,29 @@ const cargarDetalles = async () => {
     reporte.value = res.data
     estadoActual.value = res.data.estado
     await cargarRespuestas()
+
+    try {
+      const empRes = await axios.get('http://localhost:3007/api/empleados/lista')
+      if (res.data.identidad) {
+        const identidadesArr = res.data.identidad.split(',').map(i => i.trim())
+        empleadosReportados.value = empRes.data.filter(e => identidadesArr.includes(e.identidad))
+        if (empleadosReportados.value.length > 0) {
+          reporte.value.empleado_nombre = empleadosReportados.value.map(e => `${e.nombre} ${e.apellido}`.trim()).join(', ')
+          reporte.value.empleado_apellido = ''
+          reporte.value.departamento_nombre = empleadosReportados.value
+            .map(e => `${e.nombre} ${e.apellido}: ${e.departamento_nombre || 'Sin Departamento'}`)
+            .join(', ')
+          
+          // Set the first employee's photo so at least one is shown in the PDF
+          const firstWithPhoto = empleadosReportados.value.find(e => e.foto)
+          if (firstWithPhoto) {
+            reporte.value.empleado_foto = firstWithPhoto.foto
+          }
+        }
+      }
+    } catch (err) {
+      console.error("Error al cargar lista de empleados para match:", err)
+    }
 
     if (route.hash === '#resoluciones-section') {
       setTimeout(() => {

@@ -10,6 +10,7 @@ class Ticket {
   final String? archivo;
   final DateTime? fechaCreacion;
   final DateTime? updatedAt;
+  final String? identidad;
   
   // Solicitante (Empleado o Externo)
   final String? empleadoNombre;
@@ -36,6 +37,7 @@ class Ticket {
     this.archivo,
     this.fechaCreacion,
     this.updatedAt,
+    this.identidad,
     this.empleadoNombre,
     this.empleadoApellido,
     this.empleadoFoto,
@@ -60,6 +62,7 @@ class Ticket {
       archivo: json['archivo'],
       fechaCreacion: json['fecha_creacion'] != null ? DateTime.tryParse(json['fecha_creacion']) : null,
       updatedAt: json['updated_at'] != null ? DateTime.tryParse(json['updated_at']) : null,
+      identidad: json['identidad'],
       empleadoNombre: json['empleado_nombre'],
       empleadoApellido: json['empleado_apellido'],
       empleadoFoto: json['empleado_foto'],
