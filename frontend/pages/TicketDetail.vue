@@ -689,6 +689,7 @@ const generarPDFTicket = async () => {
         ['Asignado A', ticket.value.assignedTo?.name || 'Sin Asignar'],
       ],
       theme: 'grid',
+      margin: { bottom: 60 },
       headStyles: { fillColor: [241, 245, 249], textColor: [15, 23, 42], fontStyle: 'bold' },
       styles: { cellPadding: 3, fontSize: 10, textColor: [51, 65, 85] },
       columnStyles: { 0: { cellWidth: 50, fontStyle: 'bold' } },
@@ -733,6 +734,7 @@ const generarPDFTicket = async () => {
         ['Teléfono', telefonosStr],
       ],
       theme: 'grid',
+      margin: { bottom: 60 },
       headStyles: { fillColor: [241, 245, 249], textColor: [15, 23, 42], fontStyle: 'bold' },
       styles: { cellPadding: 3, fontSize: 10, textColor: [51, 65, 85] },
       columnStyles: { 0: { cellWidth: 50, fontStyle: 'bold' } },
@@ -806,6 +808,7 @@ const generarPDFTicket = async () => {
         head: [['Usuario / Fecha', 'Mensaje']],
         body: respData,
         theme: 'grid',
+        margin: { bottom: 60 },
         headStyles: { fillColor: [241, 245, 249], textColor: [15, 23, 42], fontStyle: 'bold' },
         styles: { cellPadding: 4, fontSize: 10, textColor: [51, 65, 85] },
         columnStyles: { 0: { cellWidth: 40, fontStyle: 'bold' } },
@@ -818,16 +821,16 @@ const generarPDFTicket = async () => {
     for (let i = 1; i <= totalPages; i++) {
       doc.setPage(i);
       const pageHeight = doc.internal.pageSize.height;
-      const footerY = pageHeight - 30; 
+      const footerY = pageHeight - 40; // Más espacio desde el fondo
       
       doc.setDrawColor(0);
       doc.setLineWidth(0.5);
       doc.line(65, footerY, 145, footerY); 
       
-      doc.setFontSize(10);
-      doc.setTextColor(0, 0, 0);
-      doc.setFont('helvetica', 'normal');
-      doc.text('Firma de Jefe inmediato / supervisor', 105, footerY + 5, { align: 'center' });
+      doc.setFontSize(11);
+      doc.setTextColor(51, 65, 85);
+      doc.setFont('helvetica', 'bold');
+      doc.text('Firma de Jefe inmediato / supervisor', 105, footerY + 10, { align: 'center' });
       
       doc.setFontSize(8);
       doc.setTextColor(100, 116, 139);

@@ -341,6 +341,7 @@ const generarPDF = async () => {
         ['Fecha del Reporte', new Date(reporte.value.fecha_creacion).toLocaleString('es-HN')],
       ],
       theme: 'grid',
+      margin: { bottom: 60 },
       headStyles: { fillColor: [241, 245, 249], textColor: [15, 23, 42] },
       columnStyles: { 0: { fontStyle: 'bold', cellWidth: 50 } }
     });
@@ -394,6 +395,7 @@ const generarPDF = async () => {
         ['Departamento', reporte.value.departamento_nombre || 'No asignado']
       ],
       theme: 'grid',
+      margin: { bottom: 60 },
       headStyles: { fillColor: [241, 245, 249], textColor: [15, 23, 42] },
       columnStyles: { 0: { fontStyle: 'bold', cellWidth: 50 } }
     });
@@ -497,16 +499,16 @@ const generarPDF = async () => {
     for (let i = 1; i <= totalPages; i++) {
       doc.setPage(i);
       const pageHeight = doc.internal.pageSize.height;
-      const footerY = pageHeight - 30; // Posición fija al fondo de cada hoja
+      const footerY = pageHeight - 40; // Más espacio desde el fondo
       
       doc.setDrawColor(0);
       doc.setLineWidth(0.5);
       doc.line(65, footerY, 145, footerY); // Línea de la firma
       
-      doc.setFontSize(10);
-      doc.setTextColor(0, 0, 0);
-      doc.setFont('helvetica', 'normal');
-      doc.text('Firma de Jefe inmediato / supervisor', 105, footerY + 5, { align: 'center' });
+      doc.setFontSize(11);
+      doc.setTextColor(51, 65, 85);
+      doc.setFont('helvetica', 'bold');
+      doc.text('Firma de Jefe inmediato / supervisor', 105, footerY + 10, { align: 'center' });
       
       // Opcional: Numeración de página
       doc.setFontSize(8);
@@ -567,6 +569,7 @@ const generarPDFResoluciones = async () => {
         ['Fecha del Reporte', new Date(reporte.value.fecha_creacion).toLocaleString('es-HN')],
       ],
       theme: 'grid',
+      margin: { bottom: 60 },
       headStyles: { fillColor: [241, 245, 249], textColor: [15, 23, 42] },
       columnStyles: { 0: { fontStyle: 'bold', cellWidth: 50 } }
     });
@@ -620,6 +623,7 @@ const generarPDFResoluciones = async () => {
         ['Departamento', reporte.value.departamento_nombre || 'No asignado']
       ],
       theme: 'grid',
+      margin: { bottom: 60 },
       headStyles: { fillColor: [241, 245, 249], textColor: [15, 23, 42] },
       columnStyles: { 0: { fontStyle: 'bold', cellWidth: 50 } }
     });
@@ -740,6 +744,7 @@ const generarPDFResoluciones = async () => {
         head: [['Usuario / Fecha', 'Mensaje']],
         body: rows,
         theme: 'grid',
+        margin: { bottom: 60 },
         headStyles: { fillColor: [241, 245, 249], textColor: [15, 23, 42] },
         columnStyles: { 0: { fontStyle: 'bold', cellWidth: 50 } },
         styles: { overflow: 'linebreak' }
@@ -759,16 +764,16 @@ const generarPDFResoluciones = async () => {
     for (let i = 1; i <= totalPagesRes; i++) {
       doc.setPage(i);
       const pageHeight = doc.internal.pageSize.height;
-      const footerY = pageHeight - 30; // Posición fija al fondo de cada hoja
+      const footerY = pageHeight - 40; // Más espacio desde el fondo
       
       doc.setDrawColor(0);
       doc.setLineWidth(0.5);
       doc.line(65, footerY, 145, footerY); // Línea de la firma
       
-      doc.setFontSize(10);
-      doc.setTextColor(0, 0, 0);
-      doc.setFont('helvetica', 'normal');
-      doc.text('Firma de Jefe inmediato / supervisor', 105, footerY + 5, { align: 'center' });
+      doc.setFontSize(11);
+      doc.setTextColor(51, 65, 85);
+      doc.setFont('helvetica', 'bold');
+      doc.text('Firma de Jefe inmediato / supervisor', 105, footerY + 10, { align: 'center' });
       
       // Opcional: Numeración de página
       doc.setFontSize(8);

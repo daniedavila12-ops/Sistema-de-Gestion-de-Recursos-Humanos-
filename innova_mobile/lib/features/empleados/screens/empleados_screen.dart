@@ -5,7 +5,8 @@ import '../providers/empleado_provider.dart';
 import 'package:innova_mobile/core/constants/api_constants.dart';
 
 class EmpleadosScreen extends ConsumerStatefulWidget {
-  const EmpleadosScreen({super.key});
+  final String? initialFilter;
+  const EmpleadosScreen({super.key, this.initialFilter});
 
   @override
   ConsumerState<EmpleadosScreen> createState() => _EmpleadosScreenState();
@@ -13,7 +14,13 @@ class EmpleadosScreen extends ConsumerStatefulWidget {
 
 class _EmpleadosScreenState extends ConsumerState<EmpleadosScreen> {
   String _searchQuery = '';
-  String _statusFilter = 'todos';
+  late String _statusFilter;
+
+  @override
+  void initState() {
+    super.initState();
+    _statusFilter = widget.initialFilter ?? 'todos';
+  }
 
   @override
   Widget build(BuildContext context) {

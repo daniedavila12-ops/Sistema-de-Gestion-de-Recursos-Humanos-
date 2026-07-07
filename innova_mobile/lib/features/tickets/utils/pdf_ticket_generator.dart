@@ -47,7 +47,7 @@ class PdfTicketGenerator {
     pdf.addPage(
       pw.MultiPage(
         pageFormat: PdfPageFormat.a4,
-        margin: const pw.EdgeInsets.all(32),
+        margin: const pw.EdgeInsets.only(left: 32, right: 32, top: 32, bottom: 80),
         footer: (pw.Context context) => _buildFooter(context),
         build: (pw.Context context) {
           return [
@@ -259,23 +259,32 @@ class PdfTicketGenerator {
 
   static pw.Widget _buildFooter(pw.Context context) {
     return pw.Container(
-      margin: const pw.EdgeInsets.only(top: 20),
+      margin: const pw.EdgeInsets.only(top: 40),
       child: pw.Column(
+        mainAxisSize: pw.MainAxisSize.min,
         children: [
-          pw.Divider(color: PdfColor.fromHex('#000000'), thickness: 1, indent: 150, endIndent: 150),
-          pw.SizedBox(height: 5),
+          pw.SizedBox(height: 60), // Mucho más espacio arriba para firmar
+          pw.Container(
+            width: 250,
+            child: pw.Divider(color: PdfColor.fromHex('#000000'), thickness: 1),
+          ),
+          pw.SizedBox(height: 15), // Separación clara entre la línea y el texto
           pw.Text(
             'Firma de Jefe inmediato / supervisor',
-            style: const pw.TextStyle(fontSize: 10),
+            style: pw.TextStyle(
+              fontSize: 12, 
+              fontWeight: pw.FontWeight.bold, 
+              color: PdfColor.fromHex('#334155')
+            ),
             textAlign: pw.TextAlign.center,
           ),
-          pw.SizedBox(height: 10),
+          pw.SizedBox(height: 25),
           pw.Row(
             mainAxisAlignment: pw.MainAxisAlignment.end,
             children: [
               pw.Text(
                 'Página ${context.pageNumber} de ${context.pagesCount}',
-                style: pw.TextStyle(fontSize: 8, color: PdfColor.fromHex('#64748b')),
+                style: pw.TextStyle(fontSize: 8, color: PdfColor.fromHex('#94a3b8')),
               )
             ]
           )

@@ -1,10 +1,35 @@
 // CREADO POR: DANIEL INNOVA
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:file_picker/file_picker.dart';
 import '../providers/ticket_provider.dart';
+
+class IdentidadInputFormatter extends TextInputFormatter {
+  @override
+  TextEditingValue formatEditUpdate(TextEditingValue oldValue, TextEditingValue newValue) {
+    String newText = newValue.text.replaceAll(RegExp(r'[^0-9]'), '');
+    
+    if (newText.length > 13) {
+      newText = newText.substring(0, 13);
+    }
+    
+    String formatted = '';
+    for (int i = 0; i < newText.length; i++) {
+      if (i == 4 || i == 8) {
+        formatted += '-';
+      }
+      formatted += newText[i];
+    }
+    
+    return TextEditingValue(
+      text: formatted,
+      selection: TextSelection.collapsed(offset: formatted.length),
+    );
+  }
+}
 
 class CrearTicketScreen extends ConsumerStatefulWidget {
   const CrearTicketScreen({super.key});
@@ -16,7 +41,7 @@ class CrearTicketScreen extends ConsumerStatefulWidget {
 class _CrearTicketScreenState extends ConsumerState<CrearTicketScreen> {
   final _formKey = GlobalKey<FormState>();
   
-  String _identidad = '';
+  final List<TextEditingController> _identidadesControllers = [TextEditingController()];
   String _tipo = 'Vacaciones';
   String _prioridad = 'Media';
   String _tema = '';
@@ -24,6 +49,14 @@ class _CrearTicketScreenState extends ConsumerState<CrearTicketScreen> {
   PlatformFile? _archivo;
   
   bool _isLoading = false;
+
+  @override
+  void dispose() {
+    for (var controller in _identidadesControllers) {
+      controller.dispose();
+    }
+    super.dispose();
+  }
   
   Future<void> _pickFile() async {
     FilePickerResult? result = await FilePicker.pickFiles();
@@ -38,6 +71,8 @@ class _CrearTicketScreenState extends ConsumerState<CrearTicketScreen> {
     if (!_formKey.currentState!.validate()) return;
     _formKey.currentState!.save();
     
+    final String identidadesStr = _identidadesControllers.map((c) => c.text.trim()).where((text) => text.isNotEmpty).join(',');
+    
     setState(() => _isLoading = true);
     
     try {
@@ -46,7 +81,7 @@ class _CrearTicketScreenState extends ConsumerState<CrearTicketScreen> {
       // Nota: El backend soporta envío JSON por ahora en el Repositorio Móvil.
       // Si se necesita enviar archivo, el repositorio debe actualizarse a FormData.
       final success = await repository.createTicket(
-        identidad: _identidad,
+        identidad: identidadesStr,
         tipo: _tipo,
         prioridad: _prioridad,
         tema: _tema,
@@ -106,10 +141,52 @@ class _CrearTicketScreenState extends ConsumerState<CrearTicketScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  TextFormField(
-                    decoration: _inputDecoration('Número de Identidad', Icons.badge_outlined).copyWith(hintText: 'Ej: 0801-1990-12345'),
-                    validator: (v) => v == null || v.isEmpty ? 'Requerido' : null,
-                    onSaved: (v) => _identidad = v!,
+                  ...List.generate(_identidadesControllers.length, (index) {
+                    return Padding(
+                      padding: const EdgeInsets.only(bottom: 8.0),
+                      child: Row(
+                        children: [
+                          Expanded(
+                            child: TextFormField(
+                              controller: _identidadesControllers[index],
+                              keyboardType: TextInputType.number,
+                              inputFormatters: [IdentidadInputFormatter()],
+                              decoration: _inputDecoration(
+                                index == 0 ? 'Número de Identidad' : 'Número de Identidad ${index + 1}',
+                                Icons.badge_outlined,
+                              ).copyWith(hintText: 'Ej: 0801-1990-12345'),
+                              validator: (v) => v == null || v.isEmpty ? 'Requerido' : (v.length < 15 ? 'Identidad incompleta' : null),
+                            ),
+                          ),
+                          if (index > 0)
+                            IconButton(
+                              icon: const Icon(Icons.remove_circle_outline, color: Colors.red),
+                              onPressed: () {
+                                setState(() {
+                                  _identidadesControllers[index].dispose();
+                                  _identidadesControllers.removeAt(index);
+                                });
+                              },
+                            ),
+                        ],
+                      ),
+                    );
+                  }),
+                  Align(
+                    alignment: Alignment.centerLeft,
+                    child: TextButton.icon(
+                      onPressed: () {
+                        setState(() {
+                          _identidadesControllers.add(TextEditingController());
+                        });
+                      },
+                      icon: const Icon(Icons.add, size: 18),
+                      label: const Text('+ Agregar otra persona'),
+                      style: TextButton.styleFrom(
+                        padding: EdgeInsets.zero,
+                        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                      ),
+                    ),
                   ),
                   const SizedBox(height: 16),
                   

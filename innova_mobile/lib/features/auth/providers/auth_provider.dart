@@ -130,7 +130,7 @@ class AuthNotifier extends Notifier<AuthState> {
       debugPrint("Error de login detallado: $e");
       state = AuthState(
         isAuthenticated: false,
-        error: 'Error: ${e.toString()}',
+        error: 'Correo o contraseña incorrectos',
       );
       return false;
     }

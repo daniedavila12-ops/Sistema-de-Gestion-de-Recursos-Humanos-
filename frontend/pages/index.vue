@@ -157,7 +157,7 @@
         </div>
 
         <!-- Contratos por Vencer -->
-        <div v-if="dashboardLists.vencimientos !== null" class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 flex flex-col h-[400px]">
+        <div id="vencimientos" v-if="dashboardLists.vencimientos !== null" class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 flex flex-col h-[400px]">
           <div class="flex justify-between items-center mb-4 shrink-0">
             <h2 class="text-lg font-black text-slate-800 uppercase tracking-tight flex items-center gap-2"><span class="text-2xl">📄</span> Contratos por Vencer</h2>
             <select v-model="mesVencimiento" @change="fetchVencimientos" class="p-2 text-xs bg-slate-50 border rounded-xl outline-none focus:border-blue-500 font-bold text-slate-600 cursor-pointer">
@@ -539,8 +539,12 @@ const tarjetas = computed(() => {
   return list;
 })
 
-const handleStatClick = (link) => {
+const handleStatClick = async (link) => {
   if (!link) return
+  if (link === '#vencimientos') {
+    mesVencimiento.value = 'todos'
+    await fetchVencimientos()
+  }
   if (link.startsWith('#')) {
     const el = document.querySelector(link)
     if (el) {

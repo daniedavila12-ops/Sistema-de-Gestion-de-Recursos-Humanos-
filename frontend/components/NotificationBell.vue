@@ -195,6 +195,8 @@ const manejarClickNotificacion = (notif) => {
     } else {
       router.push('/reportes-incidencia');
     }
+  } else if (titulo.includes('empleado inactivo')) {
+    router.push({ path: '/empleados', query: { status: 'inactivos' } });
   } else if (titulo.includes('empleado') || titulo.includes('cumpleaños') || titulo.includes('contrato')) {
     router.push('/empleados');
   } else if (titulo.includes('vacaciones') || titulo.includes('vacacion')) {

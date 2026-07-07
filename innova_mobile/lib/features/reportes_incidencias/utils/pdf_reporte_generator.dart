@@ -109,7 +109,7 @@ class PdfReporteGenerator {
     pdf.addPage(
       pw.MultiPage(
         pageFormat: PdfPageFormat.a4,
-        margin: const pw.EdgeInsets.all(32),
+        margin: const pw.EdgeInsets.only(left: 32, right: 32, top: 32, bottom: 80),
         footer: (pw.Context context) => _buildFooter(context),
         build: (pw.Context context) {
           return [

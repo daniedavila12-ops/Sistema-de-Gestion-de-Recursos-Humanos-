@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import '../models/empleado_model.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import '../repositories/empleado_repository.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'contrato_provider.dart';
 import 'vacaciones_empleado_provider.dart';
@@ -15,6 +16,7 @@ import 'notas_empleado_provider.dart';
 import '../models/documento_empleado_model.dart';
 import 'documentos_empleado_provider.dart';
 import 'package:innova_mobile/core/constants/api_constants.dart';
+import 'package:innova_mobile/core/services/socket_service.dart';
  
 class EmpleadoDetailScreen extends StatefulWidget {
   final Empleado empleado;
@@ -30,23 +32,49 @@ class _EmpleadoDetailScreenState extends State<EmpleadoDetailScreen>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
   String _filtroPeriodoHistorial = 'Todos';
+  late Empleado _empleado;
 
   @override
   void initState() {
     super.initState();
+    _empleado = widget.empleado;
     // Se crean 6 tabs para las diferentes secciones del perfil del empleado
     _tabController = TabController(length: 6, vsync: this, initialIndex: widget.initialTabIndex);
+    
+    // Escuchar actualizaciones en tiempo real
+    SocketService().socket.on('refresh_empleado_detalle', _onRefreshEmpleadoDetalle);
+  }
+
+  void _onRefreshEmpleadoDetalle(dynamic data) {
+    if (data != null && data.toString() == _empleado.id.toString()) {
+      _reloadEmpleado();
+    }
+  }
+
+  Future<void> _reloadEmpleado() async {
+    try {
+      final repo = EmpleadoRepository();
+      final updated = await repo.getEmpleado(_empleado.id);
+      if (mounted) {
+        setState(() {
+          _empleado = updated;
+        });
+      }
+    } catch (e) {
+      // ignore error
+    }
   }
 
   @override
   void dispose() {
+    SocketService().socket.off('refresh_empleado_detalle', _onRefreshEmpleadoDetalle);
     _tabController.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    final empleado = widget.empleado;
+    final empleado = _empleado;
 
     return Scaffold(
       appBar: AppBar(
@@ -1838,18 +1866,34 @@ class _EmpleadoDetailScreenState extends State<EmpleadoDetailScreen>
     );
   }
 
-  void _handleMenuSelection(BuildContext context, WidgetRef ref, String value, Empleado empleado) {
+  Future<void> _handleMenuSelection(BuildContext context, WidgetRef ref, String value, Empleado empleado) async {
     String message = 'Funcionalidad no implementada.';
     switch (value) {
       case 'editar':
-        message = 'Navegación a editar empleado no implementada.';
-        break;
+        final result = await context.push('/editar-empleado', extra: empleado);
+        if (result == true && context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Empleado actualizado, regresa a la lista para ver los cambios.')));
+        }
+        return;
       case 'contacto':
-        message = 'Registro de contacto no implementado.';
-        break;
+        // Reuse the edit screen for contacts since it has all the validation logic
+        // Alternatively we can use a custom modal but the edit screen already handles emergency contacts perfectly in sections 3 and 4
+        final res = await context.push('/editar-empleado', extra: empleado);
+        if (res == true && context.mounted) {
+           ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Contactos actualizados, regresa a la lista para ver los cambios.')));
+        }
+        return;
       case 'estado':
-        final nuevoEstado = empleado.estado == 1 ? 'desactivar' : 'activar';
-        message = 'Cambio de estado a $nuevoEstado no implementado.';
+        final nuevoEstado = empleado.estado == 1 ? 0 : 1;
+        try {
+          await EmpleadoRepository().updateEstado(empleado.id, nuevoEstado);
+          setState(() {
+            empleado.estado = nuevoEstado;
+          });
+          message = 'Empleado ${nuevoEstado == 1 ? 'activado' : 'desactivado'} con éxito.';
+        } catch (e) {
+          message = 'Error al cambiar el estado: $e';
+        }
         break;
       case 'contrato':
         context.push('/nuevo-contrato', extra: empleado.id);
@@ -1861,7 +1905,7 @@ class _EmpleadoDetailScreenState extends State<EmpleadoDetailScreen>
         _showNotaDialog(context, ref, empleado.id);
         break;
     }
-    if (mounted) {
+    if (context.mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text(message)),
       );

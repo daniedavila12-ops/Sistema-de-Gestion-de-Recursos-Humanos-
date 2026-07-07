@@ -166,6 +166,8 @@ class NotificacionesButton extends ConsumerWidget {
                             } else {
                               if (context.mounted) context.push('/empleados');
                             }
+                          } else if (titulo.contains('empleado inactivo')) {
+                            if (context.mounted) context.push('/empleados', extra: 'inactivos');
                           } else if (titulo.contains('empleado') || titulo.contains('cumpleaños') || titulo.contains('contrato')) {
                             if (context.mounted) context.push('/empleados');
                           } else if (titulo.contains('departamento')) {

@@ -274,12 +274,12 @@ class _EditarEmpleadoScreenState extends ConsumerState<EditarEmpleadoScreen> {
     };
 
     try {
-      final response = await apiClient.put('/empleados/', data: data);
+      final response = await apiClient.put('/empleados/${widget.empleado.id}', data: data);
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('✅ ${response.data['mensaje'] ?? 'Empleado registrado'}'), backgroundColor: Colors.green),
+          SnackBar(content: Text('✅ ${response.data['mensaje'] ?? 'Empleado actualizado'}'), backgroundColor: Colors.green),
         );
-        context.go('/empleados');
+        context.pop(true);
       }
     } catch (e) {
       if (mounted) {

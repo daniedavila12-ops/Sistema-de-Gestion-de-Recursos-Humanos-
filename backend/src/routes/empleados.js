@@ -137,6 +137,22 @@ router.get('/:id', (req, res) => {
     });
 });
 
+router.put('/:id/estado', (req, res) => {
+    const db = req.app.get('db');
+    const { id } = req.params;
+    const { estado } = req.body;
+    const sql = "UPDATE empleados SET estado = ? WHERE id = ?";
+    db.query(sql, [estado, id], (err, result) => {
+        if (err) return res.status(500).json(err);
+        const io = req.app.get('io');
+        if (io) {
+            io.emit('refresh_empleados');
+            io.emit('refresh_empleado_detalle', id);
+        }
+        res.json({ mensaje: "Estado actualizado correctamente" });
+    });
+});
+
 router.post('/:id/foto', upload.single('foto'), (req, res) => {
     if (!req.file) {
         return res.status(400).json({ mensaje: "No se subió ninguna imagen" });

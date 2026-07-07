@@ -176,9 +176,6 @@
                 <NuxtLink :to="`/empleados/${emp.id}`" class="inline-block bg-blue-100 text-blue-600 hover:bg-blue-600 hover:text-white px-4 py-2 rounded-lg text-xs font-bold transition-colors">
                   Ver Detalle
                 </NuxtLink>
-                <button @click="eliminarEmpleado(emp.id)" class="inline-block bg-red-100 text-red-600 hover:bg-red-600 hover:text-white px-4 py-2 rounded-lg text-xs font-bold transition-colors">
-                  Eliminar
-                </button>
               </td>
             </tr>
           </tbody>
@@ -636,6 +633,10 @@ onMounted(async () => {
     menuUsuario.value = m.data
   } catch (err) {
     console.error("Error cargando menu", err)
+  }
+
+  if (route.query.status) {
+    statusFilter.value = route.query.status
   }
 
   await cargarEmpleados()

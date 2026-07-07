@@ -18,7 +18,7 @@
         <div>
           <label class="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1 pl-1">Identidad del Empleado Reportado</label>
           <div v-for="(id, index) in identidades" :key="index" class="flex gap-2 mb-2">
-            <input v-model="identidades[index]" type="text" required placeholder="Ej: 0801-1990-12345"
+            <input v-model="identidades[index]" @input="formatIdentidad(index)" type="text" required placeholder="Ej: 0801-1990-12345"
               class="flex-1 px-5 py-4 bg-slate-50 border border-slate-200 rounded-2xl text-slate-900 focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 outline-none transition-all duration-200">
             <button v-if="identidades.length > 1" type="button" @click="removerIdentidad(index)" class="px-4 bg-red-100 text-red-600 rounded-2xl hover:bg-red-200 transition-colors font-bold text-xl flex items-center justify-center">
               &times;
@@ -92,6 +92,14 @@ const categoria = ref('')
 
 const agregarIdentidad = () => identidades.value.push('')
 const removerIdentidad = (index) => { if (identidades.value.length > 1) identidades.value.splice(index, 1) }
+
+const formatIdentidad = (index) => {
+  let val = identidades.value[index].replace(/\D/g, '')
+  if (val.length > 4) val = val.substring(0, 4) + '-' + val.substring(4)
+  if (val.length > 9) val = val.substring(0, 9) + '-' + val.substring(9)
+  if (val.length > 15) val = val.substring(0, 15)
+  identidades.value[index] = val
+}
 const prioridad = ref('Media')
 const tema = ref('')
 const descripcion = ref('')

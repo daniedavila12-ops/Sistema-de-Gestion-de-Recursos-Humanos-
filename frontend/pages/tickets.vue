@@ -29,7 +29,7 @@
     <main class="flex-1 ml-64 p-8 overflow-y-auto">
 
       <!-- Header -->
-      <header class="mb-6 bg-white rounded-2xl border border-slate-200/80 shadow-sm overflow-hidden">
+      <header class="mb-6 bg-white rounded-2xl border border-slate-200/80 shadow-sm">
         <div class="px-6 py-4 flex justify-between items-center">
           <div class="flex items-center gap-4">
             <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center shadow-lg shadow-violet-500/20">
@@ -46,37 +46,45 @@
               Nueva Solicitud
             </button>
             <div class="relative">
-              <div @click="dropdownPerfilAbierto = !dropdownPerfilAbierto" class="flex items-center gap-3 pl-4 border-l border-slate-200 cursor-pointer hover:bg-slate-50 p-2 rounded-xl transition-colors">
-                <div v-if="fotoUsuario" class="h-8 w-8 rounded-full overflow-hidden ring-2 ring-slate-100">
+              <div @click="dropdownPerfilAbierto = !dropdownPerfilAbierto" class="flex items-center gap-3 pl-6 border-l border-slate-200 cursor-pointer hover:bg-slate-50 p-2 rounded-xl transition-colors">
+                <div v-if="fotoUsuario" class="h-10 w-10 rounded-full flex items-center justify-center overflow-hidden ring-2 ring-slate-100">
                   <img :src="`http://localhost:3007${fotoUsuario}`" class="w-full h-full object-cover" />
                 </div>
-                <div v-else class="h-8 w-8 rounded-full bg-slate-800 flex items-center justify-center text-blue-400 font-black text-sm ring-2 ring-slate-100 uppercase">{{ nombreUsuario ? nombreUsuario.charAt(0) : 'U' }}</div>
-                <div class="flex flex-col text-left">
-                  <span class="text-[9px] text-slate-400 font-black uppercase tracking-widest">Sesión</span>
-                  <span class="text-[13px] font-extrabold text-slate-800 leading-tight">{{ nombreUsuario || 'Cargando...' }}</span>
+                <div v-else class="h-10 w-10 rounded-full bg-slate-800 flex items-center justify-center text-blue-400 font-black text-lg ring-2 ring-slate-100 uppercase">
+                  {{ nombreUsuario.charAt(0) }}
                 </div>
-                <svg class="w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" d="M19 9l-7 7-7-7"/></svg>
+                <div class="flex flex-col">
+                  <span class="text-[10px] text-slate-400 font-black uppercase tracking-widest">Usuario Activo</span>
+                  <span class="text-base font-black text-slate-900 leading-tight">{{ nombreUsuario }}</span>
+                </div>
               </div>
-              <div v-if="dropdownPerfilAbierto" class="absolute right-0 mt-2 w-64 bg-white rounded-2xl shadow-xl border border-slate-100 overflow-hidden z-50">
-                <div class="p-4 border-b border-slate-100 bg-slate-50 flex items-center gap-3">
-                  <div v-if="fotoUsuario" class="h-10 w-10 rounded-full overflow-hidden ring-2 ring-white shadow-sm shrink-0"><img :src="`http://localhost:3007${fotoUsuario}`" class="w-full h-full object-cover" /></div>
-                  <div v-else class="h-10 w-10 rounded-full bg-slate-800 flex items-center justify-center text-blue-400 font-black text-lg ring-2 ring-white shadow-sm shrink-0 uppercase">{{ nombreUsuario ? nombreUsuario.charAt(0) : 'U' }}</div>
+
+              <!-- Dropdown Menu -->
+              <div v-if="dropdownPerfilAbierto" class="absolute right-0 mt-2 w-64 bg-white rounded-2xl shadow-xl border border-slate-100 overflow-hidden z-50 animate-in slide-in-from-top-2 duration-200">
+                <div class="p-5 border-b border-slate-100 bg-slate-50 flex items-center gap-4">
+                  <div v-if="fotoUsuario" class="h-12 w-12 rounded-full flex items-center justify-center overflow-hidden ring-2 ring-white shadow-sm shrink-0">
+                    <img :src="`http://localhost:3007${fotoUsuario}`" class="w-full h-full object-cover" />
+                  </div>
+                  <div v-else class="h-12 w-12 rounded-full bg-slate-800 flex items-center justify-center text-blue-400 font-black text-xl ring-2 ring-white shadow-sm shrink-0 uppercase">
+                    {{ nombreUsuario.charAt(0) }}
+                  </div>
                   <div>
-                    <p class="font-extrabold text-slate-800 text-sm">{{ nombreUsuario }}</p>
-                    <p class="text-[10px] font-bold text-violet-500 uppercase tracking-widest">{{ rolNombre }}</p>
+                    <p class="font-black text-slate-800 text-sm leading-tight">{{ nombreUsuario }}</p>
+                    <p class="text-[10px] font-bold text-blue-500 uppercase tracking-widest mt-0.5">{{ rolNombre }}</p>
                   </div>
                 </div>
-                <div class="p-2">
+                <div class="p-2 space-y-1">
                   <button @click="abrirModalPerfil(); dropdownPerfilAbierto = false" class="w-full text-left flex items-center gap-3 p-3 hover:bg-slate-50 rounded-xl transition-colors group">
-                    <span class="text-base group-hover:scale-110 transition-transform">👤</span>
+                    <span class="text-lg group-hover:scale-110 transition-transform">👤</span>
                     <span class="text-sm font-bold text-slate-700">Mi Perfil de Usuario</span>
                   </button>
                   <button @click="logout" class="w-full text-left flex items-center gap-3 p-3 hover:bg-red-50 rounded-xl transition-colors group">
-                    <span class="text-base group-hover:scale-110 transition-transform">🚪</span>
+                    <span class="text-lg group-hover:scale-110 transition-transform">🚪</span>
                     <span class="text-sm font-bold text-red-600">Cerrar Sesión</span>
                   </button>
                 </div>
               </div>
+              <!-- Overlay invisible para cerrar el dropdown si se hace click fuera -->
               <div v-if="dropdownPerfilAbierto" @click="dropdownPerfilAbierto = false" class="fixed inset-0 z-40"></div>
             </div>
           </div>
@@ -340,9 +348,19 @@
         <div class="p-6">
           <form @submit.prevent="crearTicket" class="space-y-4">
             <div>
-              <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">Número de Identidad</label>
-              <input v-model="nuevoTicket.identidad" type="text" placeholder="Ej: 0801-1990-12345" required
-                class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:border-violet-400 focus:ring-2 focus:ring-violet-100 text-slate-700 font-medium transition-all text-sm">
+              <div v-for="(idObj, index) in identidades" :key="index" class="mb-4">
+                <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">Número de Identidad {{ index + 1 }}</label>
+                <div class="flex items-center gap-2">
+                  <input v-model="idObj.value" @input="formatIdentidad(idObj)" type="text" placeholder="Ej: 0801-1990-12345" required
+                    class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:border-violet-400 focus:ring-2 focus:ring-violet-100 text-slate-700 font-medium transition-all text-sm">
+                  <button v-if="identidades.length > 1" type="button" @click="removeIdentidad(index)" class="p-3 text-red-500 hover:bg-red-50 rounded-xl transition-colors" title="Eliminar">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                  </button>
+                </div>
+              </div>
+              <button type="button" @click="addIdentidad" class="inline-flex items-center gap-2 px-3 py-1.5 text-xs text-violet-600 font-bold bg-violet-50 border border-violet-100 rounded-lg hover:bg-violet-100 transition-colors mb-2">
+                <span>+ Agregar otra persona</span>
+              </button>
             </div>
             <div class="grid grid-cols-2 gap-4">
               <div>
@@ -513,6 +531,24 @@ const cambiarPagina = (pag) => {
   }
 }
 
+const identidades = ref([{ value: '' }])
+
+const addIdentidad = () => {
+  identidades.value.push({ value: '' })
+}
+
+const removeIdentidad = (index) => {
+  identidades.value.splice(index, 1)
+}
+
+const formatIdentidad = (idObj) => {
+  let val = idObj.value.replace(/\D/g, '')
+  if (val.length > 4) val = val.substring(0, 4) + '-' + val.substring(4)
+  if (val.length > 9) val = val.substring(0, 9) + '-' + val.substring(9)
+  if (val.length > 15) val = val.substring(0, 15)
+  idObj.value = val
+}
+
 const nuevoTicket = ref({
   usuario_id: null,
   identidad: '',
@@ -640,6 +676,7 @@ const abrirModalNuevo = () => {
 
 const cerrarModal = () => {
   mostrarModal.value = false
+  identidades.value = [{ value: '' }]
   nuevoTicket.value.identidad = ''
   nuevoTicket.value.descripcion = ''
   nuevoTicket.value.tipo = categoriasActivas.value.length > 0 ? categoriasActivas.value[0].nombre : ''
@@ -745,7 +782,8 @@ const crearTicket = async () => {
     
     const formData = new FormData()
     formData.append('usuario_id', nuevoTicket.value.usuario_id || '')
-    formData.append('identidad', nuevoTicket.value.identidad)
+    const identidadesString = identidades.value.map(i => i.value.trim()).filter(i => i !== '').join(',')
+    formData.append('identidad', identidadesString)
     formData.append('tipo', nuevoTicket.value.tipo)
     formData.append('prioridad', nuevoTicket.value.prioridad)
     formData.append('tema', nuevoTicket.value.tema)

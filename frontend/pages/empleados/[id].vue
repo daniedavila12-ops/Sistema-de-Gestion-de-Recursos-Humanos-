@@ -1376,7 +1376,9 @@ const toggleEstadoEmpleado = async () => {
 
   if (confirm(mensajeConfirmacion)) {
     try {
-      await axios.put(`http://localhost:3007/api/empleados/${route.params.id}/${accion}`)
+      await axios.put(`http://localhost:3007/api/empleados/${route.params.id}/estado`, {
+        estado: isActivo ? 0 : 1
+      })
       alert(`✅ Empleado ${isActivo ? 'desactivado' : 'activado'} correctamente`)
       // Actualizar el estado local para reflejar el cambio inmediatamente
       empleado.value.estado = isActivo ? 0 : 1;

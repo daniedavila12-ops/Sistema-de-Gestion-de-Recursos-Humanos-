@@ -11,7 +11,7 @@ class Empleado {
   final String? correo;
   final String? tipoContrato;
   final String? ubicacion;
-  final int estado;
+  int estado;
   final String? foto;
   final String? fechaNacimiento;
   final String? telefono;

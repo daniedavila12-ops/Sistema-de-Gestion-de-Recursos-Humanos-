@@ -165,7 +165,13 @@ class _InnovaAppState extends ConsumerState<InnovaApp> {
             ),
             GoRoute(
               path: '/empleados',
-              builder: (context, state) => const EmpleadosScreen(),
+              builder: (context, state) {
+                final extra = state.extra;
+                if (extra is String) {
+                  return EmpleadosScreen(initialFilter: extra);
+                }
+                return const EmpleadosScreen();
+              },
             ),
             GoRoute(
               path: '/nuevo-empleado',

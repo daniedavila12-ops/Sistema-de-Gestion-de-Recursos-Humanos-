@@ -13,7 +13,7 @@
           <div v-for="(idObj, index) in identidades" :key="index" class="mb-4">
             <label class="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1 pl-1">Número de Identidad {{ index + 1 }}</label>
             <div class="flex items-center gap-2">
-              <input v-model="idObj.value" type="text" required placeholder="Ej: 0801-1990-12345"
+              <input v-model="idObj.value" @input="formatIdentidad(idObj)" type="text" required placeholder="Ej: 0801-1990-12345"
                 class="w-full px-5 py-4 bg-slate-50 border border-slate-200 rounded-2xl text-slate-900 focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 outline-none transition-all duration-200">
               <button v-if="identidades.length > 1" type="button" @click="removeIdentidad(index)" class="p-3 text-red-500 hover:bg-red-50 rounded-xl transition-colors" title="Eliminar">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
@@ -113,6 +113,14 @@ const addIdentidad = () => {
 
 const removeIdentidad = (index) => {
   identidades.value.splice(index, 1)
+}
+
+const formatIdentidad = (idObj) => {
+  let val = idObj.value.replace(/\D/g, '')
+  if (val.length > 4) val = val.substring(0, 4) + '-' + val.substring(4)
+  if (val.length > 9) val = val.substring(0, 9) + '-' + val.substring(9)
+  if (val.length > 15) val = val.substring(0, 15)
+  idObj.value = val
 }
 
 const crearTicket = async () => {
