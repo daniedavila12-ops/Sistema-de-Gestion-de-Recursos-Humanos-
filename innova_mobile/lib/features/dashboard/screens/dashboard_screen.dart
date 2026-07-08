@@ -70,8 +70,13 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
     final cumpleaneros = stats['cumpleaneros']?.toString() ?? '0';
     final vencimientosCount = stats['vencimientos']?.toString() ?? '0';
 
-    return SingleChildScrollView(
-      padding: const EdgeInsets.all(16.0),
+    return RefreshIndicator(
+      onRefresh: () async {
+        ref.invalidate(dashboardStatsProvider);
+        ref.invalidate(dashboardListsProvider);
+      },
+      child: SingleChildScrollView(
+        padding: const EdgeInsets.all(16.0),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -91,19 +96,19 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
             childAspectRatio: 1.25,
             children: [
               _buildProfileCard(context, ref),
-              if (authState.hasAccess('Empleados'))
+              if (authState.hasAccess('Total Empleados') || authState.hasAccess('Empleados'))
                 _buildStatCard('Total Empleados', totalEmpleados, '👥', Colors.blue.shade50, Colors.blue.shade900, onTap: () {
                   context.push('/empleados');
                 }),
-              if (authState.hasAccess('Tickets de IT'))
+              if (authState.hasAccess('Tickets Pendientes') || authState.hasAccess('Tickets'))
                 _buildStatCard('Tickets Pendientes', ticketsPendientes, '🎫', Colors.orange.shade50, Colors.orange.shade900, onTap: () {
                   context.push('/tickets');
                 }),
-              if (authState.hasAccess('Reportes de Incidencia'))
+              if (authState.hasAccess('Incidentes Pendientes') || authState.hasAccess('Reportes de Incidencia'))
                 _buildStatCard('Incidentes Pendientes', incidentesPendientes, '⚠️', Colors.red.shade50, Colors.red.shade900, onTap: () {
                   context.push('/reportes-incidencias');
                 }),
-              if (authState.hasAccess('Empleados'))
+              if (authState.hasAccess('Cumpleañeros'))
                 _buildStatCard('Cumpleañeros', cumpleaneros, '🎂', Colors.pink.shade50, Colors.pink.shade900, onTap: () {
                   if (_cumpleanerosKey.currentContext != null) {
                     Scrollable.ensureVisible(
@@ -113,7 +118,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                     );
                   }
                 }),
-              if (authState.hasAccess('Empleados'))
+              if (authState.hasAccess('Vencimientos'))
                 _buildStatCard('Vencimientos', vencimientosCount, '📄', Colors.purple.shade50, Colors.purple.shade900, onTap: () {
                   if (_vencimientosKey.currentContext != null) {
                     Scrollable.ensureVisible(
@@ -137,7 +142,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
               return Column(
                 children: [
                   // CUMPLEAÑEROS
-                  if (authState.hasAccess('Empleados'))
+                  if (authState.hasAccess('Cumpleañeros'))
                     Container(
                       key: _cumpleanerosKey,
                       child: Column(
@@ -185,7 +190,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                     ),
 
                   // VENCIMIENTOS
-                  if (authState.hasAccess('Empleados'))
+                  if (authState.hasAccess('Vencimientos'))
                     Container(
                       key: _vencimientosKey,
                       child: Column(
@@ -233,7 +238,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                     ),
 
                     // ACTIVOS
-                    if (authState.hasAccess('Empleados')) ...[
+                    if (authState.hasAccess('Empleados Activos') || authState.hasAccess('Total Empleados') || authState.hasAccess('Empleados')) ...[
                       _buildSectionHeader('🟢 Empleados Activos', activos.length.toString()),
                     if (activos.isEmpty)
                       const Padding(padding: EdgeInsets.all(16.0), child: Text('No hay empleados activos', style: TextStyle(color: Colors.grey, fontStyle: FontStyle.italic)))
@@ -257,6 +262,7 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
           ),
         ],
       ),
+    ),
     );
   }
 

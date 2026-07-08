@@ -38,7 +38,7 @@
             <p class="text-slate-500 mt-1 font-medium italic">Gestión de departamentos de la empresa.</p>
           </div>
           <div class="flex items-center gap-4">
-            <button @click="abrirModalCrear" class="bg-green-600 text-white px-6 py-3 rounded-xl font-black uppercase text-xs hover:bg-green-700 transition-all shadow-lg shadow-green-200 flex items-center gap-2">
+            <button v-if="hasPermission('Departamentos', 'puedeCrear')" @click="abrirModalCrear" class="bg-green-600 text-white px-6 py-3 rounded-xl font-black uppercase text-xs hover:bg-green-700 transition-all shadow-lg shadow-green-200 flex items-center gap-2">
               <span>+</span> Crear Nuevo
             </button>
             <div class="relative w-full md:w-auto flex justify-end">
@@ -127,13 +127,13 @@
               <td class="p-5 text-sm text-slate-600">{{ dept.modificado_por || 'N/A' }}</td>
               <td class="p-5 text-sm text-slate-500">{{ dept.ultima_modificacion ? new Date(dept.ultima_modificacion).toLocaleDateString('es-HN') : 'N/A' }}</td>
               <td class="p-5 text-center flex justify-center gap-2">
-                <button @click="abrirModalEditar(dept)" class="bg-blue-100 text-blue-600 hover:bg-blue-600 hover:text-white p-2 rounded-lg text-xs font-bold transition-colors" title="Editar">
+                <button v-if="hasPermission('Departamentos', 'puedeEditar')" @click="abrirModalEditar(dept)" class="bg-blue-100 text-blue-600 hover:bg-blue-600 hover:text-white p-2 rounded-lg text-xs font-bold transition-colors" title="Editar">
                   ✏️
                 </button>
-                <button @click="toggleEstado(dept)" :class="dept.estado ? 'bg-red-100 text-red-600 hover:bg-red-600 hover:text-white' : 'bg-green-100 text-green-600 hover:bg-green-600 hover:text-white'" class="p-2 rounded-lg text-xs font-bold transition-colors" :title="dept.estado ? 'Desactivar' : 'Activar'">
+                <button v-if="hasPermission('Departamentos', 'puedeEditar')" @click="toggleEstado(dept)" :class="dept.estado ? 'bg-red-100 text-red-600 hover:bg-red-600 hover:text-white' : 'bg-green-100 text-green-600 hover:bg-green-600 hover:text-white'" class="p-2 rounded-lg text-xs font-bold transition-colors" :title="dept.estado ? 'Desactivar' : 'Activar'">
                   {{ dept.estado ? '🛑' : '✅' }}
                 </button>
-                <button @click="eliminarDepartamento(dept)" class="bg-red-100 text-red-600 hover:bg-red-600 hover:text-white p-2 rounded-lg text-xs font-bold transition-colors" title="Eliminar">
+                <button v-if="hasPermission('Departamentos', 'puedeEliminar')" @click="eliminarDepartamento(dept)" class="bg-red-100 text-red-600 hover:bg-red-600 hover:text-white p-2 rounded-lg text-xs font-bold transition-colors" title="Eliminar">
                   🗑️
                 </button>
               </td>
@@ -236,7 +236,9 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import axios from 'axios'
+import { usePermisos } from '~/composables/usePermisos'
 
+const { getPermisos, hasPermission } = usePermisos()
 const rolID = ref(null)
 const rolNombre = ref('Cargando...')
 const menuUsuario = ref([])
@@ -428,6 +430,9 @@ onMounted(async () => {
   } catch (e) {
     console.error('Error cargando menú', e)
   }
+
+  const usuarioID = localStorage.getItem('usuarioID');
+  await getPermisos(rolID.value, usuarioID);
 
   cargarDepartamentos()
 })

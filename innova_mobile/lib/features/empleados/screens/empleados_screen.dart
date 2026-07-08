@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../providers/empleado_provider.dart';
 import 'package:innova_mobile/core/constants/api_constants.dart';
+import '../../auth/providers/auth_provider.dart';
 
 class EmpleadosScreen extends ConsumerStatefulWidget {
   final String? initialFilter;
@@ -25,6 +26,7 @@ class _EmpleadosScreenState extends ConsumerState<EmpleadosScreen> {
   @override
   Widget build(BuildContext context) {
     final empleadosAsync = ref.watch(empleadosProvider);
+    final authState = ref.watch(authProvider);
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -34,14 +36,16 @@ class _EmpleadosScreenState extends ConsumerState<EmpleadosScreen> {
         elevation: 0,
         iconTheme: const IconThemeData(color: Colors.black87),
       ),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: () {
-          context.push('/nuevo-empleado');
-        },
-        backgroundColor: Colors.green.shade600,
-        icon: const Icon(Icons.add, color: Colors.white),
-        label: const Text('NUEVO EMPLEADO', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
-      ),
+      floatingActionButton: authState.hasPermission('Empleados', 'puedeCrear') 
+        ? FloatingActionButton.extended(
+            onPressed: () {
+              context.push('/nuevo-empleado');
+            },
+            backgroundColor: Colors.green.shade600,
+            icon: const Icon(Icons.add, color: Colors.white),
+            label: const Text('NUEVO EMPLEADO', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+          )
+        : null,
       body: Column(
         children: [
           // Header search and filter

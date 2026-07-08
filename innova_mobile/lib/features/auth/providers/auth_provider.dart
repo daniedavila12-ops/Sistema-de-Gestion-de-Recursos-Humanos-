@@ -6,7 +6,8 @@ import 'dart:convert';
 import 'package:flutter/foundation.dart';
 
 import '../../../core/api/api_client.dart';
-import '../models/usuario_model.dart'; // Importar el modelo de usuario
+import '../models/usuario_model.dart';
+import '../models/permiso_granular_model.dart'; // Importar el modelo de permisos
 
 final authProvider = NotifierProvider<AuthNotifier, AuthState>(() {
   return AuthNotifier();
@@ -16,8 +17,9 @@ class AuthState {
   final bool isAuthenticated;
   final bool isLoading;
   final String? error;
+  final String? token;
   final Usuario? user;
-  final List<String> permisos;
+  final Map<String, PermisoGranular> permisos;
 
   bool get isAdmin => user?.rolId == 1;
 
@@ -25,13 +27,27 @@ class AuthState {
     this.isAuthenticated = false,
     this.isLoading = false,
     this.error,
+    this.token,
     this.user,
-    this.permisos = const [],
+    this.permisos = const {},
   });
 
   bool hasAccess(String module) {
     if (isAdmin) return true;
-    return permisos.contains(module);
+    return permisos.containsKey(module) && permisos[module]!.puedeVer;
+  }
+
+  bool hasPermission(String modulo, String accion) {
+    if (isAdmin) return true;
+    if (!permisos.containsKey(modulo)) return false;
+    final p = permisos[modulo]!;
+    switch (accion) {
+      case 'puedeCrear': return p.puedeCrear;
+      case 'puedeEditar': return p.puedeEditar;
+      case 'puedeEliminar': return p.puedeEliminar;
+      case 'puedeVer': return p.puedeVer;
+      default: return false;
+    }
   }
 
   // Es útil tener un método copyWith para actualizar el estado
@@ -39,13 +55,15 @@ class AuthState {
     bool? isAuthenticated,
     bool? isLoading,
     String? error,
+    String? token,
     Usuario? user,
-    List<String>? permisos,
+    Map<String, PermisoGranular>? permisos,
   }) {
     return AuthState(
       isAuthenticated: isAuthenticated ?? this.isAuthenticated,
       isLoading: isLoading ?? this.isLoading,
       error: error ?? this.error,
+      token: token ?? this.token,
       user: user ?? this.user,
       permisos: permisos ?? this.permisos,
     );
@@ -70,18 +88,17 @@ class AuthNotifier extends Notifier<AuthState> {
         final userData = jsonDecode(userString);
         final user = Usuario.fromJson(userData);
         
-        List<String> permisos = [];
+        Map<String, PermisoGranular> permisosMap = {};
         if (permisosString != null) {
           final decoded = jsonDecode(permisosString);
-          if (decoded is List) {
-            permisos = decoded.cast<String>();
-          } else if (decoded == 'ALL') {
-            // isAdmin manejará el ALL internamente, pero guardamos vacía o un indicador
-            permisos = ['ALL'];
+          if (decoded is Map<String, dynamic>) {
+            decoded.forEach((key, value) {
+              permisosMap[key] = PermisoGranular.fromJson(value);
+            });
           }
         }
         
-        state = AuthState(isAuthenticated: true, user: user, permisos: permisos);
+        state = AuthState(isAuthenticated: true, token: token, user: user, permisos: permisosMap);
       } catch (e) {
         // Si hay un error al decodificar, limpiar la sesión
         await prefs.remove('auth_token');
@@ -107,24 +124,36 @@ class AuthNotifier extends Notifier<AuthState> {
       final user = Usuario.fromJson(userData);
 
       // Obtener permisos dinámicos del rol
-      List<String> permisos = [];
+      Map<String, PermisoGranular> permisosMap = {};
       try {
-        final permRes = await apiClient.get('/dashboard-permisos/${user.rolId}');
-        if (permRes.data is List) {
-          permisos = List<String>.from(permRes.data);
-        } else if (permRes.data == 'ALL') {
-          permisos = ['ALL'];
+        final permRes = await apiClient.get('/permisos-granulares/${user.rolId}?usuario_id=${user.id}');
+        if (permRes.data is Map) {
+          final Map<String, dynamic> dataMap = permRes.data;
+          dataMap.forEach((key, value) {
+            if (value is Map<String, dynamic>) {
+              // El backend devuelve: { "Empleados": { "puedeVer": 1, ... } }
+              final jsonToParse = {
+                'nombre': key,
+                ...value
+              };
+              final p = PermisoGranular.fromJson(jsonToParse);
+              permisosMap[p.moduloNombre] = p;
+            }
+          });
         }
       } catch (e) {
-        debugPrint("Error obteniendo permisos: $e");
+        debugPrint("Error obteniendo permisos granulares: $e");
       }
 
       final prefs = await SharedPreferences.getInstance();
       await prefs.setString('auth_token', token);
       await prefs.setString('user_data', jsonEncode(userData)); // Guardar datos del usuario
-      await prefs.setString('auth_permisos', jsonEncode(permisos)); // Guardar permisos
+      
+      // Save map as json by converting values to json
+      final mapToJson = permisosMap.map((key, value) => MapEntry(key, value.toJson()));
+      await prefs.setString('auth_permisos', jsonEncode(mapToJson)); // Guardar permisos
 
-      state = AuthState(isAuthenticated: true, user: user, permisos: permisos);
+      state = AuthState(isAuthenticated: true, token: token, user: user, permisos: permisosMap);
       return true;
     } catch (e) {
       debugPrint("Error de login detallado: $e");

@@ -1,6 +1,7 @@
 // CREADO POR: DANIEL INNOVA
 
 import 'package:flutter/material.dart';
+import '../../auth/providers/auth_provider.dart';
 import '../models/empleado_model.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -86,29 +87,35 @@ class _EmpleadoDetailScreenState extends State<EmpleadoDetailScreen>
                 onSelected: (value) => _handleMenuSelection(context, ref, value, empleado),
                 itemBuilder: (BuildContext context) {
                   final isActivo = empleado.estado == 1;
+                  final authState = ref.watch(authProvider);
+                  final puedeEditar = authState.hasPermission('Empleados', 'puedeEditar');
+                  
                   return <PopupMenuEntry<String>>[
                     const PopupMenuItem<String>(
                       enabled: false,
                       child: Text('PERFIL', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black54, fontSize: 12)),
                     ),
-                    const PopupMenuItem<String>(
-                      value: 'editar',
-                      child: ListTile(leading: Icon(Icons.edit_outlined), title: Text('Editar empleado')),
-                    ),
-                    const PopupMenuItem<String>(
-                      value: 'contacto',
-                      child: ListTile(leading: Icon(Icons.person_add_alt_1_outlined), title: Text('Registrar contacto')),
-                    ),
-                    PopupMenuItem<String>(
-                      value: 'estado',
-                      child: ListTile(
-                        leading: Icon(
-                          isActivo ? Icons.do_not_disturb_on_outlined : Icons.check_circle_outline,
-                          color: isActivo ? Colors.orange.shade700 : Colors.green.shade700,
-                        ),
-                        title: Text(isActivo ? 'Desactivar' : 'Activar'),
+                    if (puedeEditar)
+                      const PopupMenuItem<String>(
+                        value: 'editar',
+                        child: ListTile(leading: Icon(Icons.edit_outlined), title: Text('Editar empleado')),
                       ),
-                    ),
+                    if (puedeEditar)
+                      const PopupMenuItem<String>(
+                        value: 'contacto',
+                        child: ListTile(leading: Icon(Icons.person_add_alt_1_outlined), title: Text('Registrar contacto')),
+                      ),
+                    if (puedeEditar)
+                      PopupMenuItem<String>(
+                        value: 'estado',
+                        child: ListTile(
+                          leading: Icon(
+                            isActivo ? Icons.do_not_disturb_on_outlined : Icons.check_circle_outline,
+                            color: isActivo ? Colors.orange.shade700 : Colors.green.shade700,
+                          ),
+                          title: Text(isActivo ? 'Desactivar' : 'Activar'),
+                        ),
+                      ),
                     const PopupMenuDivider(),
                     const PopupMenuItem<String>(
                       enabled: false,

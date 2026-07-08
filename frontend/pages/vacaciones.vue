@@ -232,7 +232,7 @@
                         <option value="">Seleccione...</option>
                         <option v-for="tipo in tiposPermisoDisponibles" :key="tipo.id" :value="tipo.nombre">{{ tipo.nombre }}</option>
                       </select>
-                      <button type="button" @click="showModalTiposPermiso = true" class="px-3 py-2 bg-slate-200 text-slate-600 rounded-lg hover:bg-slate-300 transition shrink-0" title="Gestionar Tipos de Permiso">
+                      <button v-if="hasPermission('Vacaciones', 'puedeCrear')" type="button" @click="showModalTiposPermiso = true" class="px-3 py-2 bg-slate-200 text-slate-600 rounded-lg hover:bg-slate-300 transition shrink-0" title="Gestionar Tipos de Permiso">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
                       </button>
                     </div>
@@ -295,7 +295,7 @@
                   <button v-if="isEditing" type="button" @click="cancelarEdicion" class="px-6 py-3 bg-slate-100 text-slate-600 rounded-xl font-bold text-sm uppercase tracking-widest hover:bg-slate-200 transition-colors shadow-sm">
                     Cancelar
                   </button>
-                  <button type="submit" class="px-8 py-3 bg-blue-600 text-white rounded-xl font-bold text-sm uppercase tracking-widest hover:bg-blue-700 transition-colors shadow-lg">
+                  <button v-if="(isEditing && hasPermission('Vacaciones', 'puedeEditar')) || (!isEditing && hasPermission('Vacaciones', 'puedeCrear'))" type="submit" class="px-8 py-3 bg-blue-600 text-white rounded-xl font-bold text-sm uppercase tracking-widest hover:bg-blue-700 transition-colors shadow-lg">
                     {{ isEditing ? 'Actualizar' : 'Guardar' }}
                   </button>
                 </div>
@@ -335,16 +335,16 @@
                         <p><span class="text-slate-400">Creado por:</span> <span class="text-slate-700">{{ v.creadoPorNombre || 'Admin' }}</span> <span class="mx-2 text-slate-300">|</span> <span class="text-slate-400">Fecha:</span> <span class="text-slate-700">{{ v.fechaCreacion ? new Date(v.fechaCreacion).toLocaleDateString('es-HN') : (v.fecha_creacion ? new Date(v.fecha_creacion).toLocaleDateString('es-HN') : 'N/A') }}</span></p>
                         <p class="mt-1" v-if="(v.fechaModificacion || v.fecha_modificacion) && (v.fechaModificacion || v.fecha_modificacion) !== (v.fechaCreacion || v.fecha_creacion)"><span class="text-slate-400">Modificado:</span> <span class="text-slate-700">{{ v.modificadoPorNombre || v.creadoPorNombre || 's/d' }}</span> <span class="mx-2 text-slate-300">|</span> <span class="text-slate-400">Fecha:</span> <span class="text-slate-700">{{ v.fechaModificacion ? new Date(v.fechaModificacion).toLocaleDateString('es-HN') : new Date(v.fecha_modificacion).toLocaleDateString('es-HN') }}</span></p>
                       </div>
-                      <button v-if="esUltimoRegistroPeriodo(v) && Number(v.diasPendientes) > 0" @click="continuarVacaciones(v)" class="p-2.5 bg-indigo-50 text-indigo-600 hover:bg-indigo-600 hover:text-white rounded-xl transition-all border border-indigo-100 hover:border-indigo-600 shadow-sm flex items-center gap-1" title="Continuar tomando vacaciones de este periodo">
+                      <button v-if="hasPermission('Vacaciones', 'puedeCrear') && esUltimoRegistroPeriodo(v) && Number(v.diasPendientes) > 0" @click="continuarVacaciones(v)" class="p-2.5 bg-indigo-50 text-indigo-600 hover:bg-indigo-600 hover:text-white rounded-xl transition-all border border-indigo-100 hover:border-indigo-600 shadow-sm flex items-center gap-1" title="Continuar tomando vacaciones de este periodo">
                         <span>➕</span> Continuar
                       </button>
                       <a v-if="v.documento" :href="`http://localhost:3007${v.documento}`" target="_blank" class="p-2.5 bg-emerald-50 text-emerald-600 hover:bg-emerald-600 hover:text-white rounded-xl transition-all border border-emerald-100 hover:border-emerald-600 shadow-sm flex items-center gap-1" title="Ver Documento">
                         <span>📄</span>
                       </a>
-                      <button @click="editarVacacion(v)" class="p-2.5 bg-blue-50 text-blue-600 hover:bg-blue-600 hover:text-white rounded-xl transition-all border border-blue-100 hover:border-blue-600 shadow-sm flex items-center gap-1" title="Editar Vacaciones">
+                      <button v-if="hasPermission('Vacaciones', 'puedeEditar')" @click="editarVacacion(v)" class="p-2.5 bg-blue-50 text-blue-600 hover:bg-blue-600 hover:text-white rounded-xl transition-all border border-blue-100 hover:border-blue-600 shadow-sm flex items-center gap-1" title="Editar Vacaciones">
                         <span>✏️</span>
                       </button>
-                      <button @click="eliminarVacacion(v.id)" class="p-2.5 bg-red-50 text-red-600 hover:bg-red-600 hover:text-white rounded-xl transition-all border border-red-100 hover:border-red-600 shadow-sm flex items-center gap-1" title="Eliminar Vacaciones">
+                      <button v-if="hasPermission('Vacaciones', 'puedeEliminar')" @click="eliminarVacacion(v.id)" class="p-2.5 bg-red-50 text-red-600 hover:bg-red-600 hover:text-white rounded-xl transition-all border border-red-100 hover:border-red-600 shadow-sm flex items-center gap-1" title="Eliminar Vacaciones">
                         <span>🗑️</span>
                       </button>
                     </div>
@@ -532,7 +532,9 @@ import axios from 'axios'
 import jsPDF from 'jspdf'
 import autoTable from 'jspdf-autotable'
 import { io } from 'socket.io-client'
+import { usePermisos } from '~/composables/usePermisos'
 
+const { getPermisos, hasPermission } = usePermisos()
 const router = useRouter()
 let socketInstance = null
 const route = useRoute()
@@ -1548,6 +1550,9 @@ onMounted(async () => {
   } catch (e) {
     console.error('Error cargando menú', e)
   }
+
+  const usuarioID = localStorage.getItem('usuarioID');
+  await getPermisos(rolID.value, usuarioID);
 
   try {
     const res = await axios.get('http://localhost:3007/api/empleados/lista', {

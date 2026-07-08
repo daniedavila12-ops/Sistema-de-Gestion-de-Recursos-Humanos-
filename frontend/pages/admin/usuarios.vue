@@ -40,10 +40,10 @@
             <p class="text-slate-500 mt-1 font-medium italic">Gestión integral de usuarios, roles y permisos del sistema.</p>
           </div>
           <div class="flex items-center gap-4">
-             <button v-if="activeTab === 'usuarios'" @click="abrirModalUsuario()" class="bg-blue-600 text-white px-6 py-3 rounded-xl font-black uppercase text-xs hover:bg-blue-700 transition-all shadow-lg shadow-blue-200 flex items-center gap-2">
+            <button v-if="activeTab === 'usuarios' && hasPermission('Control de Usuarios', 'puedeCrear')" @click="abrirModalUsuario()" class="bg-green-600 text-white px-6 py-3 rounded-xl font-black uppercase text-xs hover:bg-green-700 transition-all shadow-lg shadow-green-200 flex items-center gap-2">
               <span>+</span> Crear Usuario
             </button>
-            <button v-if="activeTab === 'roles'" @click="abrirModalRol()" class="bg-purple-600 text-white px-6 py-3 rounded-xl font-black uppercase text-xs hover:bg-purple-700 transition-all shadow-lg shadow-purple-200 flex items-center gap-2">
+            <button v-if="activeTab === 'roles' && hasPermission('Roles y Permisos', 'puedeCrear')" @click="abrirModalRol()" class="bg-green-600 text-white px-6 py-3 rounded-xl font-black uppercase text-xs hover:bg-green-700 transition-all shadow-lg shadow-green-200 flex items-center gap-2">
               <span>+</span> Crear Rol
             </button>
             <div class="relative w-full md:w-auto flex justify-end">
@@ -157,10 +157,10 @@
               </td>
               <td class="p-5 text-sm text-slate-500">{{ usuario.ultimoLogin ? new Date(usuario.ultimoLogin).toLocaleString('es-HN') : 'Nunca' }}</td>
               <td class="p-5 text-center flex justify-center gap-2">
-                <button @click="abrirModalUsuario(usuario)" class="bg-blue-100 text-blue-600 hover:bg-blue-600 hover:text-white p-2 rounded-lg text-xs font-bold transition-colors" title="Editar">
+                <button v-if="hasPermission('Control de Usuarios', 'puedeEditar')" @click="abrirModalUsuario(usuario)" class="bg-blue-100 text-blue-600 hover:bg-blue-600 hover:text-white p-2 rounded-lg text-xs font-bold transition-colors" title="Editar">
                   ✏️
                 </button>
-                <button @click="toggleEstado(usuario)" :class="usuario.estado ? 'bg-red-100 text-red-600 hover:bg-red-600 hover:text-white' : 'bg-green-100 text-green-600 hover:bg-green-600 hover:text-white'" class="p-2 rounded-lg text-xs font-bold transition-colors" :title="usuario.estado ? 'Desactivar' : 'Activar'">
+                <button v-if="hasPermission('Control de Usuarios', 'puedeEditar')" @click="toggleEstado(usuario)" :class="usuario.estado ? 'bg-red-100 text-red-600 hover:bg-red-600 hover:text-white' : 'bg-green-100 text-green-600 hover:bg-green-600 hover:text-white'" class="p-2 rounded-lg text-xs font-bold transition-colors" :title="usuario.estado ? 'Desactivar' : 'Activar'">
                   {{ usuario.estado ? '🛑' : '✅' }}
                 </button>
               </td>
@@ -190,13 +190,13 @@
               <td class="p-5 text-sm text-slate-600 font-bold">{{ rol.id }}</td>
               <td class="p-5 font-bold text-slate-800">{{ rol.nombre }}</td>
               <td class="p-5 text-center flex justify-center gap-2">
-                <button @click="abrirModalRol(rol)" class="bg-blue-100 text-blue-600 hover:bg-blue-600 hover:text-white p-2 rounded-lg text-xs font-bold transition-colors" title="Editar Nombre">
+                <button v-if="hasPermission('Roles y Permisos', 'puedeEditar')" @click="abrirModalRol(rol)" class="bg-blue-100 text-blue-600 hover:bg-blue-600 hover:text-white p-2 rounded-lg text-xs font-bold transition-colors" title="Editar Nombre">
                   ✏️
                 </button>
-                <button @click="abrirModalPermisos(rol)" class="bg-purple-100 text-purple-600 hover:bg-purple-600 hover:text-white px-4 py-2 rounded-lg text-xs font-bold transition-colors flex items-center gap-2">
+                <button v-if="hasPermission('Roles y Permisos', 'puedeEditar')" @click="abrirModalPermisos(rol)" class="bg-purple-100 text-purple-600 hover:bg-purple-600 hover:text-white px-4 py-2 rounded-lg text-xs font-bold transition-colors flex items-center gap-2">
                   <span>🛡️</span> Permisos
                 </button>
-                <button @click="eliminarRol(rol)" class="bg-red-100 text-red-600 hover:bg-red-600 hover:text-white p-2 rounded-lg text-xs font-bold transition-colors" title="Eliminar">
+                <button v-if="hasPermission('Roles y Permisos', 'puedeEliminar')" @click="eliminarRol(rol)" class="bg-red-100 text-red-600 hover:bg-red-600 hover:text-white p-2 rounded-lg text-xs font-bold transition-colors" title="Eliminar">
                   🗑️
                 </button>
               </td>
@@ -227,7 +227,18 @@
 
               <div>
                 <label class="block text-[10px] font-black text-slate-500 uppercase mb-1">Contraseña <span v-if="esEdicionUsuario" class="text-xs lowercase font-normal text-slate-400">(Dejar en blanco para no cambiar)</span></label>
-                <input type="password" v-model="formUsuario.password" :required="!esEdicionUsuario" class="w-full p-3 border border-slate-200 rounded-xl text-sm bg-slate-50 focus:ring-2 focus:ring-blue-500 outline-none" placeholder="******">
+                <div class="relative">
+                  <input :type="mostrarPassword ? 'text' : 'password'" v-model="formUsuario.password" :required="!esEdicionUsuario" class="w-full p-3 border border-slate-200 rounded-xl text-sm bg-slate-50 focus:ring-2 focus:ring-blue-500 outline-none pr-10" placeholder="******">
+                  <button v-if="rolID == 1" type="button" @click="mostrarPassword = !mostrarPassword" class="absolute inset-y-0 right-3 flex items-center text-slate-400 hover:text-slate-600">
+                    <svg v-if="!mostrarPassword" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 0 1 0-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178Z" />
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
+                    </svg>
+                    <svg v-else xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M3.98 8.223A10.477 10.477 0 0 0 1.934 12C3.226 16.338 7.244 19.5 12 19.5c.993 0 1.953-.138 2.863-.395M6.228 6.228A10.451 10.451 0 0 1 12 4.5c4.756 0 8.773 3.162 10.065 7.498a10.522 10.522 0 0 1-4.293 5.774M6.228 6.228 3 3m3.228 3.228 3.65 3.65m7.894 7.894L21 21m-3.228-3.228-3.65-3.65m0 0a3 3 0 1 0-4.243-4.243m4.242 4.242L9.88 9.88" />
+                    </svg>
+                  </button>
+                </div>
               </div>
 
               <div>
@@ -409,7 +420,9 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import axios from 'axios'
+import { usePermisos } from '~/composables/usePermisos'
 
+const { getPermisos, hasPermission } = usePermisos()
 const rolID = ref(null)
 const rolNombre = ref('Cargando...')
 const menuUsuario = ref([])
@@ -486,6 +499,7 @@ const loadingUsuarios = ref(true)
 const mostrarModalUsuario = ref(false)
 const esEdicionUsuario = ref(false)
 const formUsuario = ref({ id: null, nombre: '', email: '', password: '', rol_id: '', estado: true })
+const mostrarPassword = ref(false)
 
 // ESTADO - ROLES
 const roles = ref([])
@@ -558,6 +572,7 @@ const verPermisosUsuario = (usuario) => {
 
 const cerrarModalUsuario = () => {
   mostrarModalUsuario.value = false
+  mostrarPassword.value = false
 }
 
 const guardarUsuario = async () => {
@@ -684,7 +699,8 @@ const abrirModalPermisos = async (rol) => {
         { id: 14, nombre: 'Archivero Legal' },
         { id: 15, nombre: 'Logs de Sistema' },
         { id: 24, nombre: 'Campanita de Notificaciones' },
-        { id: 25, nombre: 'Reclutamiento' }
+        { id: 25, nombre: 'Reclutamiento' },
+        { id: 27, nombre: '+Nuevo Empleado' }
       ];
     }
 
@@ -777,15 +793,14 @@ onMounted(async () => {
   }
 
   try {
-    const usuarioID = localStorage.getItem('usuarioID')
-    const urlMenu = usuarioID 
-      ? `http://localhost:3007/api/menu/${rolID.value}?usuario_id=${usuarioID}`
-      : `http://localhost:3007/api/menu/${rolID.value}`
-    const m = await axios.get(urlMenu)
+    const m = await axios.get(`http://localhost:3007/api/menu/${rolID.value}?usuario_id=${localStorage.getItem('usuarioID')}`)
     menuUsuario.value = m.data
   } catch (e) {
     console.error('Error cargando menú', e)
   }
+
+  const usuarioID = localStorage.getItem('usuarioID');
+  await getPermisos(rolID.value, usuarioID);
 
   cargarUsuarios()
   cargarRoles()

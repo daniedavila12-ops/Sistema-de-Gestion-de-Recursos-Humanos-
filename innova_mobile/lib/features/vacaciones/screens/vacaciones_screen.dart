@@ -7,6 +7,7 @@ import 'package:url_launcher/url_launcher.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/api/api_client.dart';
 import 'package:innova_mobile/core/constants/api_constants.dart';
+import '../../auth/providers/auth_provider.dart';
 
 class VacacionesScreen extends ConsumerStatefulWidget {
   const VacacionesScreen({super.key});
@@ -699,6 +700,11 @@ class _VacacionesScreenState extends ConsumerState<VacacionesScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final authState = ref.watch(authProvider);
+    final puedeCrear = authState.hasPermission('Vacaciones', 'puedeCrear');
+    final puedeEditar = authState.hasPermission('Vacaciones', 'puedeEditar');
+    final puedeEliminar = authState.hasPermission('Vacaciones', 'puedeEliminar');
+
     return Scaffold(
       backgroundColor: Colors.grey[100],
       appBar: AppBar(
@@ -816,8 +822,9 @@ class _VacacionesScreenState extends ConsumerState<VacacionesScreen> {
               ),
 
               const SizedBox(height: 24),
-              const Text('DATOS DE VACACIONES', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.blue, fontSize: 12, letterSpacing: 1.5)),
-              const Divider(),
+              if (puedeCrear || _isEditing) ...[
+                const Text('DATOS DE VACACIONES', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.blue, fontSize: 12, letterSpacing: 1.5)),
+                const Divider(),
               
               Container(
                 padding: const EdgeInsets.all(16),
@@ -960,6 +967,13 @@ class _VacacionesScreenState extends ConsumerState<VacacionesScreen> {
                   ],
                 ),
               ),
+              ] else if (!puedeCrear && !_isEditing) ...[
+                Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(color: Colors.yellow[50], borderRadius: BorderRadius.circular(8)),
+                  child: const Text('No tienes permisos para registrar vacaciones.', style: TextStyle(color: Colors.orange, fontStyle: FontStyle.italic)),
+                ),
+              ],
 
               const SizedBox(height: 32),
               const Text('HISTORIAL DE VACACIONES', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.blue, fontSize: 12, letterSpacing: 1.5)),
@@ -998,15 +1012,17 @@ class _VacacionesScreenState extends ConsumerState<VacacionesScreen> {
                                 ),
                                 Row(
                                   children: [
-                                    if (_esUltimoRegistroPeriodo(v) && (double.tryParse(v['diasPendientes'].toString()) ?? 0) > 0)
+                                    if (_esUltimoRegistroPeriodo(v) && (double.tryParse(v['diasPendientes'].toString()) ?? 0) > 0 && puedeCrear)
                                       IconButton(icon: const Icon(Icons.add_circle_outline, color: Colors.indigo), onPressed: () => _continuarVacaciones(v), tooltip: 'Continuar', constraints: const BoxConstraints(), padding: const EdgeInsets.all(4)),
                                     if (v['documento'] != null)
                                       IconButton(icon: const Icon(Icons.description, color: Colors.green), onPressed: () async {
                                         final url = Uri.parse('${ApiConstants.baseUrl}${v['documento']}');
                                         if (await canLaunchUrl(url)) await launchUrl(url);
                                       }, tooltip: 'Ver Documento', constraints: const BoxConstraints(), padding: const EdgeInsets.all(4)),
-                                    IconButton(icon: const Icon(Icons.edit, color: Colors.blue), onPressed: () => _editarVacacion(v), constraints: const BoxConstraints(), padding: const EdgeInsets.all(4)),
-                                    IconButton(icon: const Icon(Icons.delete, color: Colors.red), onPressed: () => _eliminarVacacion(v['id']), constraints: const BoxConstraints(), padding: const EdgeInsets.all(4)),
+                                    if (puedeEditar)
+                                      IconButton(icon: const Icon(Icons.edit, color: Colors.blue), onPressed: () => _editarVacacion(v), constraints: const BoxConstraints(), padding: const EdgeInsets.all(4)),
+                                    if (puedeEliminar)
+                                      IconButton(icon: const Icon(Icons.delete, color: Colors.red), onPressed: () => _eliminarVacacion(v['id']), constraints: const BoxConstraints(), padding: const EdgeInsets.all(4)),
                                   ],
                                 )
                               ],

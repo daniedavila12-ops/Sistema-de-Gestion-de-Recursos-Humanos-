@@ -1,7 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
-import 'dart:async' as dart_async;
+
 import '../../auth/providers/auth_provider.dart';
 import '../../../core/api/api_client.dart';
 import 'package:innova_mobile/core/constants/api_constants.dart';
@@ -35,12 +35,6 @@ final dashboardFiltersProvider = StateProvider<DashboardFilters>((ref) {
 });
 
 final dashboardStatsProvider = FutureProvider.autoDispose<Map<String, dynamic>>((ref) async {
-  // Auto-refresh cada 10 segundos
-  final timer = dart_async.Timer(const Duration(seconds: 10), () {
-    ref.invalidateSelf();
-  });
-  ref.onDispose(timer.cancel);
-
   final authState = ref.watch(authProvider);
   final user = authState.user;
   if (user == null) return {};

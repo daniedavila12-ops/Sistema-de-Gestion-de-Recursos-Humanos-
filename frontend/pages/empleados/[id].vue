@@ -86,13 +86,13 @@
               
               <div v-if="mostrarOpciones" class="absolute right-0 mt-2 w-60 bg-white rounded-2xl shadow-xl border border-slate-100 overflow-hidden z-20 text-slate-800">
                 <div class="px-5 py-2 text-[10px] font-black text-slate-400 uppercase tracking-widest bg-slate-50 border-b border-slate-100">Perfil</div>
-                <button @click="irAEditar" class="w-full text-left px-5 py-2.5 text-sm font-bold hover:bg-blue-50 hover:text-blue-600 transition-colors">
+                <button v-if="hasPermission('Empleados', 'puedeEditar')" @click="irAEditar" class="w-full text-left px-5 py-2.5 text-sm font-bold hover:bg-blue-50 hover:text-blue-600 transition-colors">
                   ✏️ Editar empleado
                 </button>
-                <button @click="abrirModalContacto" class="w-full text-left px-5 py-2.5 text-sm font-bold hover:bg-blue-50 hover:text-blue-600 transition-colors">
+                <button v-if="hasPermission('Empleados', 'puedeEditar')" @click="abrirModalContacto" class="w-full text-left px-5 py-2.5 text-sm font-bold hover:bg-blue-50 hover:text-blue-600 transition-colors">
                   ➕ Registrar contacto
                 </button>
-                <button @click="toggleEstadoEmpleado" class="w-full text-left px-5 py-2.5 text-sm font-bold transition-colors"
+                <button v-if="hasPermission('Empleados', 'puedeEditar')" @click="toggleEstadoEmpleado" class="w-full text-left px-5 py-2.5 text-sm font-bold transition-colors"
                   :class="empleado.estado == 1 || empleado.estado === undefined ? 'text-orange-500 hover:bg-orange-50' : 'text-emerald-500 hover:bg-emerald-50'">
                   {{ empleado.estado == 1 || empleado.estado === undefined ? '⭕ Desactivar' : '✅ Activar' }}
                 </button>
@@ -814,9 +814,11 @@ import { useRoute, useRouter } from 'vue-router'
 import axios from 'axios'
 import jsPDF from 'jspdf'
 import autoTable from 'jspdf-autotable'
+import { usePermisos } from '~/composables/usePermisos'
 
 const route = useRoute()
 const router = useRouter()
+const { getPermisos, hasPermission } = usePermisos()
 const empleado = ref(null)
 const loading = ref(true)
 const error = ref('')
@@ -1624,6 +1626,10 @@ onMounted(async () => {
   } catch (e) {
     console.error('Error cargando menú', e)
   }
+
+  const usuarioID = localStorage.getItem('usuarioID');
+  await getPermisos(rolID.value, usuarioID);
+
 
   try {
     const id = route.params.id

@@ -4,14 +4,17 @@ import '../widgets/roles_tab.dart';
 import '../widgets/usuario_form_dialog.dart';
 import '../widgets/rol_form_dialog.dart';
 
-class UsuariosRolesScreen extends StatefulWidget {
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../auth/providers/auth_provider.dart';
+
+class UsuariosRolesScreen extends ConsumerStatefulWidget {
   const UsuariosRolesScreen({super.key});
 
   @override
-  State<UsuariosRolesScreen> createState() => _UsuariosRolesScreenState();
+  ConsumerState<UsuariosRolesScreen> createState() => _UsuariosRolesScreenState();
 }
 
-class _UsuariosRolesScreenState extends State<UsuariosRolesScreen> with SingleTickerProviderStateMixin {
+class _UsuariosRolesScreenState extends ConsumerState<UsuariosRolesScreen> with SingleTickerProviderStateMixin {
   late TabController _tabController;
   int _currentIndex = 0;
 
@@ -84,37 +87,45 @@ class _UsuariosRolesScreenState extends State<UsuariosRolesScreen> with SingleTi
                 ),
                 const SizedBox(height: 20),
                 // Action Button dynamically changing
-                ElevatedButton.icon(
-                  onPressed: () {
-                    if (_currentIndex == 0) {
-                      showDialog(
-                        context: context,
-                        builder: (_) => const UsuarioFormDialog(),
-                      );
-                    } else {
-                      showDialog(
-                        context: context,
-                        builder: (_) => const RolFormDialog(),
-                      );
-                    }
-                  },
-                  icon: const Icon(Icons.add, size: 18),
-                  label: Text(_currentIndex == 0 ? 'CREAR USUARIO' : 'CREAR ROL'),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: _currentIndex == 0 ? Colors.blue[600] : Colors.purple[600],
-                    foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
+                Builder(builder: (context) {
+                  final authState = ref.watch(authProvider);
+                  final bool puedeCrearUsuario = authState.hasPermission('Control de Usuarios', 'puedeCrear');
+                  final bool puedeCrearRol = authState.hasPermission('Roles y Permisos', 'puedeCrear');
+
+                  if (_currentIndex == 0 ? !puedeCrearUsuario : !puedeCrearRol) {
+                    return const SizedBox.shrink();
+                  }
+
+                  return ElevatedButton.icon(
+                    onPressed: () {
+                      if (_currentIndex == 0) {
+                        showDialog(
+                          context: context,
+                          builder: (_) => const UsuarioFormDialog(),
+                        );
+                      } else {
+                        showDialog(
+                          context: context,
+                          builder: (_) => const RolFormDialog(),
+                        );
+                      }
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF1E293B), // slate-800
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      elevation: 0,
                     ),
-                    elevation: 4,
-                    textStyle: const TextStyle(
-                      fontWeight: FontWeight.w900,
-                      fontSize: 12,
-                      letterSpacing: 1.0,
+                    icon: const Icon(Icons.add, size: 20),
+                    label: Text(
+                      _currentIndex == 0 ? 'NUEVO USUARIO' : 'NUEVO ROL',
+                      style: const TextStyle(fontWeight: FontWeight.bold, letterSpacing: 0.5),
                     ),
-                  ),
-                ),
+                  );
+                }),
                 const SizedBox(height: 20),
                 // Custom Tabs
                 Container(

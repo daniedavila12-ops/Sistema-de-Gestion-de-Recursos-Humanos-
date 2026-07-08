@@ -127,6 +127,8 @@ class LoginScreen extends ConsumerWidget {
                     Expanded(child: _buildServiceButton(context, '⚠️', 'Incidentes', '/incidencia-publica', Colors.red)),
                     const SizedBox(width: 8),
                     Expanded(child: _buildServiceButton(context, '📩', 'Reporte SMS', '/reporte-sms-publico', Colors.green)),
+                    const SizedBox(width: 8),
+                    Expanded(child: _buildServiceButton(context, '💼', 'Empleos', '/reclutamiento-publico', Colors.cyan)),
                   ],
                 ),
               ),

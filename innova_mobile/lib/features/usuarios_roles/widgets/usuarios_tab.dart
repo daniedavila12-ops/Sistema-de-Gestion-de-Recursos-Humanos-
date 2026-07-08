@@ -6,6 +6,7 @@ import '../models/rol_model.dart';
 import 'usuario_form_dialog.dart';
 import 'permisos_dialog.dart';
 import 'package:intl/intl.dart';
+import '../../auth/providers/auth_provider.dart';
 
 class UsuariosTab extends ConsumerWidget {
   const UsuariosTab({super.key});
@@ -226,35 +227,49 @@ class UsuariosTab extends ConsumerWidget {
                     ),
                     Row(
                       children: [
-                        _buildActionButton(
-                          icon: Icons.edit,
-                          color: Colors.blue,
-                          tooltip: 'Editar',
-                          onTap: () {
-                            showDialog(
-                              context: context,
-                              builder: (_) => UsuarioFormDialog(usuario: usuario),
+                        Builder(
+                          builder: (context) {
+                            final authState = ref.watch(authProvider);
+                            final puedeEditar = authState.hasPermission('Control de Usuarios', 'puedeEditar');
+                            
+                            return Row(
+                              children: [
+                                if (puedeEditar)
+                                  _buildActionButton(
+                                    icon: Icons.edit,
+                                    color: Colors.blue,
+                                    tooltip: 'Editar',
+                                    onTap: () {
+                                      showDialog(
+                                        context: context,
+                                        builder: (_) => UsuarioFormDialog(usuario: usuario),
+                                      );
+                                    },
+                                  ),
+                                if (puedeEditar)
+                                  const SizedBox(width: 8),
+                                if (puedeEditar)
+                                  _buildActionButton(
+                                    icon: usuario.estado ? Icons.block : Icons.check_circle,
+                                    color: usuario.estado ? Colors.red : Colors.green,
+                                    tooltip: usuario.estado ? 'Desactivar' : 'Activar',
+                                    onTap: () async {
+                                      final repo = ref.read(usuariosRolesRepositoryProvider);
+                                      try {
+                                        await repo.updateEstadoUsuario(usuario.id, !usuario.estado);
+                                        ref.invalidate(usuariosProvider);
+                                      } catch (e) {
+                                        if (context.mounted) {
+                                          ScaffoldMessenger.of(context).showSnackBar(
+                                            SnackBar(content: Text('Error: $e')),
+                                          );
+                                        }
+                                      }
+                                    },
+                                  ),
+                              ],
                             );
-                          },
-                        ),
-                        const SizedBox(width: 8),
-                        _buildActionButton(
-                          icon: usuario.estado ? Icons.block : Icons.check_circle,
-                          color: usuario.estado ? Colors.red : Colors.green,
-                          tooltip: usuario.estado ? 'Desactivar' : 'Activar',
-                          onTap: () async {
-                            final repo = ref.read(usuariosRolesRepositoryProvider);
-                            try {
-                              await repo.updateEstadoUsuario(usuario.id, !usuario.estado);
-                              ref.invalidate(usuariosProvider);
-                            } catch (e) {
-                              if (context.mounted) {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(content: Text('Error al cambiar estado: $e')),
-                                );
-                              }
-                            }
-                          },
+                          }
                         ),
                       ],
                     )

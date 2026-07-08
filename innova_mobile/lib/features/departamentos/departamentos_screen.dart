@@ -4,6 +4,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import 'providers/departamento_provider.dart';
 import 'models/departamento_model.dart';
+import '../auth/providers/auth_provider.dart';
 
 class DepartamentosScreen extends ConsumerStatefulWidget {
   const DepartamentosScreen({super.key});
@@ -201,19 +202,21 @@ class _DepartamentosScreenState extends ConsumerState<DepartamentosScreen> {
   @override
   Widget build(BuildContext context) {
     final departamentosAsync = ref.watch(departamentoProvider);
+    final authState = ref.watch(authProvider);
 
     return Scaffold(
       appBar: AppBar(
         title: const Text('Departamentos'),
         actions: [
-          Padding(
-            padding: const EdgeInsets.only(right: 16.0),
-            child: ElevatedButton.icon(
-              onPressed: () => _mostrarDialogoFormulario(),
-              icon: const Icon(Icons.add),
-              label: const Text('Agregar'),
-            ),
-          )
+          if (authState.hasPermission('Departamentos', 'puedeCrear'))
+            Padding(
+              padding: const EdgeInsets.only(right: 16.0),
+              child: ElevatedButton.icon(
+                onPressed: () => _mostrarDialogoFormulario(),
+                icon: const Icon(Icons.add),
+                label: const Text('Agregar'),
+              ),
+            )
         ],
       ),
       body: Column(
@@ -302,21 +305,24 @@ class _DepartamentosScreenState extends ConsumerState<DepartamentosScreen> {
                             Row(
                               mainAxisAlignment: MainAxisAlignment.end,
                               children: [
-                                IconButton(
-                                  icon: const Icon(Icons.edit, color: Colors.blue, size: 20),
-                                  tooltip: 'Editar',
-                                  onPressed: () => _mostrarDialogoFormulario(departamento: depto),
-                                ),
-                                IconButton(
-                                  icon: Icon(isActivo ? Icons.block : Icons.check_circle_outline, color: isActivo ? Colors.orange : Colors.green, size: 20),
-                                  tooltip: isActivo ? 'Desactivar' : 'Activar',
-                                  onPressed: () => _toggleEstado(depto),
-                                ),
-                                IconButton(
-                                  icon: const Icon(Icons.delete, color: Colors.red, size: 20),
-                                  tooltip: 'Eliminar',
-                                  onPressed: () => _confirmarEliminacion(depto),
-                                ),
+                                if (authState.hasPermission('Departamentos', 'puedeEditar'))
+                                  IconButton(
+                                    icon: const Icon(Icons.edit, color: Colors.blue, size: 20),
+                                    tooltip: 'Editar',
+                                    onPressed: () => _mostrarDialogoFormulario(departamento: depto),
+                                  ),
+                                if (authState.hasPermission('Departamentos', 'puedeEditar'))
+                                  IconButton(
+                                    icon: Icon(isActivo ? Icons.block : Icons.check_circle_outline, color: isActivo ? Colors.orange : Colors.green, size: 20),
+                                    tooltip: isActivo ? 'Desactivar' : 'Activar',
+                                    onPressed: () => _toggleEstado(depto),
+                                  ),
+                                if (authState.hasPermission('Departamentos', 'puedeEliminar'))
+                                  IconButton(
+                                    icon: const Icon(Icons.delete, color: Colors.red, size: 20),
+                                    tooltip: 'Eliminar',
+                                    onPressed: () => _confirmarEliminacion(depto),
+                                  ),
                               ],
                             ),
                           ],

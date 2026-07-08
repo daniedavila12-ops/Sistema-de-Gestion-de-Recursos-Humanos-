@@ -58,7 +58,8 @@ class AppDrawer extends ConsumerWidget {
                     authState.hasAccess('Departamentos') ||
                     authState.hasAccess('Reportes de Incidencia') ||
                     authState.hasAccess('Gestión de Manuales') ||
-                    authState.hasAccess('Archivero Legal') || authState.hasAccess('Documentos Legales'))
+                    authState.hasAccess('Archivero Legal') || authState.hasAccess('Documentos Legales') ||
+                    authState.hasAccess('Reclutamiento'))
                   const Padding(
                     padding: EdgeInsets.only(left: 16, top: 16, bottom: 8),
                     child: Text(
@@ -79,7 +80,7 @@ class AppDrawer extends ConsumerWidget {
                       context.go('/empleados');
                     },
                   ),
-                if (authState.hasAccess('Empleados'))
+                if (authState.hasAccess('+Nuevo Empleado'))
                   _DrawerItem(
                     icon: Icons.person_add,
                     title: 'Nuevo Empleado',
@@ -140,6 +141,15 @@ class AppDrawer extends ConsumerWidget {
                     onTap: () {
                       Navigator.pop(context);
                       context.go('/documentos-legales');
+                    },
+                  ),
+                if (authState.hasAccess('Reclutamiento'))
+                  _DrawerItem(
+                    icon: Icons.work,
+                    title: 'Reclutamiento',
+                    onTap: () {
+                      Navigator.pop(context);
+                      context.go('/reclutamiento');
                     },
                   ),
                 if (authState.hasAccess('Tickets') ||

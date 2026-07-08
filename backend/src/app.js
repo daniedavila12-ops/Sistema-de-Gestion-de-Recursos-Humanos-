@@ -169,6 +169,8 @@ app.get('/api/menu/:rol_id', (req, res) => {
             
             if (hasAccess('Empleados')) {
                 rrhhItems.push({ nombre: 'Empleados', ruta: '/empleados', icono: '👥' });
+            }
+            if (hasAccess('+Nuevo Empleado')) {
                 rrhhItems.push({ nombre: 'Nuevo Empleado', ruta: '/empleados/nuevo', icono: '👤+' });
             }
             if (hasAccess('Vacaciones')) {
@@ -260,6 +262,58 @@ app.get('/api/dashboard-permisos/:rol_id', (req, res) => {
         res.json(allowed);
     });
 });
+
+app.get('/api/permisos-granulares/:rol_id', (req, res) => {
+    const { rol_id } = req.params;
+    const { usuario_id } = req.query;
+    
+    let sql = '';
+    let params = [];
+
+    if (usuario_id) {
+        sql = `
+            SELECT m.nombre, 
+                   um.puedeVer as uVer, um.puedeCrear as uCrear, um.puedeEditar as uEditar, um.puedeEliminar as uEliminar,
+                   rm.puedeVer as rVer, rm.puedeCrear as rCrear, rm.puedeEditar as rEditar, rm.puedeEliminar as rEliminar
+            FROM modulos m 
+            LEFT JOIN rol_modulo rm ON m.id = rm.modulo_id AND rm.rol_id = ?
+            LEFT JOIN usuario_modulo um ON m.id = um.modulo_id AND um.usuario_id = ?
+        `;
+        params = [rol_id, usuario_id];
+    } else {
+        sql = `
+            SELECT m.nombre, 
+                   NULL as uVer, NULL as uCrear, NULL as uEditar, NULL as uEliminar,
+                   rm.puedeVer as rVer, rm.puedeCrear as rCrear, rm.puedeEditar as rEditar, rm.puedeEliminar as rEliminar
+            FROM modulos m 
+            LEFT JOIN rol_modulo rm ON m.id = rm.modulo_id AND rm.rol_id = ?
+        `;
+        params = [rol_id];
+    }
+    
+    db.query(sql, params, (err, results) => {
+        if (err) return res.status(500).json(err);
+        
+        const permisos = {};
+
+        results.forEach(r => {
+            const v = r.uVer !== null ? r.uVer : r.rVer;
+            const c = r.uCrear !== null ? r.uCrear : r.rCrear;
+            const e = r.uEditar !== null ? r.uEditar : r.rEditar;
+            const el = r.uEliminar !== null ? r.uEliminar : r.rEliminar;
+            
+            permisos[r.nombre] = {
+                puedeVer: v || 0,
+                puedeCrear: c || 0,
+                puedeEditar: e || 0,
+                puedeEliminar: el || 0
+            };
+        });
+
+        res.json(permisos);
+    });
+});
+
 
 // 2. ESTADÍSTICAS PARA LAS TARJETAS DEL DASHBOARD
 app.get('/api/stats/resumen', (req, res) => {

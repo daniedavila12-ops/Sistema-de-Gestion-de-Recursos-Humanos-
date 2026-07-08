@@ -91,6 +91,21 @@
         </div>
       </header>
 
+      <!-- Barra de Búsqueda -->
+      <div class="mb-6">
+        <div class="relative max-w-md">
+          <span class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
+            🔍
+          </span>
+          <input 
+            type="text" 
+            v-model="searchQuery" 
+            placeholder="Buscar por nombre, puesto, correo o teléfono..." 
+            class="w-full pl-10 pr-4 py-2.5 bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition shadow-sm text-sm"
+          />
+        </div>
+      </div>
+
       <!-- Tabla de Candidatos -->
       <div class="bg-white rounded-3xl shadow-sm border border-slate-100 overflow-hidden">
         <div class="overflow-x-auto">
@@ -117,12 +132,12 @@
                   </div>
                 </td>
               </tr>
-              <tr v-else-if="candidatos.length === 0">
+              <tr v-else-if="candidatosFiltrados.length === 0">
                 <td colspan="6" class="px-6 py-12 text-center text-slate-400 font-bold">
-                  No hay candidatos registrados en el sistema.
+                  No se encontraron candidatos.
                 </td>
               </tr>
-              <tr v-else v-for="candidato in candidatos" :key="candidato.id" class="hover:bg-slate-50 transition-colors">
+              <tr v-else v-for="candidato in candidatosFiltrados" :key="candidato.id" class="hover:bg-slate-50 transition-colors">
                 <td class="px-6 py-4">
                   <div class="font-bold text-slate-800">{{ candidato.nombre_completo }}</div>
                 </td>
@@ -163,7 +178,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, computed } from 'vue';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 
@@ -178,6 +193,18 @@ const dropdownPerfilAbierto = ref(false);
 // Variables del componente Candidatos
 const candidatos = ref([]);
 const loadingCandidatos = ref(true);
+const searchQuery = ref('');
+
+const candidatosFiltrados = computed(() => {
+  if (!searchQuery.value) return candidatos.value;
+  const q = searchQuery.value.toLowerCase();
+  return candidatos.value.filter(c => 
+    c.nombre_completo?.toLowerCase().includes(q) ||
+    c.puesto_aplicado?.toLowerCase().includes(q) ||
+    c.correo?.toLowerCase().includes(q) ||
+    c.telefono?.toLowerCase().includes(q)
+  );
+});
 
 const logout = () => {
   localStorage.clear();

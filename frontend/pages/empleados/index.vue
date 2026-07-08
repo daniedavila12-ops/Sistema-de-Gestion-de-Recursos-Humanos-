@@ -44,7 +44,7 @@
             <p class="text-slate-500 mt-1 font-medium italic">Personal registrado en la plataforma.</p>
           </div>
           <div class="flex items-center gap-6">
-            <button @click="abrirModalNuevo" class="bg-green-600 text-white px-6 py-3 rounded-xl font-black uppercase text-xs hover:bg-green-700 transition-all shadow-lg shadow-green-200">
+            <button v-if="puedeCrearNuevoEmpleado" @click="abrirModalNuevo" class="bg-green-600 text-white px-6 py-3 rounded-xl font-black uppercase text-xs hover:bg-green-700 transition-all shadow-lg shadow-green-200">
               + Nuevo Empleado
             </button>
             <div class="relative">
@@ -368,9 +368,11 @@ import { useRouter, useRoute } from 'vue-router'
 import axios from 'axios'
 import { io } from 'socket.io-client'
 import { vMaska } from 'maska/vue'
+import { usePermisos } from '~/composables/usePermisos'
 
 const router = useRouter()
 const route = useRoute()
+const { getPermisos, hasPermission } = usePermisos()
 
 // Lógica Modal Perfil
 const dropdownPerfilAbierto = ref(false)
@@ -442,6 +444,7 @@ const loadingGuardar = ref(false)
 const departamentos = ref([])
 const nombreUsuario = ref('')
 const fotoUsuario = ref(null)
+const puedeCrearNuevoEmpleado = ref(false)
 
 const rolID = ref(null)
 const rolNombre = ref('Cargando...')
@@ -633,6 +636,18 @@ onMounted(async () => {
     menuUsuario.value = m.data
   } catch (err) {
     console.error("Error cargando menu", err)
+  }
+
+  try {
+    const usuarioID = localStorage.getItem('usuarioID');
+    await getPermisos(rolID.value, usuarioID);
+    
+    // Check either Empleados -> puedeCrear OR +Nuevo Empleado -> puedeVer
+    if (hasPermission('Empleados', 'puedeCrear') || hasPermission('+Nuevo Empleado', 'puedeVer') || hasPermission('+Nuevo Empleado', 'puedeCrear')) {
+      puedeCrearNuevoEmpleado.value = true;
+    }
+  } catch (err) {
+    console.error("Error cargando permisos", err);
   }
 
   if (route.query.status) {

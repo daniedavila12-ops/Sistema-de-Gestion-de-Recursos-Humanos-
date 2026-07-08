@@ -16,6 +16,8 @@ import 'features/empleados/screens/editar_empleado_screen.dart';
 import 'features/empleados/models/empleado_model.dart';
 import 'features/notificaciones/widgets/notificaciones_button.dart';
 import 'features/notificaciones/providers/notificaciones_provider.dart';
+import 'features/reclutamiento/screens/reclutamiento_screen.dart';
+import 'features/reclutamiento/screens/reclutamiento_publico_screen.dart';
 import 'shared/widgets/app_drawer.dart';
 import 'core/services/socket_service.dart';
 
@@ -79,7 +81,8 @@ class _InnovaAppState extends ConsumerState<InnovaApp> {
           '/biblioteca',
           '/tickets-publicos',
           '/incidencia-publica',
-          '/reporte-sms-publico'
+          '/reporte-sms-publico',
+          '/reclutamiento-publico'
         ];
         
         final isPublic = publicRoutes.contains(state.matchedLocation);
@@ -108,6 +111,10 @@ class _InnovaAppState extends ConsumerState<InnovaApp> {
         GoRoute(
           path: '/reporte-sms-publico',
           builder: (context, state) => const ReporteSmsPublicoScreen(),
+        ),
+        GoRoute(
+          path: '/reclutamiento-publico',
+          builder: (context, state) => const ReclutamientoPublicoScreen(),
         ),
         ShellRoute(
           builder: (context, state, child) {
@@ -228,6 +235,10 @@ class _InnovaAppState extends ConsumerState<InnovaApp> {
             GoRoute(
               path: '/logs',
               builder: (context, state) => const LogsScreen(),
+            ),
+            GoRoute(
+              path: '/reclutamiento',
+              builder: (context, state) => const ReclutamientoScreen(),
             ),
           ],
         ),
