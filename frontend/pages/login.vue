@@ -34,12 +34,12 @@
       </div>
     </div>
 
-    <div class="mt-12 w-full max-w-lg">
+    <div class="mt-12 w-full max-w-2xl">
       <p class="text-center text-slate-500 text-[10px] font-black uppercase tracking-[0.3em] mb-6 opacity-50">
         Servicios Externos
       </p>
       
-      <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
+      <div class="grid grid-cols-2 sm:grid-cols-5 gap-4">
         <NuxtLink to="/biblioteca" 
           class="flex flex-col items-center p-5 bg-slate-800/40 border border-white/5 rounded-3xl hover:bg-slate-800 hover:border-blue-500/50 transition-all group">
           <span class="text-3xl mb-3 group-hover:scale-110 transition-transform">📚</span>
@@ -62,6 +62,12 @@
           class="flex flex-col items-center p-5 bg-slate-800/40 border border-white/5 rounded-3xl hover:bg-slate-800 hover:border-green-500/50 transition-all group">
           <span class="text-3xl mb-3 group-hover:scale-110 transition-transform">📩</span>
           <span class="text-white text-[9px] font-black uppercase tracking-widest text-center opacity-70 group-hover:opacity-100">Reporte SMS</span>
+        </NuxtLink>
+
+        <NuxtLink to="/reclutamiento" 
+          class="flex flex-col items-center p-5 bg-slate-800/40 border border-white/5 rounded-3xl hover:bg-slate-800 hover:border-cyan-500/50 transition-all group">
+          <span class="text-3xl mb-3 group-hover:scale-110 transition-transform">💼</span>
+          <span class="text-white text-[9px] font-black uppercase tracking-widest text-center opacity-70 group-hover:opacity-100">Empleos</span>
         </NuxtLink>
       </div>
     </div>

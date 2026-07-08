@@ -23,6 +23,7 @@ const documentosLegalesRoutes = require('./routes/documentos-legales');
 const categoriasLegalesRoutes = require('./routes/categorias-legales');
 const reportesIncidenciaRoutes = require('./routes/reportes-incidencia');
 const notificacionesRoutes = require('./routes/notificaciones');
+const candidatosRoutes = require('./routes/candidatos');
 const initCronJobs = require('./cron');
 
 const app = express();
@@ -102,6 +103,7 @@ app.use('/api/categorias-legales', categoriasLegalesRoutes);
 app.use('/api/reportes-incidencia', reportesIncidenciaRoutes);
 app.use('/api/logs', logsRoutes);
 app.use('/api/notificaciones', notificacionesRoutes);
+app.use('/api/candidatos', candidatosRoutes);
 
 // 1. OBTENER TODOS LOS MÓDULOS
 app.get('/api/modulos', (req, res) => {
@@ -174,6 +176,9 @@ app.get('/api/menu/:rol_id', (req, res) => {
             }
             if (hasAccess('Reportes') || hasAccess('Módulo de Reportes')) {
                 rrhhItems.push({ nombre: 'Reportes', ruta: '/reportes', icono: '📊' });
+            }
+            if (hasAccess('Reclutamiento')) {
+                rrhhItems.push({ nombre: 'Reclutamiento', ruta: '/admin/candidatos', icono: '💼' });
             }
             if (hasAccess('Departamentos')) {
                 rrhhItems.push({ nombre: 'Departamentos', ruta: '/departamentos', icono: '🏢' });

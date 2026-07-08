@@ -683,7 +683,8 @@ const abrirModalPermisos = async (rol) => {
         { id: 13, nombre: 'Módulo de Reportes' },
         { id: 14, nombre: 'Archivero Legal' },
         { id: 15, nombre: 'Logs de Sistema' },
-        { id: 24, nombre: 'Campanita de Notificaciones' }
+        { id: 24, nombre: 'Campanita de Notificaciones' },
+        { id: 25, nombre: 'Reclutamiento' }
       ];
     }
 
