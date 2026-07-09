@@ -11,6 +11,7 @@ class Ticket {
   final DateTime? fechaCreacion;
   final DateTime? updatedAt;
   final String? identidad;
+  final int? usuarioId;
   
   // Solicitante (Empleado o Externo)
   final String? empleadoNombre;
@@ -21,6 +22,7 @@ class Ticket {
   final int? ticketsResueltos;
 
   // Asignado
+  final int? asignadoUsuarioId;
   final String? asignadoEmpleadoNombre;
   final String? asignadoEmpleadoApellido;
   final String? asignadoEmpleadoFoto;
@@ -38,12 +40,14 @@ class Ticket {
     this.fechaCreacion,
     this.updatedAt,
     this.identidad,
+    this.usuarioId,
     this.empleadoNombre,
     this.empleadoApellido,
     this.empleadoFoto,
     this.empleadoTelefono,
     this.ticketsTotales,
     this.ticketsResueltos,
+    this.asignadoUsuarioId,
     this.asignadoEmpleadoNombre,
     this.asignadoEmpleadoApellido,
     this.asignadoEmpleadoFoto,
@@ -63,12 +67,14 @@ class Ticket {
       fechaCreacion: json['fecha_creacion'] != null ? DateTime.tryParse(json['fecha_creacion']) : null,
       updatedAt: json['updated_at'] != null ? DateTime.tryParse(json['updated_at']) : null,
       identidad: json['identidad'],
+      usuarioId: json['usuario_id'],
       empleadoNombre: json['empleado_nombre'],
       empleadoApellido: json['empleado_apellido'],
       empleadoFoto: json['empleado_foto'],
       empleadoTelefono: json['empleado_telefono'],
       ticketsTotales: json['tickets_totales'],
       ticketsResueltos: json['tickets_resueltos'],
+      asignadoUsuarioId: json['asignado_usuario_id'],
       asignadoEmpleadoNombre: json['asignado_empleado_nombre'],
       asignadoEmpleadoApellido: json['asignado_empleado_apellido'],
       asignadoEmpleadoFoto: json['asignado_empleado_foto'],

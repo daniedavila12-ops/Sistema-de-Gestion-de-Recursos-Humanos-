@@ -700,7 +700,10 @@ const abrirModalPermisos = async (rol) => {
         { id: 15, nombre: 'Logs de Sistema' },
         { id: 24, nombre: 'Campanita de Notificaciones' },
         { id: 25, nombre: 'Reclutamiento' },
-        { id: 27, nombre: '+Nuevo Empleado' }
+        { id: 27, nombre: '+Nuevo Empleado' },
+        { id: 28, nombre: 'Contratos' },
+        { id: 29, nombre: 'Notas' },
+        { id: 30, nombre: 'Perfil del Empleado' }
       ];
     }
 

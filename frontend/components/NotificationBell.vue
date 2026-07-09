@@ -181,17 +181,13 @@ const manejarClickNotificacion = (notif) => {
 
   if (titulo.includes('ticket')) {
     if (itemId) {
-      router.push({ path: '/TicketDetail', query: { id: itemId } });
+      router.push({ path: '/tickets', query: { id: itemId } });
     } else {
       router.push('/tickets');
     }
   } else if (titulo.includes('incidente') || titulo.includes('reporte') || titulo.includes('respuesta en incidente')) {
     if (itemId) {
-      if (titulo.includes('respuesta')) {
-        router.push({ path: '/TicketDetailReportesIncidencia', query: { id: itemId }, hash: '#resoluciones-section' });
-      } else {
-        router.push({ path: '/TicketDetailReportesIncidencia', query: { id: itemId } });
-      }
+      router.push({ path: '/reportes-incidencia', query: { id: itemId } });
     } else {
       router.push('/reportes-incidencia');
     }

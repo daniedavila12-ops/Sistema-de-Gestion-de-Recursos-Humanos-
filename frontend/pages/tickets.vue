@@ -414,18 +414,20 @@
 <script setup>
 import { ref, computed, watch, onMounted } from 'vue'
 import axios from 'axios'
-import { useRouter } from 'vue-router'
+import { useRouter, useRoute } from 'vue-router'
 import Swal from 'sweetalert2'
 import TicketCard from '~/components/TicketCard.vue'
 import TicketDetail from '~/pages/TicketDetail.vue'
 
 const selectedTicketId = ref(null)
+const router = useRouter()
+const route = useRoute()
+
 const cerrarDetalle = () => {
   selectedTicketId.value = null
   fetchTickets()
+  router.replace({ query: {} })
 }
-
-const router = useRouter()
 
 // Variables de sesión y layout
 const nombreUsuario = ref('')
@@ -835,6 +837,10 @@ const formatearFecha = (fechaStr) => {
 }
 
 onMounted(async () => {
+  if (route.query.id) {
+    selectedTicketId.value = parseInt(route.query.id, 10)
+  }
+
   // Inicializar variables de sesión
   const uId = localStorage.getItem('usuarioID')
   nombreUsuario.value = localStorage.getItem('usuarioNombre') || 'Invitado'
@@ -861,6 +867,12 @@ onMounted(async () => {
 
   // Cargar tickets
   await fetchTickets()
+})
+
+watch(() => route.query.id, (newId) => {
+  if (newId) {
+    selectedTicketId.value = parseInt(newId, 10)
+  }
 })
 
 const logout = () => { 

@@ -538,7 +538,7 @@
 <script setup>
 import { ref, computed, watch, onMounted, onUnmounted } from 'vue'
 import axios from 'axios'
-import { useRouter } from 'vue-router'
+import { useRouter, useRoute } from 'vue-router'
 import jsPDF from 'jspdf'
 import 'jspdf-autotable'
 import Swal from 'sweetalert2'
@@ -548,12 +548,15 @@ import { io } from 'socket.io-client'
 let socketInstance = null
 
 const selectedTicketId = ref(null)
+
+const router = useRouter()
+const route = useRoute()
+
 const cerrarDetalle = () => {
   selectedTicketId.value = null
   fetchReportes()
+  router.replace({ query: {} })
 }
-
-const router = useRouter()
 
 // Variables de sesión y layout
 const nombreUsuario = ref('')
@@ -1088,6 +1091,10 @@ const generarPDF = async () => {
 }
 
 onMounted(async () => {
+  if (route.query.id) {
+    selectedTicketId.value = parseInt(route.query.id, 10)
+  }
+
   const uId = localStorage.getItem('usuarioID');
   usuarioActualId.value = uId ? parseInt(uId, 10) : null;
   nombreUsuario.value = localStorage.getItem('usuarioNombre') || 'Invitado'
@@ -1132,6 +1139,12 @@ onMounted(async () => {
 onUnmounted(() => {
   if (socketInstance) {
     socketInstance.disconnect()
+  }
+})
+
+watch(() => route.query.id, (newId) => {
+  if (newId) {
+    selectedTicketId.value = parseInt(newId, 10)
   }
 })
 

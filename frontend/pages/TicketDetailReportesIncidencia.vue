@@ -88,8 +88,13 @@
 
                   <!-- Archivo Adjunto -->
                   <div v-if="reporte.archivo" class="mt-6 ml-16 no-print">
-                    <div v-if="isImage(reporte.archivo)" class="mt-2 text-center rounded-xl overflow-hidden border border-slate-200">
-                      <img :src="`http://localhost:3007${reporte.archivo}`" class="max-w-full max-h-[400px] object-contain mx-auto" alt="Evidencia" />
+                    <div v-if="isImage(reporte.archivo)" class="mt-2">
+                      <div class="text-center rounded-xl overflow-hidden border border-slate-200 mb-3">
+                        <img :src="`http://localhost:3007${reporte.archivo}`" class="max-w-full max-h-[400px] object-contain mx-auto" alt="Evidencia" />
+                      </div>
+                      <a :href="`http://localhost:3007${reporte.archivo}`" target="_blank" download class="inline-flex items-center gap-2 px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-xs hover:border-purple-300 transition-colors text-purple-600 font-bold">
+                        <span>⬇️</span> Descargar Imagen
+                      </a>
                     </div>
                     <div v-else class="inline-flex items-center gap-3 px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl hover:border-purple-300 transition-colors">
                       <span class="text-purple-500">📎</span>
@@ -122,9 +127,19 @@
                   
                   <p class="text-sm text-slate-600 leading-relaxed whitespace-pre-line pl-14">{{ res.mensaje }}</p>
                   
-                  <div v-if="res.archivo" class="mt-4 ml-14 inline-flex items-center gap-2 px-3 py-1.5 bg-white border border-slate-200 rounded-lg text-xs hover:border-indigo-300 transition-colors no-print">
-                    <span>📎</span>
-                    <a :href="`http://localhost:3007${res.archivo}`" target="_blank" class="text-indigo-600 font-bold truncate max-w-[200px] hover:underline">Archivo Adjunto</a>
+                  <div v-if="res.archivo" class="mt-4 ml-14 no-print">
+                    <div v-if="isImage(res.archivo)" class="mt-2">
+                      <div class="text-center rounded-xl overflow-hidden border border-slate-200 mb-2 bg-white">
+                        <img :src="`http://localhost:3007${res.archivo}`" class="max-w-full max-h-[300px] object-contain mx-auto" alt="Evidencia de Respuesta" />
+                      </div>
+                      <a :href="`http://localhost:3007${res.archivo}`" target="_blank" download class="inline-flex items-center gap-2 px-3 py-1.5 bg-white border border-slate-200 rounded-lg text-xs hover:border-indigo-300 transition-colors text-indigo-600 font-bold">
+                        <span>⬇️</span> Descargar Imagen
+                      </a>
+                    </div>
+                    <div v-else class="inline-flex items-center gap-2 px-3 py-1.5 bg-white border border-slate-200 rounded-lg text-xs hover:border-indigo-300 transition-colors">
+                      <span>📎</span>
+                      <a :href="`http://localhost:3007${res.archivo}`" target="_blank" class="text-indigo-600 font-bold truncate max-w-[200px] hover:underline">Archivo Adjunto</a>
+                    </div>
                   </div>
                 </div>
 
@@ -726,17 +741,44 @@ const generarPDFResoluciones = async () => {
     currentY += 6;
 
     if (respuestas.value && respuestas.value.length > 0) {
-      const rows = respuestas.value.map(res => {
+      // Pre-cargar imágenes de resoluciones
+      for (let i = 0; i < respuestas.value.length; i++) {
+        const res = respuestas.value[i];
+        if (res && res.archivo && isImage(res.archivo)) {
+          const img = new Image();
+          img.crossOrigin = "Anonymous";
+          img.src = `http://localhost:3007${res.archivo}`;
+          await new Promise(resolve => {
+            img.onload = () => { res._imgObj = img; resolve(); };
+            img.onerror = resolve;
+          });
+        }
+      }
+
+      const rows = [];
+      respuestas.value.forEach(res => {
         const nombre = res.usuario_nombre || (res.empleado_nombre + ' ' + res.empleado_apellido);
         const fecha = new Date(res.fecha_creacion).toLocaleString('es-HN');
         let msg = res.mensaje;
-        if (res.archivo) {
-          msg += `\n\n[📎 Archivo Adjunto: ${res.archivo}]`;
+        
+        if (res.archivo && !isImage(res.archivo)) {
+          msg += `\n\nDocumento Adjunto: ${res.archivo}`;
         }
-        return [
+        
+        rows.push([
           `${nombre}\n${fecha}`,
           msg
-        ];
+        ]);
+
+        if (res.archivo && isImage(res.archivo)) {
+          const imgRow = [
+            '', 
+            `Evidencia Adjunta:\n\n\n\n\n\n\n\n\n\n\n\n\n\n`
+          ];
+          imgRow._res = res;
+          imgRow._isImageRow = true;
+          rows.push(imgRow);
+        }
       });
 
       autoTable(doc, {
@@ -747,7 +789,40 @@ const generarPDFResoluciones = async () => {
         margin: { bottom: 60 },
         headStyles: { fillColor: [241, 245, 249], textColor: [15, 23, 42] },
         columnStyles: { 0: { fontStyle: 'bold', cellWidth: 50 } },
-        styles: { overflow: 'linebreak' }
+        styles: { overflow: 'linebreak' },
+        didDrawCell: function(data) {
+          if (data.section === 'body' && data.column.index === 1) {
+            const isImgRow = data.row.raw && data.row.raw._isImageRow;
+            if (isImgRow) {
+              const res = data.row.raw._res;
+              if (res && res._imgObj) {
+                const img = res._imgObj;
+                const ext = img.src.toUpperCase().includes('.PNG') ? 'PNG' : 'JPEG';
+                
+                const maxWidth = 55;
+                const maxHeight = 45;
+                let w = img.width || 80;
+                let h = img.height || 80;
+                if (w > maxWidth) { h = Math.round((h * maxWidth) / w); w = maxWidth; }
+                if (h > maxHeight) { w = Math.round((w * maxHeight) / h); h = maxHeight; }
+                
+                const imgX = data.cell.x + 4;
+                // La imagen va justo debajo del texto "Evidencia Adjunta:"
+                // Un padding típico es ~4, texto es ~4, dejamos un margen de 4 -> offset 12
+                const imgY = data.cell.y + 12;
+                
+                try {
+                  doc.setFillColor(248, 250, 252);
+                  doc.setDrawColor(203, 213, 225);
+                  doc.setLineWidth(0.5);
+                  doc.roundedRect(imgX - 1, imgY - 1, w + 2, h + 2, 2, 2, 'FD');
+                  
+                  doc.addImage(img, ext, imgX, imgY, w, h);
+                } catch(e) {}
+              }
+            }
+          }
+        }
       });
       currentY = doc.lastAutoTable.finalY + 20;
     } else {

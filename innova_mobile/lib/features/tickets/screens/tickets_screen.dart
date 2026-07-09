@@ -9,9 +9,35 @@ import '../providers/ticket_provider.dart';
 import '../providers/tickets_filter_provider.dart';
 import '../widgets/ticket_card.dart';
 import '../../../shared/widgets/innova_loading.dart';
+import '../../../core/services/socket_service.dart';
 
-class TicketsScreen extends ConsumerWidget {
+class TicketsScreen extends ConsumerStatefulWidget {
   const TicketsScreen({super.key});
+
+  @override
+  ConsumerState<TicketsScreen> createState() => _TicketsScreenState();
+}
+
+class _TicketsScreenState extends ConsumerState<TicketsScreen> {
+  @override
+  void initState() {
+    super.initState();
+    SocketService().socket.on('nuevo_ticket', _onRefreshTickets);
+    SocketService().socket.on('tickets_actualizados', _onRefreshTickets);
+  }
+
+  @override
+  void dispose() {
+    SocketService().socket.off('nuevo_ticket', _onRefreshTickets);
+    SocketService().socket.off('tickets_actualizados', _onRefreshTickets);
+    super.dispose();
+  }
+
+  void _onRefreshTickets(dynamic data) {
+    if (mounted) {
+      ref.invalidate(ticketsProvider);
+    }
+  }
 
   void _showSortPriorityBottomSheet(BuildContext context, WidgetRef ref) {
     showModalBottomSheet(
@@ -73,7 +99,7 @@ class TicketsScreen extends ConsumerWidget {
   }
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
     final ticketsAsyncValue = ref.watch(filteredTicketsProvider);
     final currentFilter = ref.watch(ticketsFilterProvider);
 

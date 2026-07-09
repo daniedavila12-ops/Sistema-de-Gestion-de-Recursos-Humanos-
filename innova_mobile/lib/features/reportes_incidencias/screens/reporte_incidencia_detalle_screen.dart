@@ -11,6 +11,7 @@ import '../../empleados/providers/empleado_provider.dart';
 import '../../empleados/models/empleado_model.dart';
 import '../utils/pdf_reporte_generator.dart';
 import 'package:innova_mobile/core/constants/api_constants.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class ReporteIncidenciaDetalleScreen extends ConsumerStatefulWidget {
   final ReporteIncidencia reporte;
@@ -40,6 +41,21 @@ class _ReporteIncidenciaDetalleScreenState extends ConsumerState<ReporteIncidenc
   void dispose() {
     _respuestaController.dispose();
     super.dispose();
+  }
+
+  bool _isImage(String path) {
+    final lower = path.toLowerCase();
+    return lower.endsWith('.jpg') || lower.endsWith('.jpeg') || lower.endsWith('.png') || lower.endsWith('.gif') || lower.endsWith('.webp');
+  }
+
+  Future<void> _downloadFile(String path) async {
+    final url = Uri.parse('${ApiConstants.baseUrl}$path');
+    if (await canLaunchUrl(url)) {
+      await launchUrl(url, mode: LaunchMode.externalApplication);
+    } else {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('No se pudo abrir el archivo')));
+    }
   }
 
   Future<void> _seleccionarArchivo() async {
@@ -297,17 +313,50 @@ class _ReporteIncidenciaDetalleScreenState extends ConsumerState<ReporteIncidenc
           Text(r.descripcion, style: const TextStyle(fontSize: 14, color: Colors.black87, height: 1.5)),
           if (r.archivo != null) ...[
             const SizedBox(height: 16),
-            Container(
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(color: Colors.grey.shade50, borderRadius: BorderRadius.circular(8), border: Border.all(color: Colors.grey.shade200)),
-              child: Row(
-                children: [
-                  const Icon(Icons.attach_file, color: Colors.blue),
-                  const SizedBox(width: 8),
-                  Expanded(child: Text(r.archivo!.split('/').last, style: const TextStyle(color: Colors.blue, fontWeight: FontWeight.bold))),
-                ],
+            if (_isImage(r.archivo!)) ...[
+              ClipRRect(
+                borderRadius: BorderRadius.circular(8),
+                child: Image.network(
+                  '${ApiConstants.baseUrl}${r.archivo}',
+                  fit: BoxFit.contain,
+                  errorBuilder: (ctx, err, stack) => Container(
+                    height: 150,
+                    color: Colors.grey.shade200,
+                    child: const Center(child: Icon(Icons.broken_image, color: Colors.grey)),
+                  ),
+                ),
               ),
-            )
+              const SizedBox(height: 8),
+              Align(
+                alignment: Alignment.centerLeft,
+                child: ElevatedButton.icon(
+                  icon: const Icon(Icons.download, size: 16),
+                  label: const Text('Descargar Imagen'),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.blue.shade50,
+                    foregroundColor: Colors.blue.shade700,
+                    elevation: 0,
+                  ),
+                  onPressed: () => _downloadFile(r.archivo!),
+                ),
+              ),
+            ] else ...[
+              GestureDetector(
+                onTap: () => _downloadFile(r.archivo!),
+                child: Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(color: Colors.grey.shade50, borderRadius: BorderRadius.circular(8), border: Border.all(color: Colors.grey.shade200)),
+                  child: Row(
+                    children: [
+                      const Icon(Icons.attach_file, color: Colors.blue),
+                      const SizedBox(width: 8),
+                      Expanded(child: Text(r.archivo!.split('/').last, style: const TextStyle(color: Colors.blue, fontWeight: FontWeight.bold))),
+                      const Icon(Icons.download, size: 20, color: Colors.blue),
+                    ],
+                  ),
+                ),
+              )
+            ]
           ]
         ],
       ),
@@ -470,23 +519,52 @@ class _ReporteIncidenciaDetalleScreenState extends ConsumerState<ReporteIncidenc
                             Text(res.respuesta, style: const TextStyle(fontSize: 14, color: Colors.black87)),
                             if (res.archivoUrl != null) ...[
                               const SizedBox(height: 8),
-                              GestureDetector(
-                                onTap: () {
-                                  // Podríamos abrir el archivo, por ahora solo mostramos el enlace visual.
-                                },
-                                child: Container(
-                                  padding: const EdgeInsets.all(8),
-                                  decoration: BoxDecoration(color: Colors.grey.shade100, borderRadius: BorderRadius.circular(8)),
-                                  child: Row(
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      const Icon(Icons.attachment, size: 16, color: Colors.blue),
-                                      const SizedBox(width: 4),
-                                      Text('Archivo adjunto', style: TextStyle(color: Colors.blue.shade700, fontSize: 12, fontWeight: FontWeight.bold)),
-                                    ],
+                              if (_isImage(res.archivoUrl!)) ...[
+                                ClipRRect(
+                                  borderRadius: BorderRadius.circular(8),
+                                  child: Image.network(
+                                    '${ApiConstants.baseUrl}${res.archivoUrl}',
+                                    fit: BoxFit.contain,
+                                    errorBuilder: (ctx, err, stack) => Container(
+                                      height: 150,
+                                      color: Colors.grey.shade200,
+                                      child: const Center(child: Icon(Icons.broken_image, color: Colors.grey)),
+                                    ),
                                   ),
                                 ),
-                              ),
+                                const SizedBox(height: 8),
+                                Align(
+                                  alignment: Alignment.centerLeft,
+                                  child: ElevatedButton.icon(
+                                    icon: const Icon(Icons.download, size: 16),
+                                    label: const Text('Descargar Imagen'),
+                                    style: ElevatedButton.styleFrom(
+                                      backgroundColor: Colors.blue.shade50,
+                                      foregroundColor: Colors.blue.shade700,
+                                      elevation: 0,
+                                    ),
+                                    onPressed: () => _downloadFile(res.archivoUrl!),
+                                  ),
+                                ),
+                              ] else ...[
+                                GestureDetector(
+                                  onTap: () => _downloadFile(res.archivoUrl!),
+                                  child: Container(
+                                    padding: const EdgeInsets.all(8),
+                                    decoration: BoxDecoration(color: Colors.grey.shade100, borderRadius: BorderRadius.circular(8)),
+                                    child: Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        const Icon(Icons.attachment, size: 16, color: Colors.blue),
+                                        const SizedBox(width: 4),
+                                        Flexible(child: Text('Archivo adjunto', style: TextStyle(color: Colors.blue.shade700, fontSize: 12, fontWeight: FontWeight.bold), overflow: TextOverflow.ellipsis)),
+                                        const SizedBox(width: 4),
+                                        const Icon(Icons.download, size: 16, color: Colors.blue),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                              ]
                             ],
                             const SizedBox(height: 8),
                             Text('${res.fechaCreacion.day}/${res.fechaCreacion.month}/${res.fechaCreacion.year} ${res.fechaCreacion.hour}:${res.fechaCreacion.minute.toString().padLeft(2,'0')}', style: const TextStyle(fontSize: 11, color: Colors.grey)),

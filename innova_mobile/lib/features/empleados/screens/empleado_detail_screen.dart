@@ -19,19 +19,17 @@ import 'documentos_empleado_provider.dart';
 import 'package:innova_mobile/core/constants/api_constants.dart';
 import 'package:innova_mobile/core/services/socket_service.dart';
  
-class EmpleadoDetailScreen extends StatefulWidget {
+class EmpleadoDetailScreen extends ConsumerStatefulWidget {
   final Empleado empleado;
   final int initialTabIndex;
 
   const EmpleadoDetailScreen({super.key, required this.empleado, this.initialTabIndex = 0});
 
   @override
-  State<EmpleadoDetailScreen> createState() => _EmpleadoDetailScreenState();
+  ConsumerState<EmpleadoDetailScreen> createState() => _EmpleadoDetailScreenState();
 }
 
-class _EmpleadoDetailScreenState extends State<EmpleadoDetailScreen>
-    with SingleTickerProviderStateMixin {
-  late TabController _tabController;
+class _EmpleadoDetailScreenState extends ConsumerState<EmpleadoDetailScreen> {
   String _filtroPeriodoHistorial = 'Todos';
   late Empleado _empleado;
 
@@ -39,8 +37,6 @@ class _EmpleadoDetailScreenState extends State<EmpleadoDetailScreen>
   void initState() {
     super.initState();
     _empleado = widget.empleado;
-    // Se crean 6 tabs para las diferentes secciones del perfil del empleado
-    _tabController = TabController(length: 6, vsync: this, initialIndex: widget.initialTabIndex);
     
     // Escuchar actualizaciones en tiempo real
     SocketService().socket.on('refresh_empleado_detalle', _onRefreshEmpleadoDetalle);
@@ -69,101 +65,130 @@ class _EmpleadoDetailScreenState extends State<EmpleadoDetailScreen>
   @override
   void dispose() {
     SocketService().socket.off('refresh_empleado_detalle', _onRefreshEmpleadoDetalle);
-    _tabController.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     final empleado = _empleado;
+    final authState = ref.watch(authProvider);
 
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(empleado.nombreCompleto),
-        actions: [
-          Consumer(
-            builder: (context, ref, child) {
-              return PopupMenuButton<String>(
-                onSelected: (value) => _handleMenuSelection(context, ref, value, empleado),
-                itemBuilder: (BuildContext context) {
-                  final isActivo = empleado.estado == 1;
-                  final authState = ref.watch(authProvider);
-                  final puedeEditar = authState.hasPermission('Empleados', 'puedeEditar');
-                  
-                  return <PopupMenuEntry<String>>[
+    final tabs = <Widget>[];
+    final views = <Widget>[];
+
+    tabs.add(const Tab(icon: Icon(Icons.person_outline), text: 'General'));
+    views.add(_buildInformacionGeneralTab(empleado));
+
+    if (authState.hasPermission('Contratos', 'puedeVer')) {
+      tabs.add(const Tab(icon: Icon(Icons.description_outlined), text: 'Contratos'));
+      views.add(_buildContratosTab(empleado));
+    }
+    if (authState.hasPermission('Vacaciones', 'puedeVer')) {
+      tabs.add(const Tab(icon: Icon(Icons.beach_access_outlined), text: 'Vacaciones'));
+      views.add(_buildVacacionesTab(empleado));
+    }
+    if (authState.hasPermission('Faltas', 'puedeVer')) {
+      tabs.add(const Tab(icon: Icon(Icons.event_busy_outlined), text: 'Faltas'));
+      views.add(_buildFaltasTab(empleado));
+    }
+    if (authState.hasPermission('Notas', 'puedeVer')) {
+      tabs.add(const Tab(icon: Icon(Icons.note_alt_outlined), text: 'Notas'));
+      views.add(_buildNotasTab(empleado));
+    }
+    if (authState.hasPermission('Documentos', 'puedeVer')) {
+      tabs.add(const Tab(icon: Icon(Icons.folder_open_outlined), text: 'Documentos'));
+      views.add(_buildDocumentosTab(empleado));
+    }
+
+    final initialIndex = widget.initialTabIndex < tabs.length ? widget.initialTabIndex : 0;
+
+    return DefaultTabController(
+      length: tabs.length,
+      initialIndex: initialIndex,
+      child: Scaffold(
+        appBar: AppBar(
+          title: Text(empleado.nombreCompleto),
+          actions: [
+            PopupMenuButton<String>(
+              onSelected: (value) => _handleMenuSelection(context, ref, value, empleado),
+              itemBuilder: (BuildContext context) {
+                final isActivo = empleado.estado == 1;
+                final puedeEditar = authState.hasPermission('Empleados', 'puedeEditar');
+                
+                final puedeEditarContratos = authState.hasPermission('Contratos', 'puedeCrear');
+                final puedeEditarFaltas = authState.hasPermission('Faltas', 'puedeCrear');
+                final puedeEditarNotas = authState.hasPermission('Notas', 'puedeCrear');
+                final puedeVerPerfil = authState.hasPermission('Perfil del Empleado', 'puedeVer');
+                
+                return <PopupMenuEntry<String>>[
+                  const PopupMenuItem<String>(
+                    enabled: false,
+                    child: Text('PERFIL', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black54, fontSize: 12)),
+                  ),
+                  if (puedeEditar)
                     const PopupMenuItem<String>(
-                      enabled: false,
-                      child: Text('PERFIL', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black54, fontSize: 12)),
+                      value: 'editar',
+                      child: ListTile(leading: Icon(Icons.edit_outlined), title: Text('Editar empleado')),
                     ),
-                    if (puedeEditar)
-                      const PopupMenuItem<String>(
-                        value: 'editar',
-                        child: ListTile(leading: Icon(Icons.edit_outlined), title: Text('Editar empleado')),
-                      ),
-                    if (puedeEditar)
-                      const PopupMenuItem<String>(
-                        value: 'contacto',
-                        child: ListTile(leading: Icon(Icons.person_add_alt_1_outlined), title: Text('Registrar contacto')),
-                      ),
-                    if (puedeEditar)
-                      PopupMenuItem<String>(
-                        value: 'estado',
-                        child: ListTile(
-                          leading: Icon(
-                            isActivo ? Icons.do_not_disturb_on_outlined : Icons.check_circle_outline,
-                            color: isActivo ? Colors.orange.shade700 : Colors.green.shade700,
-                          ),
-                          title: Text(isActivo ? 'Desactivar' : 'Activar'),
+                  if (puedeEditar)
+                    const PopupMenuItem<String>(
+                      value: 'contacto',
+                      child: ListTile(leading: Icon(Icons.person_add_alt_1_outlined), title: Text('Registrar contacto')),
+                    ),
+                  if (puedeEditar)
+                    PopupMenuItem<String>(
+                      value: 'estado',
+                      child: ListTile(
+                        leading: Icon(
+                          isActivo ? Icons.do_not_disturb_on_outlined : Icons.check_circle_outline,
+                          color: isActivo ? Colors.orange.shade700 : Colors.green.shade700,
                         ),
+                        title: Text(isActivo ? 'Desactivar' : 'Activar'),
                       ),
+                    ),
+                  if (puedeVerPerfil) ...[
+                    const PopupMenuDivider(),
+                    const PopupMenuItem<String>(
+                      value: 'pdf',
+                      child: ListTile(leading: Icon(Icons.picture_as_pdf_outlined), title: Text('Crear Pdf Perfil del Empleado')),
+                    ),
+                  ],
+                  if (puedeEditarContratos || puedeEditarFaltas || puedeEditarNotas) ...[
                     const PopupMenuDivider(),
                     const PopupMenuItem<String>(
                       enabled: false,
                       child: Text('EXPEDIENTE', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black54, fontSize: 12)),
                     ),
+                  ],
+                  if (puedeEditarContratos)
                     const PopupMenuItem<String>(
                       value: 'contrato',
                       child: ListTile(leading: Icon(Icons.description_outlined), title: Text('Registrar contrato')),
                     ),
+                  if (puedeEditarFaltas)
                     const PopupMenuItem<String>(
                       value: 'falta',
                       child: ListTile(leading: Icon(Icons.event_busy_outlined), title: Text('Registrar falta')),
                     ),
+                  if (puedeEditarNotas)
                     const PopupMenuItem<String>(
                       value: 'nota',
                       child: ListTile(leading: Icon(Icons.note_add_outlined), title: Text('Registrar nota')),
                     ),
-                  ];
-                },
-                icon: const Icon(Icons.more_vert_outlined),
-                tooltip: 'Opciones',
-              );
-            }
-          ),
-        ],
-        bottom: TabBar(
-          controller: _tabController,
-          isScrollable: true,
-          tabs: const [
-            Tab(icon: Icon(Icons.person_outline), text: 'General'),
-            Tab(icon: Icon(Icons.description_outlined), text: 'Contratos'),
-            Tab(icon: Icon(Icons.beach_access_outlined), text: 'Vacaciones'),
-            Tab(icon: Icon(Icons.event_busy_outlined), text: 'Faltas'),
-            Tab(icon: Icon(Icons.note_alt_outlined), text: 'Notas'),
-            Tab(icon: Icon(Icons.folder_open_outlined), text: 'Documentos'),
+                ];
+              },
+              icon: const Icon(Icons.more_vert_outlined),
+              tooltip: 'Opciones',
+            ),
           ],
+          bottom: TabBar(
+            isScrollable: true,
+            tabs: tabs,
+          ),
         ),
-      ),
-      body: TabBarView(
-        controller: _tabController,
-        children: [
-          _buildInformacionGeneralTab(empleado),
-          _buildContratosTab(empleado),
-          _buildVacacionesTab(empleado),
-          _buildFaltasTab(empleado),
-          _buildNotasTab(empleado),
-          _buildDocumentosTab(empleado),
-        ],
+        body: TabBarView(
+          children: views,
+        ),
       ),
     );
   }

@@ -98,16 +98,16 @@
                 </button>
                 
                 <div class="px-5 py-2 text-[10px] font-black text-slate-400 uppercase tracking-widest bg-slate-50 border-y border-slate-100 mt-1">Expediente</div>
-                <button @click="generarPDFPerfilEmpleado" class="w-full text-left px-5 py-2.5 text-sm font-bold hover:bg-blue-50 hover:text-blue-600 transition-colors">
+                <button v-if="hasPermission('Perfil del Empleado', 'puedeVer') === true" @click="generarPDFPerfilEmpleado" class="w-full text-left px-5 py-2.5 text-sm font-bold hover:bg-blue-50 hover:text-blue-600 transition-colors">
                   📄 Crear Pdf Perfil del Empleado
                 </button>
-                <button @click="abrirModalContrato" class="w-full text-left px-5 py-2.5 text-sm font-bold hover:bg-blue-50 hover:text-blue-600 transition-colors">
+                <button v-if="hasPermission('Contratos', 'puedeCrear') === true" @click="abrirModalContrato" class="w-full text-left px-5 py-2.5 text-sm font-bold hover:bg-blue-50 hover:text-blue-600 transition-colors">
                   📄 Registrar contrato
                 </button>
-                <button @click="abrirModalFalta" class="w-full text-left px-5 py-2.5 text-sm font-bold hover:bg-blue-50 hover:text-blue-600 transition-colors">
+                <button v-if="hasPermission('Faltas', 'puedeCrear') === true" @click="abrirModalFalta" class="w-full text-left px-5 py-2.5 text-sm font-bold hover:bg-blue-50 hover:text-blue-600 transition-colors">
                   ➕ Registrar falta
                 </button>
-                <button @click="abrirModalNota" class="w-full text-left px-5 py-2.5 text-sm font-bold hover:bg-blue-50 hover:text-blue-600 transition-colors">
+                <button v-if="hasPermission('Notas', 'puedeCrear') === true" @click="abrirModalNota" class="w-full text-left px-5 py-2.5 text-sm font-bold hover:bg-blue-50 hover:text-blue-600 transition-colors">
                   📝 Registrar nota
                 </button>
               </div>
@@ -198,9 +198,9 @@
             
             <!-- Pestañas de Detalles -->
             <div class="mt-12 pt-8 border-t border-slate-100">
-              <div class="flex flex-wrap gap-2 mb-6 border-b border-slate-200 pb-2">
+              <div v-if="tabsPermitidas.length > 0" class="flex flex-wrap gap-2 mb-6 border-b border-slate-200 pb-2">
                 <button 
-                  v-for="tab in ['CONTRATOS', 'VACACIONES', 'FALTAS', 'NOTAS', 'DOCUMENTOS']" 
+                  v-for="tab in tabsPermitidas" 
                   :key="tab"
                   @click="activeTab = tab"
                   class="px-5 py-2.5 rounded-t-xl font-bold text-xs uppercase tracking-widest transition-all border-b-2"
@@ -211,8 +211,8 @@
               </div>
               
               <!-- Contenido de las Pestañas -->
-              <div class="bg-slate-50 p-8 rounded-2xl border border-slate-100 min-h-[200px] flex flex-col">
-                <div v-if="activeTab === 'CONTRATOS'" class="w-full">
+              <div v-if="tabsPermitidas.length > 0" class="bg-slate-50 p-8 rounded-2xl border border-slate-100 min-h-[200px] flex flex-col">
+                <div v-if="activeTab === 'CONTRATOS' && hasPermission('Contratos', 'puedeVer') === true" class="w-full">
                   <div class="flex justify-between items-center mb-6">
                     <h4 class="text-lg font-black text-slate-800 uppercase tracking-tight">Historial de Contratos</h4>
                     <button @click="abrirModalContrato" class="px-4 py-2 bg-blue-600 text-white rounded-xl font-bold text-xs uppercase tracking-widest hover:bg-blue-700 transition-colors shadow-sm">
@@ -266,7 +266,7 @@
                     </div>
                   </div>
                 </div>
-                <div v-else-if="activeTab === 'VACACIONES'" class="w-full">
+                <div v-if="activeTab === 'VACACIONES' && hasPermission('Vacaciones', 'puedeVer') === true" class="w-full">
                   <div class="flex justify-between items-center mb-6">
                     <h4 class="text-lg font-black text-slate-800 uppercase tracking-tight">Historial de Vacaciones</h4>
                     <div class="flex items-center gap-4">
@@ -354,7 +354,7 @@
                     </div>
                   </div>
                 </div>
-                <div v-else-if="activeTab === 'FALTAS'" class="w-full">
+                <div v-if="activeTab === 'FALTAS' && hasPermission('Faltas', 'puedeVer') === true" class="w-full">
                   <div class="flex justify-between items-center mb-6">
                     <h4 class="text-lg font-black text-slate-800 uppercase tracking-tight">Historial de Faltas</h4>
                     <button @click="abrirModalFalta" class="px-4 py-2 bg-blue-600 text-white rounded-xl font-bold text-xs uppercase tracking-widest hover:bg-blue-700 transition-colors shadow-sm">
@@ -397,7 +397,7 @@
                     </div>
                   </div>
                 </div>
-                <div v-else-if="activeTab === 'NOTAS'" class="w-full">
+                <div v-if="activeTab === 'NOTAS' && hasPermission('Notas', 'puedeVer') === true" class="w-full">
                   <div class="flex justify-between items-center mb-6">
                     <h4 class="text-lg font-black text-slate-800 uppercase tracking-tight">Historial de Notas</h4>
                     <button @click="abrirModalNota" class="px-4 py-2 bg-blue-600 text-white rounded-xl font-bold text-xs uppercase tracking-widest hover:bg-blue-700 transition-colors shadow-sm">
@@ -438,7 +438,7 @@
                     </div>
                   </div>
                 </div>
-                <div v-else-if="activeTab === 'DOCUMENTOS'" class="w-full">
+                <div v-if="activeTab === 'DOCUMENTOS' && hasPermission('Documentos', 'puedeVer') === true" class="w-full">
                   <div class="flex justify-between items-center mb-6">
                     <h4 class="text-lg font-black text-slate-800 uppercase tracking-tight">Historial de Documentos</h4>
                     <button @click="abrirModalDocumento" class="px-4 py-2 bg-blue-600 text-white rounded-xl font-bold text-xs uppercase tracking-widest hover:bg-blue-700 transition-colors shadow-sm">
@@ -824,6 +824,25 @@ const loading = ref(true)
 const error = ref('')
 const fileInput = ref(null)
 const activeTab = ref('CONTRATOS')
+
+import { watch } from 'vue'
+
+const tabsPermitidas = computed(() => {
+  const tabs = [];
+  if (hasPermission('Contratos', 'puedeVer') === true) tabs.push('CONTRATOS');
+  if (hasPermission('Vacaciones', 'puedeVer') === true) tabs.push('VACACIONES');
+  if (hasPermission('Faltas', 'puedeVer') === true) tabs.push('FALTAS');
+  if (hasPermission('Notas', 'puedeVer') === true) tabs.push('NOTAS');
+  if (hasPermission('Documentos', 'puedeVer') === true) tabs.push('DOCUMENTOS');
+  return tabs;
+});
+
+// Asegurar que activeTab sea válido si la pestaña actual no está permitida
+watch(tabsPermitidas, (newTabs) => {
+  if (newTabs.length > 0 && !newTabs.includes(activeTab.value)) {
+    activeTab.value = newTabs[0];
+  }
+});
 
 const mostrarModalFoto = ref(false)
 

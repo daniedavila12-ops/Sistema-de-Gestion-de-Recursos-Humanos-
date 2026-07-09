@@ -148,9 +148,10 @@
                 </div>
               </td>
               <td class="p-5 font-bold text-slate-800">
-                <NuxtLink :to="`/empleados/${emp.id}`" class="hover:text-blue-600 hover:underline transition-colors cursor-pointer">
+                <NuxtLink v-if="hasPermission('Perfil del Empleado', 'puedeVer') || hasPermission('Perfil del Empleado', 'puedeVer') === undefined" :to="`/empleados/${emp.id}`" class="hover:text-blue-600 hover:underline transition-colors cursor-pointer">
                   {{ emp.nombre }} {{ emp.apellido }}
                 </NuxtLink>
+                <span v-else>{{ emp.nombre }} {{ emp.apellido }}</span>
               </td>
               <td class="p-5 text-sm text-slate-600">
                 {{ emp.identidad }}
@@ -173,7 +174,7 @@
                 {{ emp.fecha_inicio ? new Date(emp.fecha_inicio).toLocaleDateString('es-HN') : 'N/A' }}
               </td>
               <td class="p-5 text-center flex justify-center gap-2">
-                <NuxtLink :to="`/empleados/${emp.id}`" class="inline-block bg-blue-100 text-blue-600 hover:bg-blue-600 hover:text-white px-4 py-2 rounded-lg text-xs font-bold transition-colors">
+                <NuxtLink v-if="hasPermission('Perfil del Empleado', 'puedeVer') || hasPermission('Perfil del Empleado', 'puedeVer') === undefined" :to="`/empleados/${emp.id}`" class="inline-block bg-blue-100 text-blue-600 hover:bg-blue-600 hover:text-white px-4 py-2 rounded-lg text-xs font-bold transition-colors">
                   Ver Detalle
                 </NuxtLink>
               </td>

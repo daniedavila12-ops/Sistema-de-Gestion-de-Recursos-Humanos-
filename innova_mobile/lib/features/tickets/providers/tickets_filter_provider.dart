@@ -3,6 +3,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/ticket_model.dart';
 import 'ticket_provider.dart';
+import '../../auth/providers/auth_provider.dart';
 
 // Definimos el estado del filtro
 class TicketsFilterState {
@@ -51,9 +52,16 @@ final ticketsFilterProvider = StateNotifierProvider<TicketsFilterNotifier, Ticke
 final filteredTicketsProvider = Provider<AsyncValue<List<Ticket>>>((ref) {
   final ticketsAsync = ref.watch(ticketsProvider);
   final filters = ref.watch(ticketsFilterProvider);
+  final authState = ref.watch(authProvider);
 
   return ticketsAsync.whenData((tickets) {
     var data = List<Ticket>.from(tickets);
+
+    // Filtrar por rol de usuario (solo ver sus propios tickets si no es admin)
+    if (authState.user != null && authState.user!.rolId != 1) {
+      final uid = authState.user!.id;
+      data = data.where((t) => t.asignadoUsuarioId == uid || t.usuarioId == uid).toList();
+    }
 
     // 1. Filtro lateral / chips (Estado)
     if (filters.activeFilter != 'todas') {

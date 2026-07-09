@@ -89,6 +89,65 @@ class _InnovaAppState extends ConsumerState<InnovaApp> {
 
         if (!authState.isAuthenticated && !isPublic) return '/login';
         if (authState.isAuthenticated && state.matchedLocation == '/login') return '/dashboard';
+
+        // Route Guards (Guardianes de Navegación)
+        if (authState.isAuthenticated && !isPublic && state.matchedLocation != '/dashboard') {
+          final path = state.matchedLocation;
+          bool canAccess = true;
+
+          switch (path) {
+            case '/empleados':
+            case '/empleado':
+            case '/editar-empleado':
+            case '/nuevo-contrato':
+              canAccess = authState.hasAccess('Empleados');
+              break;
+            case '/nuevo-empleado':
+              canAccess = authState.hasAccess('+Nuevo Empleado');
+              break;
+            case '/vacaciones':
+            case '/historial-vacaciones':
+            case '/reportes-vacaciones':
+              canAccess = authState.hasAccess('Vacaciones');
+              break;
+            case '/reportes':
+              canAccess = authState.hasAccess('Reportes') || authState.hasAccess('Módulo de Reportes');
+              break;
+            case '/departamentos':
+              canAccess = authState.hasAccess('Departamentos');
+              break;
+            case '/reportes-incidencias':
+            case '/crear-reporte-incidencia':
+            case '/reporte-incidencia-detalle':
+              canAccess = authState.hasAccess('Reportes de Incidencia');
+              break;
+            case '/gestion-manuales':
+              canAccess = authState.hasAccess('Gestión de Manuales');
+              break;
+            case '/documentos-legales':
+              canAccess = authState.hasAccess('Archivero Legal') || authState.hasAccess('Documentos Legales');
+              break;
+            case '/reclutamiento':
+              canAccess = authState.hasAccess('Reclutamiento');
+              break;
+            case '/tickets':
+            case '/ticket':
+            case '/crear-ticket':
+              canAccess = authState.hasAccess('Tickets');
+              break;
+            case '/usuarios-roles':
+              canAccess = authState.hasAccess('Control de Usuarios') || authState.hasAccess('Roles y Permisos') || authState.hasAccess('Control Usuarios y Roles');
+              break;
+            case '/logs':
+              canAccess = authState.hasAccess('Logs de Sistema');
+              break;
+          }
+
+          if (!canAccess) {
+            return '/dashboard'; // Bloquear acceso y redirigir
+          }
+        }
+
         return null;
       },
       routes: [

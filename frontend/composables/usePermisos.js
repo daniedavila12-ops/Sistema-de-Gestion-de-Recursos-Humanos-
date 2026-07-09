@@ -3,15 +3,18 @@ import axios from 'axios';
 
 // Global cache for permissions to avoid redundant network calls
 const permisosCache = ref(null);
+const currentRolCache = ref(null);
 const loadingPermisos = ref(false);
 
 export const usePermisos = () => {
   const getPermisos = async (rolId, usuarioId) => {
-    if (permisosCache.value) return permisosCache.value;
+    // Si ya tenemos cache y el rol coincide, retornar
+    if (permisosCache.value && currentRolCache.value === rolId) return permisosCache.value;
+    
     if (loadingPermisos.value) {
         // Wait until it finishes (simplified spinlock)
         await new Promise(resolve => setTimeout(resolve, 50));
-        if (permisosCache.value) return permisosCache.value;
+        if (permisosCache.value && currentRolCache.value === rolId) return permisosCache.value;
     }
     
     loadingPermisos.value = true;
@@ -21,6 +24,7 @@ export const usePermisos = () => {
         : `http://localhost:3007/api/permisos-granulares/${rolId}`;
       const { data } = await axios.get(url);
       permisosCache.value = data;
+      currentRolCache.value = rolId;
       return data;
     } catch (error) {
       console.error('Error fetching permissions:', error);
