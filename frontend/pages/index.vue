@@ -240,87 +240,7 @@
         </div>
       </div>
 
-      <div v-if="modalAbierto" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex justify-center items-center p-4">
-        <div class="bg-white w-full max-w-4xl max-h-[90vh] overflow-y-auto rounded-3xl shadow-2xl animate-in fade-in zoom-in duration-200">
-          <div class="p-6 border-b sticky top-0 bg-white z-10 flex justify-between items-center">
-            <h2 class="text-2xl font-black text-slate-800 uppercase tracking-tight">📝 Registrar Empleado</h2>
-            <button @click="cerrarModal" class="text-slate-400 hover:text-red-500 transition text-2xl">&times;</button>
-          </div>
 
-          <form @submit.prevent="guardarEmpleado" class="p-8 space-y-8">
-            <div>
-              <h3 class="text-[10px] font-black text-blue-500 uppercase tracking-widest mb-4 border-b pb-2">1. Datos Personales</h3>
-              <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div v-for="f in fieldsPersonal" :key="f.id">
-                  <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">{{ f.label }}</label>
-                  <input v-model="form[f.id]" :type="f.type" required class="w-full p-3 bg-slate-50 border rounded-xl outline-none focus:border-blue-500">
-                </div>
-                <div>
-                  <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Género</label>
-                  <select v-model="form.genero" class="w-full p-3 bg-slate-50 border rounded-xl outline-none focus:border-blue-500">
-                    <option value="Masculino">Masculino</option>
-                    <option value="Femenino">Femenino</option>
-                  </select>
-                </div>
-                <div class="md:col-span-3">
-                  <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Dirección</label>
-                  <textarea v-model="form.direccion" rows="2" class="w-full p-3 bg-slate-50 border rounded-xl outline-none focus:border-blue-500"></textarea>
-                </div>
-              </div>
-            </div>
-
-            <div>
-              <h3 class="text-[10px] font-black text-blue-500 uppercase tracking-widest mb-4 border-b pb-2">2. Datos Laborales</h3>
-              <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div>
-                  <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Tipo Contrato</label>
-                  <select v-model="form.tipo_contrato" class="w-full p-3 bg-slate-50 border rounded-xl outline-none focus:border-blue-500">
-                    <option value="Permanente">Permanente</option>
-                    <option value="Temporal">Temporal</option>
-                    <option value="Servicios Profesionales">Servicios Profesionales</option>
-                  </select>
-                </div>
-                <div>
-                  <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Departamento</label>
-                  <select v-model="form.departamento_id" class="w-full p-3 bg-slate-50 border rounded-xl outline-none focus:border-blue-500">
-                    <option value="">Seleccione</option>
-                    <option v-for="dep in departamentos" :key="dep.id" :value="dep.id">{{ dep.nombre }}</option>
-                  </select>
-                </div>
-                <div>
-                  <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Fecha Inicio</label>
-                  <input v-model="form.fecha_inicio" type="date" required class="w-full p-3 bg-slate-50 border rounded-xl outline-none focus:border-blue-500">
-                </div>
-                <div>
-                  <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Ciudad</label>
-                  <input v-model="form.ciudad" type="text" class="w-full p-3 bg-slate-50 border rounded-xl outline-none focus:border-blue-500">
-                </div>
-                <div>
-                  <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Ubicación</label>
-                  <input v-model="form.ubicacion" type="text" class="w-full p-3 bg-slate-50 border rounded-xl outline-none focus:border-blue-500">
-                </div>
-              </div>
-            </div>
-
-            <div>
-              <h3 class="text-[10px] font-black text-orange-500 uppercase tracking-widest mb-4 border-b pb-2">3. Contacto Emergencia</h3>
-              <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div v-for="f in fieldsEmergencia" :key="f.id">
-                  <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">{{ f.label }}</label>
-                  <input v-model="form[f.id]" :type="f.type" required class="w-full p-3 bg-slate-50 border rounded-xl outline-none focus:border-blue-500">
-                </div>
-              </div>
-            </div>
-
-            <div class="flex justify-end gap-3 pt-4 border-t">
-              <button type="button" @click="cerrarModal" class="px-6 py-3 text-slate-400 font-bold uppercase text-xs">Cancelar</button>
-              <button type="submit" :disabled="loading" class="px-10 py-3 bg-blue-600 text-white rounded-xl font-black uppercase text-xs shadow-lg shadow-blue-200">
-                {{ loading ? 'Guardando...' : 'Registrar Ahora' }}
-              </button>
-            </div>
-          </form>
-        </div>
-      </div>
       <div v-if="modalAbiertoPerfil" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex justify-center items-center p-4">
         <div class="bg-white w-full max-w-md overflow-hidden rounded-3xl shadow-2xl animate-in fade-in zoom-in duration-200">
           <div class="p-6 border-b bg-white flex justify-between items-center">
@@ -458,66 +378,9 @@ const cambiarPassword = async () => {
   }
 }
 
-// Lógica Modal
-const modalAbierto = ref(false)
-const loading = ref(false)
-const form = ref({
-  identidad: '', nombre: '', apellido: '', fecha_nacimiento: '', correo: '', telefono: '', direccion: '',
-  tipo_contrato: 'Permanente', fecha_inicio: '', ciudad: '', ubicacion: '',
-  emergencia_parentesco: '', emergencia_nombre: '', emergencia_telefono: ''
-})
-
-const abrirModalEmpleado = () => { modalAbierto.value = true }
-const cerrarModal = () => { modalAbierto.value = false }
-
-const fieldsPersonal = [
-  { id: 'codigo_empleado', label: 'Código Empleado', type: 'text' },
-  { id: 'identidad', label: 'Identidad', type: 'text' },
-  { id: 'nombre', label: 'Nombre', type: 'text' },
-  { id: 'apellido', label: 'Apellido', type: 'text' },
-  { id: 'fecha_nacimiento', label: 'Nacimiento', type: 'date' },
-  { id: 'correo', label: 'Correo', type: 'email' },
-  { id: 'telefono', label: 'Teléfono', type: 'text' }
-]
-
-const fieldsEmergencia = [
-  { id: 'emergencia_parentesco', label: 'Parentesco', type: 'text' },
-  { id: 'emergencia_nombre', label: 'Nombre', type: 'text' },
-  { id: 'emergencia_telefono', label: 'Teléfono', type: 'text' }
-]
-const guardarEmpleado = async () => {
-  try {
-    loading.value = true;
-    const res = await axios.post('http://localhost:3007/api/empleados/crear', form.value);
-    
-    // Verificamos si la respuesta fue exitosa
-    if (res.status === 200 || res.data.success) {
-      alert('✅ ' + (res.data.mensaje || 'Empleado guardado con éxito'));
-      cerrarModal();
-      
-      // Limpiar el formulario
-      form.value = { 
-        codigo_empleado: '', identidad: '', nombre: '', apellido: '', fecha_nacimiento: '', genero: 'Masculino',
-        correo: '', telefono: '', direccion: '', tipo_contrato: 'Permanente', 
-        fecha_inicio: '', ciudad: '', ubicacion: '', departamento_id: '', emergencia_parentesco: '', 
-        emergencia_nombre: '', emergencia_telefono: '' 
-      };
-
-      // Actualizar los contadores del Dashboard
-      const uId = localStorage.getItem('usuarioID') || '';
-      const uNombre = localStorage.getItem('usuarioNombre') || '';
-      const uRol = localStorage.getItem('usuarioRol') || '';
-      const s = await axios.get(`http://localhost:3007/api/stats/resumen?usuario_id=${uId}&nombre=${encodeURIComponent(uNombre)}&rol_id=${uRol}`);
-      stats.value = s.data;
-    }
-  } catch (e) {
-    console.error("Error al guardar:", e.response?.data || e);
-    // Solo mostramos error si realmente la petición falló
-    alert('❌ ' + (e.response?.data?.mensaje || 'Error de conexión con el servidor'));
-  } finally {
-    loading.value = false;
-  }
-};
+const abrirModalEmpleado = () => {
+  navigateTo('/empleados?nuevo=true')
+}
 
 const tarjetas = computed(() => {
   let list = [

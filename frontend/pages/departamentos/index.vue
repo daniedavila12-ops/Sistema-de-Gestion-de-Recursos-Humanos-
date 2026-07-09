@@ -316,9 +316,12 @@ const esEdicion = ref(false)
 const form = ref({ id: null, nombre: '', descripcion: '' })
 
 const filteredDepartamentos = computed(() => {
-  if (!searchQuery.value) return departamentos.value;
+  let result = [...departamentos.value].sort((a, b) => a.nombre.localeCompare(b.nombre));
+  
+  if (!searchQuery.value) return result;
+  
   const lowerCaseQuery = searchQuery.value.toLowerCase();
-  return departamentos.value.filter(d => 
+  return result.filter(d => 
     d.nombre.toLowerCase().includes(lowerCaseQuery) || 
     (d.descripcion && d.descripcion.toLowerCase().includes(lowerCaseQuery))
   );

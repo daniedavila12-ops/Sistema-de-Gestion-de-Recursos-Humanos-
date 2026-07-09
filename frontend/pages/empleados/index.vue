@@ -101,7 +101,14 @@
             >
           </div>
           <div class="flex items-center gap-2">
-            <span class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Estado:</span>
+            <span class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Departamento:</span>
+            <select v-model="departmentFilter" class="bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 outline-none focus:border-blue-500 text-sm font-medium text-slate-700 transition-colors cursor-pointer max-w-[150px]">
+              <option value="todos">Todos</option>
+              <option v-for="dep in departamentos" :key="dep.id" :value="dep.id">
+                {{ dep.nombre }}
+              </option>
+            </select>
+            <span class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-2">Estado:</span>
             <select v-model="statusFilter" class="bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 outline-none focus:border-blue-500 text-sm font-medium text-slate-700 transition-colors cursor-pointer">
               <option value="todos">Todos</option>
               <option value="activos">Activos</option>
@@ -440,6 +447,7 @@ const cambiarPassword = async () => {
 const listaEmpleados = ref([])
 const searchQuery = ref('')
 const statusFilter = ref('todos')
+const departmentFilter = ref('todos')
 const mostrarModalNuevo = ref(false)
 const loadingGuardar = ref(false)
 const departamentos = ref([])
@@ -537,6 +545,10 @@ const filteredEmpleados = computed(() => {
     empleados = empleados.filter(emp => emp.estado === 'Activo' || emp.estado === 1 || emp.estado === true);
   } else if (statusFilter.value === 'inactivos') {
     empleados = empleados.filter(emp => emp.estado === 'Inactivo' || emp.estado === 0 || emp.estado === false);
+  }
+
+  if (departmentFilter.value !== 'todos') {
+    empleados = empleados.filter(emp => emp.departamento_id === departmentFilter.value);
   }
 
   if (!searchQuery.value) return empleados;
@@ -658,7 +670,7 @@ onMounted(async () => {
   await cargarEmpleados()
   try {
     const res = await axios.get('http://localhost:3007/api/departamentos/lista')
-    departamentos.value = res.data
+    departamentos.value = res.data.sort((a, b) => a.nombre.localeCompare(b.nombre))
   } catch (error) {
     console.error("Error cargando departamentos:", error)
   }
