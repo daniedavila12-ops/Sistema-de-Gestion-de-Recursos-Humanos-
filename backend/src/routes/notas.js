@@ -36,6 +36,21 @@ router.post('/registrar', upload.single('documento'), (req, res) => {
             console.error("Error al registrar nota:", err);
             return res.status(500).json({ error: "Error al registrar nota", detalle: err.message });
         }
+
+        const io = req.app.get('io');
+        if (io) {
+            io.emit('nueva_notificacion');
+            io.emit('refresh_empleado_detalle', empleado_id);
+        }
+
+        db.query('SELECT id FROM usuarios WHERE rol_id IN (1, 2)', (err, users) => {
+            if (!err && users && users.length > 0) {
+                const notifQuery = 'INSERT INTO notificaciones (usuario_id, titulo, mensaje, tipo) VALUES ?';
+                const notifValues = users.map(u => [u.id, 'Nueva Nota', `Se ha registrado una nueva nota para el empleado ID: ${empleado_id}`, 'info']);
+                db.query(notifQuery, [notifValues]);
+            }
+        });
+
         res.json({ mensaje: "Nota registrada con éxito", id: result.insertId });
     });
 });

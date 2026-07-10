@@ -304,7 +304,19 @@ router.post('/:id/contratos', uploadContratos.single('archivo'), (req, res) => {
     db.query(sql, values, (err, result) => {
         if (err) return res.status(500).json({ mensaje: "Error al guardar contrato", detalle: err.sqlMessage });
         const io = req.app.get('io');
-        if (io) io.emit('refresh_empleado_detalle', id);
+        if (io) {
+            io.emit('nueva_notificacion');
+            io.emit('refresh_empleado_detalle', id);
+        }
+
+        db.query('SELECT id FROM usuarios WHERE rol_id IN (1, 2)', (err, users) => {
+            if (!err && users && users.length > 0) {
+                const notifQuery = 'INSERT INTO notificaciones (usuario_id, titulo, mensaje, tipo) VALUES ?';
+                const notifValues = users.map(u => [u.id, 'Nuevo Contrato', `Se ha registrado un nuevo contrato para el empleado ID: ${id}`, 'info']);
+                db.query(notifQuery, [notifValues]);
+            }
+        });
+
         res.status(200).json({ success: true, mensaje: "Contrato registrado correctamente" });
     });
 });

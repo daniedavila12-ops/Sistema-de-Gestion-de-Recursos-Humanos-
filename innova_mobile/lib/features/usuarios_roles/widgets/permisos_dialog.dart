@@ -111,83 +111,206 @@ class _PermisosDialogState extends ConsumerState<PermisosDialog> {
             return const Center(child: Text('No hay módulos configurados.', style: TextStyle(color: Colors.grey, fontStyle: FontStyle.italic)));
           }
 
-          return Column(
-            children: [
+          final moduleGroups = {
+            'RRHH Innova': [
+              {'nombre': 'Dashboard', 'icono': '🏠'},
+              {'nombre': 'Campanita de Notificaciones', 'icono': '🔔'}
+            ],
+            'RECURSOS HUMANOS': [
+              {'nombre': 'Empleados', 'icono': '👥'},
+              {'nombre': '+Nuevo Empleado', 'icono': '👤+'},
+              {'nombre': 'Vacaciones', 'icono': '🏖️'},
+              {'nombre': 'Reportes', 'icono': '📊'},
+              {'nombre': 'Módulo de Reportes', 'icono': '📊'},
+              {'nombre': 'Reclutamiento', 'icono': '💼'},
+              {'nombre': 'Departamentos', 'icono': '🏢'},
+              {'nombre': 'Reportes de Incidencia', 'icono': '⚠️'},
+              {'nombre': 'Gestión de Manuales', 'icono': '📚'},
+              {'nombre': 'Documentos', 'icono': '📁'},
+              {'nombre': 'Archivero Legal', 'icono': '📁'},
+              {'nombre': 'Faltas', 'icono': '📅'},
+              {'nombre': 'Contratos', 'icono': '📝'},
+              {'nombre': 'Notas', 'icono': '🗒️'},
+              {'nombre': 'Perfil del Empleado', 'icono': '🧑‍💼'}
+            ],
+            'Departamento de IT': [
+              {'nombre': 'Tickets', 'icono': '🎫'},
+              {'nombre': 'Control de Usuarios', 'icono': '🔐'},
+              {'nombre': 'Roles y Permisos', 'icono': '🛡️'},
+              {'nombre': 'Logs de Sistema', 'icono': '📋'}
+            ]
+          };
+
+          final Map<String, List<Map<String, dynamic>>> grupos = {
+            'RRHH Innova': [],
+            'RECURSOS HUMANOS': [],
+            'Departamento de IT': [],
+            'Otros': []
+          };
+
+          for (final permiso in _permisosForm!) {
+            bool assigned = false;
+            for (final entry in moduleGroups.entries) {
+              final match = entry.value.where((m) => m['nombre'] == permiso.moduloNombre).toList();
+              if (match.isNotEmpty) {
+                grupos[entry.key]!.add({
+                  'permiso': permiso,
+                  'icono': match.first['icono'],
+                });
+                assigned = true;
+                break;
+              }
+            }
+            if (!assigned) {
+              grupos['Otros']!.add({
+                'permiso': permiso,
+                'icono': '🔹',
+              });
+            }
+          }
+
+          List<Widget> listItems = [];
+          for (final entry in grupos.entries) {
+            if (entry.value.isEmpty) continue;
+
+            IconData categoryIcon = Icons.folder;
+            if (entry.key == 'RRHH Innova') categoryIcon = Icons.dashboard_customize;
+            if (entry.key == 'RECURSOS HUMANOS') categoryIcon = Icons.people_alt;
+            if (entry.key == 'Departamento de IT') categoryIcon = Icons.computer;
+
+            listItems.add(
               Container(
-                width: double.infinity,
-                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-                color: Colors.purple.shade800,
-                child: RichText(
-                  text: TextSpan(
-                    style: TextStyle(color: Colors.purple.shade100, fontSize: 14),
-                    children: [
-                      const TextSpan(text: 'Configurando accesos para: '),
-                      TextSpan(text: widget.rol.nombre, style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.white)),
-                    ],
-                  ),
+                margin: const EdgeInsets.only(top: 24, bottom: 12),
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                decoration: BoxDecoration(
+                  color: Colors.purple.shade50,
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: Colors.purple.shade100),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(categoryIcon, size: 18, color: Colors.purple.shade700),
+                    const SizedBox(width: 8),
+                    Text(
+                      entry.key.toUpperCase(),
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w900,
+                        color: Colors.purple.shade900,
+                        letterSpacing: 1.2,
+                      ),
+                    ),
+                  ],
                 ),
               ),
-              Expanded(
-                child: ListView.builder(
-                  padding: const EdgeInsets.all(16),
-                  itemCount: _permisosForm!.length,
-                  itemBuilder: (context, index) {
-                    final permiso = _permisosForm![index];
-                    return Container(
-                      margin: const EdgeInsets.only(bottom: 12),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(16),
-                        border: Border.all(color: Colors.blueGrey.shade200),
-                        boxShadow: const [BoxShadow(color: Colors.black12, blurRadius: 2, offset: Offset(0, 1))],
-                      ),
-                      child: Padding(
-                        padding: const EdgeInsets.all(16.0),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
+            );
+
+            for (final item in entry.value) {
+              final permiso = item['permiso'] as Permiso;
+              final icono = item['icono'] as String;
+
+              listItems.add(
+                Container(
+                  margin: const EdgeInsets.only(bottom: 16),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(20),
+                    border: Border.all(color: Colors.blueGrey.shade100, width: 1.5),
+                    boxShadow: [
+                      BoxShadow(color: Colors.blueGrey.shade100.withValues(alpha: 0.5), blurRadius: 10, offset: const Offset(0, 4)),
+                    ],
+                  ),
+                  child: Padding(
+                    padding: const EdgeInsets.all(20.0),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Text(
-                                  permiso.moduloNombre,
-                                  style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w900, color: Color(0xFF1E293B)),
-                                ),
-                                Row(
-                                  children: [
-                                    const Text('TODOS', style: TextStyle(fontSize: 10, fontWeight: FontWeight.w900, color: Colors.purple)),
-                                    Checkbox(
-                                      value: _todosSeleccionados(permiso),
-                                      onChanged: (v) => _toggleTodos(permiso, v),
-                                      activeColor: Colors.purple,
-                                      visualDensity: VisualDensity.compact,
-                                    ),
-                                  ],
-                                ),
-                              ],
+                            Expanded(
+                              child: Text(
+                                permiso.moduloNombre == 'Cumpleañeros' ? '🎂 Cumpleañeros' : '$icono ${permiso.moduloNombre}',
+                                style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w900, color: Color(0xFF1E293B)),
+                                overflow: TextOverflow.ellipsis,
+                              ),
                             ),
-                            const Divider(),
-                            Column(
+                            Row(
                               children: [
-                                Row(
-                                  children: [
-                                    Expanded(child: _buildCheckbox('Ver', permiso.puedeVer, (v) => _onPuedeVerChange(permiso, v))),
-                                    Expanded(child: _buildCheckbox('Crear', permiso.puedeCrear, (v) => _onAccionChange(permiso, v, 'crear'))),
-                                  ],
-                                ),
-                                Row(
-                                  children: [
-                                    Expanded(child: _buildCheckbox('Editar', permiso.puedeEditar, (v) => _onAccionChange(permiso, v, 'editar'))),
-                                    Expanded(child: _buildCheckbox('Eliminar', permiso.puedeEliminar, (v) => _onAccionChange(permiso, v, 'eliminar'))),
-                                  ],
+                                Text('TODOS', style: TextStyle(fontSize: 10, fontWeight: FontWeight.w900, color: Colors.grey.shade600)),
+                                const SizedBox(width: 4),
+                                Switch(
+                                  value: _todosSeleccionados(permiso),
+                                  onChanged: (v) => _toggleTodos(permiso, v),
+                                  activeThumbColor: Colors.purple.shade600,
+                                  activeTrackColor: Colors.purple.shade100,
                                 ),
                               ],
                             ),
                           ],
                         ),
-                      ),
-                    );
-                  },
+                        const Padding(
+                          padding: EdgeInsets.symmetric(vertical: 8.0),
+                          child: Divider(height: 1),
+                        ),
+                        Wrap(
+                          spacing: 8,
+                          runSpacing: 12,
+                          alignment: WrapAlignment.start,
+                          children: [
+                            _buildActionChip('Ver', permiso.puedeVer, (v) => _onPuedeVerChange(permiso, v), Icons.visibility_outlined),
+                            _buildActionChip('Crear', permiso.puedeCrear, (v) => _onAccionChange(permiso, v, 'crear'), Icons.add_circle_outline),
+                            _buildActionChip('Editar', permiso.puedeEditar, (v) => _onAccionChange(permiso, v, 'editar'), Icons.edit_outlined),
+                            _buildActionChip('Eliminar', permiso.puedeEliminar, (v) => _onAccionChange(permiso, v, 'eliminar'), Icons.delete_outline),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                )
+              );
+            }
+          }
+
+          return Column(
+            children: [
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(24),
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [Colors.purple.shade800, Colors.purple.shade600],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
+                  borderRadius: const BorderRadius.only(
+                    bottomLeft: Radius.circular(24),
+                    bottomRight: Radius.circular(24),
+                  ),
+                  boxShadow: [
+                    BoxShadow(color: Colors.purple.shade200.withValues(alpha: 0.5), blurRadius: 10, offset: const Offset(0, 4)),
+                  ],
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      'Configurando accesos para:',
+                      style: TextStyle(color: Colors.white70, fontSize: 14),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      widget.rol.nombre,
+                      style: const TextStyle(fontWeight: FontWeight.w900, color: Colors.white, fontSize: 24, letterSpacing: 0.5),
+                    ),
+                  ],
+                ),
+              ),
+              Expanded(
+                child: ListView(
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  children: listItems,
                 ),
               ),
               Container(
@@ -195,33 +318,38 @@ class _PermisosDialogState extends ConsumerState<PermisosDialog> {
                 decoration: BoxDecoration(
                   color: Colors.white,
                   border: Border(top: BorderSide(color: Colors.blueGrey.shade100)),
-                ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.end,
-                  children: [
-                    TextButton(
-                      onPressed: _isLoading ? null : () => Navigator.pop(context),
-                      style: TextButton.styleFrom(
-                        foregroundColor: Colors.blueGrey.shade600,
-                        textStyle: const TextStyle(fontWeight: FontWeight.bold, letterSpacing: 1.0, fontSize: 12),
-                        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-                      ),
-                      child: const Text('CANCELAR'),
-                    ),
-                    const SizedBox(width: 12),
-                    ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.purple.shade600,
-                        foregroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                        textStyle: const TextStyle(fontWeight: FontWeight.w900, letterSpacing: 1.0, fontSize: 12),
-                        elevation: 4,
-                      ),
-                      onPressed: _isLoading ? null : _guardarPermisos,
-                      child: _isLoading ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2)) : const Text('GUARDAR PERMISOS'),
-                    ),
+                  boxShadow: const [
+                    BoxShadow(color: Colors.black12, blurRadius: 10, offset: Offset(0, -2))
                   ],
+                ),
+                child: SafeArea(
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: [
+                      TextButton(
+                        onPressed: _isLoading ? null : () => Navigator.pop(context),
+                        style: TextButton.styleFrom(
+                          foregroundColor: Colors.blueGrey.shade600,
+                          textStyle: const TextStyle(fontWeight: FontWeight.bold, letterSpacing: 1.0, fontSize: 13),
+                          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
+                        ),
+                        child: const Text('CANCELAR'),
+                      ),
+                      const SizedBox(width: 12),
+                      ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.purple.shade600,
+                          foregroundColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 14),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                          textStyle: const TextStyle(fontWeight: FontWeight.w900, letterSpacing: 1.0, fontSize: 13),
+                          elevation: 2,
+                        ),
+                        onPressed: _isLoading ? null : _guardarPermisos,
+                        child: _isLoading ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2)) : const Text('GUARDAR'),
+                      ),
+                    ],
+                  ),
                 ),
               )
             ],
@@ -233,18 +361,38 @@ class _PermisosDialogState extends ConsumerState<PermisosDialog> {
     );
   }
 
-  Widget _buildCheckbox(String label, bool value, ValueChanged<bool?> onChanged) {
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Text(label, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: Colors.black87)),
-        Checkbox(
-          value: value,
-          onChanged: onChanged,
-          activeColor: Colors.purple,
-          visualDensity: VisualDensity.compact,
+  Widget _buildActionChip(String label, bool value, ValueChanged<bool?> onChanged, IconData icon) {
+    return GestureDetector(
+      onTap: () => onChanged(!value),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+        decoration: BoxDecoration(
+          color: value ? Colors.purple.shade50 : Colors.grey.shade50,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(
+            color: value ? Colors.purple.shade300 : Colors.grey.shade300,
+            width: value ? 1.5 : 1.0,
+          ),
+          boxShadow: value ? [BoxShadow(color: Colors.purple.shade100, blurRadius: 4, offset: const Offset(0, 2))] : [],
         ),
-      ],
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(icon, size: 16, color: value ? Colors.purple.shade700 : Colors.blueGrey.shade400),
+            const SizedBox(width: 6),
+            Text(
+              label,
+              style: TextStyle(
+                fontSize: 12,
+                fontWeight: value ? FontWeight.w900 : FontWeight.w600,
+                color: value ? Colors.purple.shade800 : Colors.blueGrey.shade600,
+                letterSpacing: 0.5,
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }

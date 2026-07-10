@@ -322,27 +322,37 @@
                 </tr>
               </thead>
               <tbody>
-                <tr v-for="(permiso, index) in permisosForm" :key="permiso.modulo_id" class="border-b border-slate-100 hover:bg-slate-50">
-                  <td class="p-4 font-bold text-slate-700">
-                    <span v-if="permiso.modulo_nombre === 'Cumpleañeros'">🎂 </span>
-                    {{ permiso.modulo_nombre }}
-                  </td>
-                  <td class="p-4 text-center">
-                    <input type="checkbox" :checked="todosSeleccionados(permiso)" @change="toggleTodos(permiso, $event.target.checked)" class="w-5 h-5 text-purple-600 rounded focus:ring-purple-500 cursor-pointer">
-                  </td>
-                  <td class="p-4 text-center">
-                    <input type="checkbox" v-model="permiso.puedeVer" :true-value="1" :false-value="0" @change="onPuedeVerChange(permiso)" class="w-5 h-5 text-purple-600 rounded focus:ring-purple-500 cursor-pointer">
-                  </td>
-                  <td class="p-4 text-center">
-                    <input type="checkbox" v-model="permiso.puedeCrear" :true-value="1" :false-value="0" @change="onPuedeAccionChange(permiso)" class="w-5 h-5 text-purple-600 rounded focus:ring-purple-500 cursor-pointer">
-                  </td>
-                  <td class="p-4 text-center">
-                    <input type="checkbox" v-model="permiso.puedeEditar" :true-value="1" :false-value="0" @change="onPuedeAccionChange(permiso)" class="w-5 h-5 text-purple-600 rounded focus:ring-purple-500 cursor-pointer">
-                  </td>
-                  <td class="p-4 text-center">
-                    <input type="checkbox" v-model="permiso.puedeEliminar" :true-value="1" :false-value="0" @change="onPuedeAccionChange(permiso)" class="w-5 h-5 text-purple-600 rounded focus:ring-purple-500 cursor-pointer">
-                  </td>
-                </tr>
+                <template v-for="(permisos, grupo) in permisosAgrupados" :key="grupo">
+                  <template v-if="permisos.length > 0">
+                    <tr class="bg-slate-50">
+                      <td colspan="6" class="p-3 font-black text-xs text-slate-800 uppercase tracking-wider border-y border-slate-200">
+                        {{ grupo }}
+                      </td>
+                    </tr>
+                    <tr v-for="(permiso, index) in permisos" :key="permiso.modulo_id" class="border-b border-slate-100 hover:bg-slate-50">
+                      <td class="p-4 font-bold text-slate-700 pl-8">
+                        <span v-if="permiso.modulo_nombre === 'Cumpleañeros'">🎂 </span>
+                        <span v-else>{{ permiso.displayIcon }} </span>
+                        {{ permiso.modulo_nombre }}
+                      </td>
+                      <td class="p-4 text-center">
+                        <input type="checkbox" :checked="todosSeleccionados(permiso)" @change="toggleTodos(permiso, $event.target.checked)" class="w-5 h-5 text-purple-600 rounded focus:ring-purple-500 cursor-pointer">
+                      </td>
+                      <td class="p-4 text-center">
+                        <input type="checkbox" v-model="permiso.puedeVer" :true-value="1" :false-value="0" @change="onPuedeVerChange(permiso)" class="w-5 h-5 text-purple-600 rounded focus:ring-purple-500 cursor-pointer">
+                      </td>
+                      <td class="p-4 text-center">
+                        <input type="checkbox" v-model="permiso.puedeCrear" :true-value="1" :false-value="0" @change="onPuedeAccionChange(permiso)" class="w-5 h-5 text-purple-600 rounded focus:ring-purple-500 cursor-pointer">
+                      </td>
+                      <td class="p-4 text-center">
+                        <input type="checkbox" v-model="permiso.puedeEditar" :true-value="1" :false-value="0" @change="onPuedeAccionChange(permiso)" class="w-5 h-5 text-purple-600 rounded focus:ring-purple-500 cursor-pointer">
+                      </td>
+                      <td class="p-4 text-center">
+                        <input type="checkbox" v-model="permiso.puedeEliminar" :true-value="1" :false-value="0" @change="onPuedeAccionChange(permiso)" class="w-5 h-5 text-purple-600 rounded focus:ring-purple-500 cursor-pointer">
+                      </td>
+                    </tr>
+                  </template>
+                </template>
               </tbody>
             </table>
           </div>
@@ -513,6 +523,64 @@ const mostrarModalPermisos = ref(false)
 const loadingPermisos = ref(false)
 const rolSeleccionado = ref(null)
 const permisosForm = ref([])
+
+const moduleGroups = {
+  'RRHH Innova': [
+    { nombre: 'Dashboard', icono: '🏠' },
+    { nombre: 'Campanita de Notificaciones', icono: '🔔' }
+  ],
+  'RECURSOS HUMANOS': [
+    { nombre: 'Empleados', icono: '👥' },
+    { nombre: '+Nuevo Empleado', icono: '👤+' },
+    { nombre: 'Vacaciones', icono: '🏖️' },
+    { nombre: 'Reportes', icono: '📊' },
+    { nombre: 'Módulo de Reportes', icono: '📊' },
+    { nombre: 'Reclutamiento', icono: '💼' },
+    { nombre: 'Departamentos', icono: '🏢' },
+    { nombre: 'Reportes de Incidencia', icono: '⚠️' },
+    { nombre: 'Gestión de Manuales', icono: '📚' },
+    { nombre: 'Documentos', icono: '📁' },
+    { nombre: 'Archivero Legal', icono: '📁' },
+    { nombre: 'Faltas', icono: '📅' },
+    { nombre: 'Contratos', icono: '📝' },
+    { nombre: 'Notas', icono: '🗒️' },
+    { nombre: 'Perfil del Empleado', icono: '🧑‍💼' }
+  ],
+  'Departamento de IT': [
+    { nombre: 'Tickets', icono: '🎫' },
+    { nombre: 'Control de Usuarios', icono: '🔐' },
+    { nombre: 'Roles y Permisos', icono: '🛡️' },
+    { nombre: 'Logs de Sistema', icono: '📋' }
+  ]
+};
+
+const permisosAgrupados = computed(() => {
+  const grupos = {
+    'RRHH Innova': [],
+    'RECURSOS HUMANOS': [],
+    'Departamento de IT': [],
+    'Otros': []
+  };
+
+  permisosForm.value.forEach(permiso => {
+    let assigned = false;
+    for (const [grupo, modulos] of Object.entries(moduleGroups)) {
+      const match = modulos.find(m => m.nombre === permiso.modulo_nombre);
+      if (match) {
+        permiso.displayIcon = match.icono;
+        grupos[grupo].push(permiso);
+        assigned = true;
+        break;
+      }
+    }
+    if (!assigned) {
+      permiso.displayIcon = '🔹';
+      grupos['Otros'].push(permiso);
+    }
+  });
+
+  return grupos;
+});
 
 const cargarUsuarios = async () => {
   try {

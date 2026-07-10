@@ -68,12 +68,12 @@
         <div>
           <div class="flex items-center gap-3">
              <h1 class="text-2xl font-black text-slate-800 tracking-tight uppercase">Módulo de Reportes</h1>
-             <div class="flex items-center gap-1.5 px-2.5 py-1 bg-emerald-50 border border-emerald-100 rounded-full animate-pulse">
+             <div class="flex items-center gap-1.5 px-2.5 py-1 bg-emerald-50 border border-emerald-100 rounded-full">
                 <div class="w-2 h-2 rounded-full bg-emerald-500"></div>
                 <span class="text-[9px] font-bold text-emerald-600 uppercase tracking-widest">En Vivo</span>
              </div>
           </div>
-          <p class="text-slate-500 mt-1 font-medium text-sm">Dashboard Analítico e Integrado en Tiempo Real</p>
+          <p class="text-slate-500 mt-1 font-medium text-sm">Dashboard Analítico e Integrado · <span class="text-slate-400">Actualizado: {{ ultimaActualizacion }}</span></p>
         </div>
         <div class="w-full md:w-auto flex flex-col md:flex-row items-center gap-4">
           <div class="relative w-full md:w-auto flex justify-end">
@@ -121,31 +121,28 @@
         </div>
       </header>
 
-      <!-- NAVIGATION TABS -->
       <div class="flex border-b border-slate-200 mb-6 overflow-x-auto no-print">
         <button @click="activeTab = 'dashboard'" :class="['px-6 py-3 font-bold text-xs uppercase tracking-widest whitespace-nowrap border-b-2 transition-colors', activeTab === 'dashboard' ? 'border-blue-500 text-blue-600' : 'border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300']">
           📊 Dashboard General
         </button>
-        <button @click="activeTab = 'empleados'" :class="['px-6 py-3 font-bold text-xs uppercase tracking-widest whitespace-nowrap border-b-2 transition-colors', activeTab === 'empleados' ? 'border-blue-500 text-blue-600' : 'border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300']">
+        <button @click="activeTab = 'empleados'" :class="['px-6 py-3 font-bold text-xs uppercase tracking-widest whitespace-nowrap border-b-2 transition-colors flex items-center gap-2', activeTab === 'empleados' ? 'border-blue-500 text-blue-600' : 'border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300']">
           👥 Plantilla & Empleados
+          <span v-if="empleados.length" class="text-[9px] font-black bg-blue-100 text-blue-600 px-1.5 py-0.5 rounded-full">{{ empleados.length }}</span>
         </button>
-        <button @click="activeTab = 'incidencias'" :class="['px-6 py-3 font-bold text-xs uppercase tracking-widest whitespace-nowrap border-b-2 transition-colors', activeTab === 'incidencias' ? 'border-rose-500 text-rose-600' : 'border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300']">
+        <button @click="activeTab = 'incidencias'" :class="['px-6 py-3 font-bold text-xs uppercase tracking-widest whitespace-nowrap border-b-2 transition-colors flex items-center gap-2', activeTab === 'incidencias' ? 'border-rose-500 text-rose-600' : 'border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300']">
           🚨 Incidencias Laborales
+          <span v-if="incidenciasDatos.length" class="text-[9px] font-black bg-rose-100 text-rose-600 px-1.5 py-0.5 rounded-full">{{ incidenciasDatos.length }}</span>
         </button>
         <button @click="activeTab = 'tiempos'" :class="['px-6 py-3 font-bold text-xs uppercase tracking-widest whitespace-nowrap border-b-2 transition-colors', activeTab === 'tiempos' ? 'border-emerald-500 text-emerald-600' : 'border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300']">
           ⏳ Control de Tiempos
         </button>
-        <button @click="activeTab = 'legales'" :class="['px-6 py-3 font-bold text-xs uppercase tracking-widest whitespace-nowrap border-b-2 transition-colors', activeTab === 'legales' ? 'border-indigo-500 text-indigo-600' : 'border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300']">
+        <button @click="activeTab = 'legales'" :class="['px-6 py-3 font-bold text-xs uppercase tracking-widest whitespace-nowrap border-b-2 transition-colors flex items-center gap-2', activeTab === 'legales' ? 'border-indigo-500 text-indigo-600' : 'border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300']">
           ⚖️ Docs & Legales
+          <span v-if="legalesDatos.length" class="text-[9px] font-black bg-indigo-100 text-indigo-600 px-1.5 py-0.5 rounded-full">{{ legalesDatos.length }}</span>
         </button>
-        <button @click="activeTab = 'despidos'" :class="['px-6 py-3 font-bold text-xs uppercase tracking-widest whitespace-nowrap border-b-2 transition-colors', activeTab === 'despidos' ? 'border-red-500 text-red-600' : 'border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300']">
-          🚪 Bajas y Despidos
-        </button>
-        <button @click="activeTab = 'tickets'" :class="['px-6 py-3 font-bold text-xs uppercase tracking-widest whitespace-nowrap border-b-2 transition-colors', activeTab === 'tickets' ? 'border-amber-500 text-amber-600' : 'border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300']">
+        <button @click="activeTab = 'tickets'" :class="['px-6 py-3 font-bold text-xs uppercase tracking-widest whitespace-nowrap border-b-2 transition-colors flex items-center gap-2', activeTab === 'tickets' ? 'border-amber-500 text-amber-600' : 'border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300']">
           🎫 Soporte & Tickets
-        </button>
-        <button @click="activeTab = 'wizard'" :class="['px-6 py-3 font-bold text-xs uppercase tracking-widest whitespace-nowrap border-b-2 transition-colors', activeTab === 'wizard' ? 'border-purple-500 text-purple-600' : 'border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300']">
-          🧙‍♂️ Generador Asistido
+          <span v-if="tickets.length" class="text-[9px] font-black bg-amber-100 text-amber-600 px-1.5 py-0.5 rounded-full">{{ tickets.length }}</span>
         </button>
       </div>
 
@@ -154,7 +151,7 @@
         <!-- HEADER DASHBOARD -->
         <div class="flex justify-between items-center bg-white p-4 rounded-2xl shadow-sm border border-slate-200">
            <div>
-             <h2 class="text-lg font-black text-slate-800 uppercase tracking-tighter">Resumen Ejecutivo</h2>
+             <h2 class="text-lg font-black text-slate-800 uppercase tracking-tight">Resumen Ejecutivo</h2>
              <p class="text-xs text-slate-500 font-medium">Estadísticas y métricas generales de la plataforma</p>
            </div>
            <button @click="generarPDFDashboard" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-bold text-xs uppercase tracking-widest transition-colors shadow-sm flex items-center justify-center gap-2 whitespace-nowrap group">
@@ -384,7 +381,7 @@
       <!-- TAB: EMPLEADOS -->
       <div v-if="activeTab === 'empleados'" class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
         <div class="flex flex-col md:flex-row justify-between items-center mb-6 gap-4 border-b border-slate-100 pb-4">
-          <h2 class="text-lg font-black text-slate-800 uppercase tracking-tighter">Directorio Analítico</h2>
+          <h2 class="text-lg font-black text-slate-800 uppercase tracking-tight">Directorio Analítico</h2>
           <div class="flex flex-col md:flex-row gap-3 w-full md:w-auto">
             <div class="flex bg-slate-100 p-1 rounded-lg">
               <button @click="empleadosVista = 'general'" :class="['px-3 py-1.5 text-xs font-bold rounded-md transition-colors', empleadosVista === 'general' ? 'bg-white shadow-sm text-blue-600' : 'text-slate-500 hover:text-slate-700']">General</button>
@@ -484,7 +481,7 @@
       <!-- TAB: INCIDENCIAS LABORALES -->
       <div v-if="activeTab === 'incidencias'" class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 animate-in fade-in duration-300">
         <div class="flex flex-col md:flex-row justify-between items-center mb-6 gap-4 border-b border-slate-100 pb-4">
-          <h2 class="text-lg font-black text-slate-800 uppercase tracking-tighter text-rose-600">🚨 Incidencias Laborales</h2>
+          <h2 class="text-lg font-black text-slate-800 uppercase tracking-tight text-rose-600">🚨 Incidencias Laborales</h2>
           <div class="flex flex-col md:flex-row gap-3 w-full md:w-auto items-center">
             <input v-model="searchQuery" type="text" placeholder="Buscar empleado o categoría..." class="p-2 border border-slate-200 rounded-lg text-sm bg-slate-50 w-full md:w-48 focus:border-blue-500 outline-none">
             <button @click="generarPDFIncidencias" class="px-4 py-2 bg-slate-800 hover:bg-slate-900 text-white rounded-lg font-bold text-xs uppercase tracking-widest transition-colors shadow-sm flex items-center justify-center gap-2">
@@ -557,7 +554,7 @@
       <!-- TAB: DOCS LEGALES -->
       <div v-if="activeTab === 'legales'" class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 animate-in fade-in duration-300">
         <div class="flex flex-col md:flex-row justify-between items-center mb-6 gap-4 border-b border-slate-100 pb-4">
-          <h2 class="text-lg font-black text-slate-800 uppercase tracking-tighter text-indigo-600">⚖️ Documentación Legal y Vencimientos</h2>
+          <h2 class="text-lg font-black text-slate-800 uppercase tracking-tight text-indigo-600">⚖️ Documentación Legal y Vencimientos</h2>
           <div class="flex flex-col md:flex-row gap-3 w-full md:w-auto items-center">
             <input v-model="searchQuery" type="text" placeholder="Buscar documento o empleado..." class="p-2 border border-slate-200 rounded-lg text-sm bg-slate-50 w-full md:w-48 focus:border-blue-500 outline-none">
             <select v-model="legalesFiltroEstado" class="p-2 border border-slate-200 rounded-lg text-sm bg-slate-50 focus:border-blue-500 outline-none">
@@ -615,94 +612,12 @@
         </div>
       </div>
 
-      <!-- TAB: DESPIDOS -->
-      <div v-if="activeTab === 'despidos'" class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 animate-in fade-in duration-300">
-        <div class="flex flex-col md:flex-row justify-between items-center mb-6 gap-4 border-b border-slate-100 pb-4">
-          <h2 class="text-lg font-black text-slate-800 uppercase tracking-tighter text-red-600">🚪 Información de Bajas y Despidos</h2>
-          <p class="text-xs text-slate-500 font-medium">Procedimiento y documentación necesaria para desvinculaciones.</p>
-        </div>
-        
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <!-- Checklist -->
-          <div class="bg-slate-50 p-6 rounded-2xl border border-slate-100 hover:shadow-md transition-shadow">
-            <h3 class="text-sm font-black text-slate-800 uppercase tracking-widest mb-5 flex items-center gap-2">
-              <span class="w-2 h-2 bg-blue-500 rounded-full"></span>
-              📋 Checklist de Documentación
-            </h3>
-            <ul class="space-y-4 text-sm font-medium text-slate-600">
-              <li class="flex items-start gap-3 bg-white p-3 rounded-xl border border-slate-100 shadow-sm">
-                <span class="text-green-500 text-lg">✅</span> 
-                <span><strong>Carta de Despido / Renuncia:</strong> Documento debidamente firmado y sellado.</span>
-              </li>
-              <li class="flex items-start gap-3 bg-white p-3 rounded-xl border border-slate-100 shadow-sm">
-                <span class="text-green-500 text-lg">✅</span> 
-                <span><strong>Cálculo de Prestaciones y Finiquito:</strong> Cheque y desglose entregado en tiempo de ley.</span>
-              </li>
-              <li class="flex items-start gap-3 bg-white p-3 rounded-xl border border-slate-100 shadow-sm">
-                <span class="text-green-500 text-lg">✅</span> 
-                <span><strong>Constancia de Trabajo:</strong> Firmada por el Depto. de RRHH (Si el empleado lo solicita).</span>
-              </li>
-              <li class="flex items-start gap-3 bg-white p-3 rounded-xl border border-slate-100 shadow-sm">
-                <span class="text-green-500 text-lg">✅</span> 
-                <span><strong>Devolución de Equipo:</strong> Laptops, uniformes, llaves, y herramientas asignadas.</span>
-              </li>
-              <li class="flex items-start gap-3 bg-white p-3 rounded-xl border border-slate-100 shadow-sm">
-                <span class="text-green-500 text-lg">✅</span> 
-                <span><strong>Baja en IHSS / RAP:</strong> Comprobante de cancelación de seguro y previsión social.</span>
-              </li>
-            </ul>
-          </div>
 
-          <!-- Procedimiento -->
-          <div class="bg-slate-50 p-6 rounded-2xl border border-slate-100 hover:shadow-md transition-shadow">
-             <h3 class="text-sm font-black text-slate-800 uppercase tracking-widest mb-5 flex items-center gap-2">
-              <span class="w-2 h-2 bg-red-500 rounded-full"></span>
-              ⚠️ Procedimiento Operativo
-            </h3>
-             <ol class="space-y-4 text-sm font-medium text-slate-600 relative">
-               <div class="absolute left-[13px] top-4 bottom-4 w-0.5 bg-slate-200"></div>
-               <li class="flex items-start gap-4 relative z-10">
-                 <div class="w-7 h-7 rounded-full bg-slate-800 text-white flex items-center justify-center font-bold text-xs shrink-0 ring-4 ring-slate-50">1</div>
-                 <div class="bg-white p-3 rounded-xl border border-slate-100 shadow-sm w-full">
-                    <p>Notificar al empleado con la <strong>carta formal</strong> especificando motivos (si es despido justificado).</p>
-                 </div>
-               </li>
-               <li class="flex items-start gap-4 relative z-10">
-                 <div class="w-7 h-7 rounded-full bg-slate-800 text-white flex items-center justify-center font-bold text-xs shrink-0 ring-4 ring-slate-50">2</div>
-                 <div class="bg-white p-3 rounded-xl border border-slate-100 shadow-sm w-full">
-                    <p>Realizar <strong>entrevista de salida</strong> y solicitar devolución de equipo y gafete.</p>
-                 </div>
-               </li>
-               <li class="flex items-start gap-4 relative z-10">
-                 <div class="w-7 h-7 rounded-full bg-slate-800 text-white flex items-center justify-center font-bold text-xs shrink-0 ring-4 ring-slate-50">3</div>
-                 <div class="bg-white p-3 rounded-xl border border-slate-100 shadow-sm w-full">
-                    <p>Tramitar accesos de red: deshabilitar correo corporativo, ERP y credenciales del sistema.</p>
-                 </div>
-               </li>
-               <li class="flex items-start gap-4 relative z-10">
-                 <div class="w-7 h-7 rounded-full bg-slate-800 text-white flex items-center justify-center font-bold text-xs shrink-0 ring-4 ring-slate-50">4</div>
-                 <div class="bg-white p-3 rounded-xl border border-slate-100 shadow-sm w-full">
-                    <p>Actualizar estado a <strong>Inactivo</strong> en RRHH Innova desde el módulo de Empleados.</p>
-                 </div>
-               </li>
-             </ol>
-          </div>
-        </div>
-
-        <div class="mt-8 flex justify-end gap-3 border-t border-slate-100 pt-6">
-           <button @click="router.push('/empleados')" class="px-6 py-3 bg-red-600 text-white rounded-xl font-black uppercase text-xs hover:bg-red-700 transition-colors shadow-lg shadow-red-200 flex items-center gap-2">
-              👥 Ir a Inactivar Empleado
-           </button>
-           <button class="px-6 py-3 bg-slate-800 text-white rounded-xl font-black uppercase text-xs hover:bg-slate-900 transition-colors shadow-lg flex items-center gap-2">
-              🖨️ Imprimir Guía
-           </button>
-        </div>
-      </div>
 
       <!-- TAB: TICKETS -->
       <div v-if="activeTab === 'tickets'" class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
         <div class="flex flex-col md:flex-row justify-between items-center mb-6 gap-4 border-b border-slate-100 pb-4">
-          <h2 class="text-lg font-black text-slate-800 uppercase tracking-tighter">Análisis de Soporte</h2>
+          <h2 class="text-lg font-black text-slate-800 uppercase tracking-tight">Análisis de Soporte</h2>
           <div class="flex flex-col md:flex-row gap-3 w-full md:w-auto items-center">
             <input v-model="searchQuery" type="text" placeholder="Buscar ticket, usuario..." class="p-2 border border-slate-200 rounded-lg text-sm bg-slate-50 w-full md:w-48 focus:border-blue-500 outline-none">
             <select v-model="ticketsFiltroEstado" class="p-2 border border-slate-200 rounded-lg text-sm bg-slate-50 focus:border-blue-500 outline-none">
@@ -833,7 +748,7 @@
         <!-- ENCABEZADO Y PDF CONTROL DE TIEMPOS -->
         <div class="flex flex-col md:flex-row justify-between items-center bg-white p-6 rounded-2xl shadow-sm border border-slate-200 gap-4">
            <div>
-             <h2 class="text-xl font-black text-slate-800 uppercase tracking-tighter text-emerald-600">⏳ Reporte de Control de Tiempos</h2>
+             <h2 class="text-xl font-black text-slate-800 uppercase tracking-tight text-emerald-600">⏳ Reporte de Control de Tiempos</h2>
              <p class="text-xs text-slate-500 font-medium mt-1">Genera un reporte consolidado con proyecciones, ausentismo y saldos de vacaciones.</p>
            </div>
            <button @click="generarPDFControlTiempos" class="px-5 py-2.5 bg-slate-800 hover:bg-slate-900 text-white rounded-lg font-bold text-xs uppercase tracking-widest transition-colors shadow-sm flex items-center justify-center gap-2 whitespace-nowrap">
@@ -844,7 +759,7 @@
         <!-- Proyecciones Vacaciones -->
         <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
         <div class="flex flex-col md:flex-row justify-between items-center mb-6 gap-4 border-b border-slate-100 pb-4">
-          <h2 class="text-lg font-black text-slate-800 uppercase tracking-tighter">Proyecciones de Vacaciones</h2>
+          <h2 class="text-lg font-black text-slate-800 uppercase tracking-tight">Proyecciones de Vacaciones</h2>
           <div class="flex flex-col md:flex-row gap-3 w-full md:w-auto">
             <button @click="exportarCSV(proyeccionesVacaciones, 'Proyecciones_Vacaciones')" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg font-bold text-xs uppercase tracking-widest transition-colors shadow-sm flex items-center justify-center gap-2">
               <span>📊</span> CSV
@@ -903,7 +818,7 @@
         <!-- Índice de Ausentismo -->
         <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
           <div class="flex flex-col md:flex-row justify-between items-center mb-6 gap-4 border-b border-slate-100 pb-4">
-            <h2 class="text-lg font-black text-slate-800 uppercase tracking-tighter flex items-center gap-2">
+            <h2 class="text-lg font-black text-slate-800 uppercase tracking-tight flex items-center gap-2">
               <span class="text-rose-500">⚠️</span> Índice de Ausentismo (Mes Actual)
             </h2>
             <button @click="exportarCSV(ausentismoDatos, 'Indice_Ausentismo')" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg font-bold text-xs uppercase tracking-widest transition-colors shadow-sm flex items-center justify-center gap-2">
@@ -954,7 +869,7 @@
         <!-- Saldos de Vacaciones -->
         <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
           <div class="flex flex-col md:flex-row justify-between items-center mb-6 gap-4 border-b border-slate-100 pb-4">
-            <h2 class="text-lg font-black text-slate-800 uppercase tracking-tighter flex items-center gap-2">
+            <h2 class="text-lg font-black text-slate-800 uppercase tracking-tight flex items-center gap-2">
               <span class="text-blue-500">🏖️</span> Saldos de Vacaciones
             </h2>
             <div class="flex flex-col md:flex-row gap-3 w-full md:w-auto">
@@ -1011,165 +926,6 @@
         </div>
       </div>
 
-      <!-- TAB: WIZARD GENERADOR -->
-      <div v-if="activeTab === 'wizard'" class="space-y-6 animate-in fade-in duration-300">
-        <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
-          <div class="flex justify-between items-center mb-6">
-            <div>
-              <h2 class="text-xl font-black text-slate-800 uppercase tracking-tighter text-purple-600">🧙‍♂️ Generador de Reportes Asistido</h2>
-              <p class="text-xs text-slate-500 font-medium mt-1">Crea reportes a medida siguiendo estos sencillos pasos.</p>
-            </div>
-            <div class="text-2xl font-black text-purple-200">Paso {{ wizardPaso }} / 4</div>
-          </div>
-
-          <!-- Progress Bar -->
-          <div class="flex items-center justify-between mb-8 relative">
-            <div class="absolute left-0 top-1/2 w-full h-1 bg-slate-100 -z-10 rounded-full"></div>
-            <div class="absolute left-0 top-1/2 h-1 bg-purple-500 -z-10 rounded-full transition-all duration-300" :style="`width: ${(wizardPaso - 1) * 33.33}%`"></div>
-            
-            <div v-for="step in 4" :key="step" class="flex flex-col items-center gap-2">
-              <div :class="['w-10 h-10 rounded-full flex items-center justify-center font-black text-sm border-4 transition-colors', wizardPaso >= step ? 'bg-purple-600 border-purple-200 text-white shadow-lg' : 'bg-white border-slate-200 text-slate-400']">
-                <span v-if="wizardPaso > step">✓</span>
-                <span v-else>{{ step }}</span>
-              </div>
-              <span :class="['text-[10px] font-bold uppercase tracking-widest', wizardPaso >= step ? 'text-purple-700' : 'text-slate-400']">
-                {{ ['Categoría', 'Filtros', 'Vista Previa', 'Exportar'][step-1] }}
-              </span>
-            </div>
-          </div>
-
-          <!-- Step 1: Categoría -->
-          <div v-if="wizardPaso === 1" class="animate-in slide-in-from-right-4">
-            <h3 class="text-sm font-black text-slate-800 uppercase tracking-widest mb-4">¿Qué tipo de información deseas consultar?</h3>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div @click="wizardCategoria = 'empleados'" :class="['p-5 rounded-xl border-2 cursor-pointer transition-all hover:-translate-y-1', wizardCategoria === 'empleados' ? 'border-blue-500 bg-blue-50 shadow-md' : 'border-slate-100 bg-white hover:border-slate-300']">
-                <div class="text-3xl mb-2">👥</div>
-                <h4 class="font-black text-slate-800 text-sm">Directorio Analítico</h4>
-                <p class="text-xs text-slate-500 mt-1">Información de empleados, estado y datos demográficos.</p>
-              </div>
-              <div @click="wizardCategoria = 'incidencias'" :class="['p-5 rounded-xl border-2 cursor-pointer transition-all hover:-translate-y-1', wizardCategoria === 'incidencias' ? 'border-rose-500 bg-rose-50 shadow-md' : 'border-slate-100 bg-white hover:border-slate-300']">
-                <div class="text-3xl mb-2">🚨</div>
-                <h4 class="font-black text-slate-800 text-sm">Incidencias Laborales</h4>
-                <p class="text-xs text-slate-500 mt-1">Reportes disciplinarios y problemas laborales registrados.</p>
-              </div>
-              <div @click="wizardCategoria = 'vacaciones'" :class="['p-5 rounded-xl border-2 cursor-pointer transition-all hover:-translate-y-1', wizardCategoria === 'vacaciones' ? 'border-emerald-500 bg-emerald-50 shadow-md' : 'border-slate-100 bg-white hover:border-slate-300']">
-                <div class="text-3xl mb-2">🏖️</div>
-                <h4 class="font-black text-slate-800 text-sm">Vacaciones y Saldos</h4>
-                <p class="text-xs text-slate-500 mt-1">Días acumulados, gozados y saldos pendientes.</p>
-              </div>
-              <div @click="wizardCategoria = 'tickets'" :class="['p-5 rounded-xl border-2 cursor-pointer transition-all hover:-translate-y-1', wizardCategoria === 'tickets' ? 'border-amber-500 bg-amber-50 shadow-md' : 'border-slate-100 bg-white hover:border-slate-300']">
-                <div class="text-3xl mb-2">🎫</div>
-                <h4 class="font-black text-slate-800 text-sm">Soporte y Tickets</h4>
-                <p class="text-xs text-slate-500 mt-1">Solicitudes de soporte y estado de resolución.</p>
-              </div>
-            </div>
-          </div>
-
-          <!-- Step 2: Filtros -->
-          <div v-if="wizardPaso === 2" class="animate-in slide-in-from-right-4 space-y-4">
-            <h3 class="text-sm font-black text-slate-800 uppercase tracking-widest mb-4">Configura los filtros de tu reporte</h3>
-            
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 bg-slate-50 p-5 rounded-xl border border-slate-100">
-              <div>
-                <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2">Buscar por nombre o código</label>
-                <input v-model="wizardFiltros.busqueda" type="text" placeholder="Ej. Juan Pérez..." class="w-full p-3 border border-slate-200 rounded-lg text-sm bg-white focus:border-purple-500 focus:ring-1 focus:ring-purple-500 outline-none">
-              </div>
-              <div v-if="wizardCategoria === 'empleados'">
-                <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2">Estado</label>
-                <select v-model="wizardFiltros.estado" class="w-full p-3 border border-slate-200 rounded-lg text-sm bg-white focus:border-purple-500 outline-none">
-                  <option value="todos">Todos los Estados</option>
-                  <option value="1">Activos</option>
-                  <option value="0">Inactivos</option>
-                </select>
-              </div>
-              <div v-if="wizardCategoria === 'incidencias' || wizardCategoria === 'tickets'">
-                <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2">Estado del caso</label>
-                <select v-model="wizardFiltros.estado_caso" class="w-full p-3 border border-slate-200 rounded-lg text-sm bg-white focus:border-purple-500 outline-none">
-                  <option value="todos">Todos</option>
-                  <option value="Abierto">Abierto/Pendiente</option>
-                  <option value="Cerrado">Cerrado/Resuelto</option>
-                </select>
-              </div>
-              <div>
-                <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2">Filtrar por Departamento</label>
-                <select v-model="wizardFiltros.departamento" class="w-full p-3 border border-slate-200 rounded-lg text-sm bg-white focus:border-purple-500 outline-none">
-                  <option value="todos">Todos los departamentos</option>
-                  <option v-for="d in departamentos" :key="d.id" :value="d.nombre">{{ d.nombre }}</option>
-                </select>
-              </div>
-            </div>
-          </div>
-
-          <!-- Step 3: Vista Previa -->
-          <div v-if="wizardPaso === 3" class="animate-in slide-in-from-right-4">
-            <h3 class="text-sm font-black text-slate-800 uppercase tracking-widest mb-4">Vista Previa de Datos ({{ wizardDatosFiltrados.length }} registros)</h3>
-            
-            <div class="overflow-x-auto border border-slate-200 rounded-xl max-h-96">
-              <table class="w-full text-left border-collapse bg-white">
-                <thead class="sticky top-0 bg-slate-50 shadow-sm">
-                  <tr>
-                    <th v-for="(col, i) in wizardColumnas" :key="i" class="p-3 text-[10px] font-black text-slate-500 uppercase tracking-widest whitespace-nowrap">
-                      {{ col.label }}
-                    </th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr v-for="(row, idx) in wizardDatosFiltrados.slice(0, 50)" :key="idx" class="border-b border-slate-100 hover:bg-slate-50">
-                    <td v-for="(col, i) in wizardColumnas" :key="i" class="p-3 text-xs text-slate-700">
-                      {{ obtenerValorColumna(row, col.key) }}
-                    </td>
-                  </tr>
-                  <tr v-if="wizardDatosFiltrados.length === 0">
-                    <td :colspan="wizardColumnas.length" class="p-8 text-center text-slate-500 font-medium text-sm">
-                      No hay registros que coincidan con los filtros aplicados.
-                    </td>
-                  </tr>
-                  <tr v-if="wizardDatosFiltrados.length > 50">
-                    <td :colspan="wizardColumnas.length" class="p-4 text-center text-slate-400 italic text-xs bg-slate-50/50">
-                      Mostrando los primeros 50 registros de {{ wizardDatosFiltrados.length }}. El reporte completo se generará al exportar.
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-          </div>
-
-          <!-- Step 4: Exportar -->
-          <div v-if="wizardPaso === 4" class="animate-in slide-in-from-right-4">
-            <h3 class="text-sm font-black text-slate-800 uppercase tracking-widest mb-4">¡Todo listo! Selecciona el formato de exportación</h3>
-            
-            <div class="bg-slate-50 p-8 rounded-2xl border border-slate-100 text-center flex flex-col items-center gap-6">
-              <div class="text-6xl animate-bounce">🎉</div>
-              <div>
-                <h4 class="text-lg font-black text-slate-800">Reporte de {{ wizardCategoriaNombre }} Preparado</h4>
-                <p class="text-slate-500 text-sm mt-1">Se procesarán {{ wizardDatosFiltrados.length }} registros según tus criterios.</p>
-              </div>
-              
-              <div class="flex flex-col sm:flex-row gap-4 w-full justify-center mt-4">
-                <button @click="generarPDFWizard" :disabled="wizardDatosFiltrados.length === 0" class="px-8 py-4 bg-slate-800 hover:bg-slate-900 text-white rounded-xl font-black text-sm uppercase tracking-widest transition-all shadow-lg flex items-center justify-center gap-3 disabled:opacity-50 disabled:cursor-not-allowed group">
-                  <span class="text-2xl group-hover:scale-110 transition-transform">📄</span> Descargar PDF
-                </button>
-                <button @click="exportarCSVWizard" :disabled="wizardDatosFiltrados.length === 0" class="px-8 py-4 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-black text-sm uppercase tracking-widest transition-all shadow-lg flex items-center justify-center gap-3 disabled:opacity-50 disabled:cursor-not-allowed group">
-                  <span class="text-2xl group-hover:scale-110 transition-transform">📊</span> Descargar CSV
-                </button>
-              </div>
-            </div>
-          </div>
-
-          <!-- Controles del Wizard -->
-          <div class="flex justify-between items-center mt-8 pt-6 border-t border-slate-100">
-            <button @click="wizardAnterior" :disabled="wizardPaso === 1" class="px-6 py-2 border-2 border-slate-200 text-slate-600 hover:bg-slate-50 rounded-lg font-bold text-xs uppercase tracking-widest transition-colors disabled:opacity-30 disabled:cursor-not-allowed">
-              ⬅ Anterior
-            </button>
-            <button v-if="wizardPaso < 4" @click="wizardSiguiente" :disabled="(wizardPaso === 1 && !wizardCategoria)" class="px-6 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg font-bold text-xs uppercase tracking-widest transition-colors shadow-md disabled:opacity-50 disabled:cursor-not-allowed">
-              Siguiente ➡
-            </button>
-            <button v-if="wizardPaso === 4" @click="wizardReiniciar" class="px-6 py-2 border-2 border-purple-200 text-purple-600 hover:bg-purple-50 rounded-lg font-bold text-xs uppercase tracking-widest transition-colors">
-              🔄 Crear Nuevo Reporte
-            </button>
-          </div>
-        </div>
-      </div>
 
     <!-- Modal Perfil -->
     <div v-if="modalAbiertoPerfil" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex justify-center items-center p-4">
@@ -1230,7 +986,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, onUnmounted, computed } from 'vue'
+import { ref, onMounted, onUnmounted, computed, watch } from 'vue'
 import axios from 'axios'
 import { useRouter } from 'vue-router'
 import { Chart as ChartJS, ArcElement, Tooltip, Legend, CategoryScale, LinearScale, BarElement, Title, PointElement, LineElement, RadialLinearScale } from 'chart.js'
@@ -1248,7 +1004,13 @@ const menuUsuario = ref([])
 const usuarioActual = ref('')
 const mobileMenuOpen = ref(false)
 const activeTab = ref('dashboard')
+const ultimaActualizacion = ref(new Date().toLocaleTimeString('es-HN'))
 const searchQuery = ref('')
+
+watch(activeTab, () => {
+  searchQuery.value = ''
+})
+
 let pollingInterval = null;
 
 // Lógica Modal Perfil
@@ -2595,182 +2357,6 @@ const imprimirReporte = () => {
   window.print();
 }
 
-// --- WIZARD GENERADOR DE REPORTES ---
-const wizardPaso = ref(1)
-const wizardCategoria = ref('') // 'empleados', 'incidencias', 'vacaciones', 'tickets'
-const wizardFiltros = ref({
-  busqueda: '',
-  estado: 'todos',
-  estado_caso: 'todos',
-  departamento: 'todos'
-})
-
-const wizardCategoriaNombre = computed(() => {
-  const cats = {
-    'empleados': 'Directorio Analítico',
-    'incidencias': 'Incidencias Laborales',
-    'vacaciones': 'Vacaciones y Saldos',
-    'tickets': 'Soporte y Tickets'
-  }
-  return cats[wizardCategoria.value] || 'Personalizado'
-})
-
-const wizardDatosBrutos = computed(() => {
-  if (wizardCategoria.value === 'empleados') return empleados.value
-  if (wizardCategoria.value === 'incidencias') return incidencias.value
-  if (wizardCategoria.value === 'vacaciones') return saldosDatos.value || []
-  if (wizardCategoria.value === 'tickets') return tickets.value
-  return []
-})
-
-const wizardDatosFiltrados = computed(() => {
-  let list = wizardDatosBrutos.value
-  const q = wizardFiltros.value.busqueda.toLowerCase().trim()
-  
-  if (q !== '') {
-    list = list.filter(item => {
-      const vals = Object.values(item).map(v => String(v).toLowerCase())
-      return vals.some(v => v.includes(q))
-    })
-  }
-  
-  if (wizardFiltros.value.departamento !== 'todos') {
-    list = list.filter(item => {
-      const depto = item.departamento || getNombreDepartamento(item.departamento_id)
-      return depto === wizardFiltros.value.departamento
-    })
-  }
-
-  if (wizardCategoria.value === 'empleados' && wizardFiltros.value.estado !== 'todos') {
-    list = list.filter(item => item.estado == wizardFiltros.value.estado)
-  }
-
-  if ((wizardCategoria.value === 'incidencias' || wizardCategoria.value === 'tickets') && wizardFiltros.value.estado_caso !== 'todos') {
-    if (wizardFiltros.value.estado_caso === 'Abierto') {
-      list = list.filter(item => item.estado !== 'Cerrado' && item.estado !== 'Resuelto')
-    } else if (wizardFiltros.value.estado_caso === 'Cerrado') {
-      list = list.filter(item => item.estado === 'Cerrado' || item.estado === 'Resuelto')
-    }
-  }
-
-  return list
-})
-
-const wizardColumnas = computed(() => {
-  if (wizardCategoria.value === 'empleados') {
-    return [
-      { key: 'codigo_empleado', label: 'Código' },
-      { key: 'nombre_completo', label: 'Empleado' },
-      { key: 'departamento', label: 'Departamento' },
-      { key: 'estado_str', label: 'Estado' }
-    ]
-  }
-  if (wizardCategoria.value === 'incidencias') {
-    return [
-      { key: 'id', label: 'ID' },
-      { key: 'empleado_nombre', label: 'Empleado' },
-      { key: 'categoria', label: 'Categoría' },
-      { key: 'prioridad', label: 'Prioridad' },
-      { key: 'estado', label: 'Estado' }
-    ]
-  }
-  if (wizardCategoria.value === 'vacaciones') {
-    return [
-      { key: 'nombre', label: 'Empleado' },
-      { key: 'departamento', label: 'Departamento' },
-      { key: 'dias_acumulados', label: 'Acumulados' },
-      { key: 'saldo_pendiente', label: 'Saldo Pendiente' }
-    ]
-  }
-  if (wizardCategoria.value === 'tickets') {
-    return [
-      { key: 'id', label: 'ID' },
-      { key: 'asunto', label: 'Asunto' },
-      { key: 'prioridad', label: 'Prioridad' },
-      { key: 'estado', label: 'Estado' }
-    ]
-  }
-  return []
-})
-
-const obtenerValorColumna = (row, key) => {
-  if (key === 'nombre_completo') return `${row.nombre || ''} ${row.apellido || ''}`.trim()
-  if (key === 'departamento' && !row.departamento) return getNombreDepartamento(row.departamento_id)
-  if (key === 'estado_str') return row.estado == 1 ? 'Activo' : 'Inactivo'
-  return row[key] !== null && row[key] !== undefined ? row[key] : 'N/A'
-}
-
-const wizardSiguiente = () => { if (wizardPaso.value < 4) wizardPaso.value++ }
-const wizardAnterior = () => { if (wizardPaso.value > 1) wizardPaso.value-- }
-const wizardReiniciar = () => {
-  wizardPaso.value = 1
-  wizardCategoria.value = ''
-  wizardFiltros.value = { busqueda: '', estado: 'todos', estado_caso: 'todos', departamento: 'todos' }
-}
-
-const generarPDFWizard = () => {
-  try {
-    const doc = new jsPDF()
-    const pageWidth = doc.internal.pageSize.width
-    const pageHeight = doc.internal.pageSize.height
-    let startY = 30
-
-    // Header
-    doc.setFillColor(15, 23, 42)
-    doc.rect(0, 0, pageWidth, 20, 'F')
-    doc.setTextColor(255, 255, 255)
-    doc.setFontSize(16)
-    doc.setFont('helvetica', 'bold')
-    doc.text('INNOVA RRHH', 14, 14)
-    
-    doc.setTextColor(203, 213, 225)
-    doc.setFontSize(10)
-    doc.text(`Reporte: ${wizardCategoriaNombre.value}`, pageWidth - 14, 14, { align: 'right' })
-
-    // Info
-    doc.setTextColor(15, 23, 42)
-    doc.setFontSize(14)
-    doc.text('Generador de Reportes Asistido', 14, startY)
-    startY += 8
-    doc.setFontSize(10)
-    doc.setTextColor(71, 85, 105)
-    doc.text(`Total Registros: ${wizardDatosFiltrados.value.length}`, 14, startY)
-    startY += 4
-    doc.text(`Fecha de emisión: ${new Date().toLocaleString()}`, 14, startY)
-    startY += 10
-
-    const heads = [wizardColumnas.value.map(c => c.label)]
-    const body = wizardDatosFiltrados.value.map(row => wizardColumnas.value.map(col => obtenerValorColumna(row, col.key)))
-
-    autoTable(doc, {
-      startY: startY,
-      head: heads,
-      body: body,
-      theme: 'grid',
-      headStyles: { fillColor: [147, 51, 234], textColor: [255, 255, 255], fontStyle: 'bold' },
-      styles: { fontSize: 8, cellPadding: 3 },
-      alternateRowStyles: { fillColor: [248, 250, 252] }
-    })
-
-    const totalPages = doc.internal.getNumberOfPages()
-    for (let i = 1; i <= totalPages; i++) {
-      doc.setPage(i)
-      doc.setFontSize(8)
-      doc.setTextColor(148, 163, 184)
-      doc.text(`Página ${i} de ${totalPages} - INNOVA RRHH`, 196, pageHeight - 10, { align: 'right' })
-    }
-
-    doc.save(`Reporte_Wizard_${wizardCategoria.value}_${new Date().toISOString().split('T')[0]}.pdf`)
-    Swal.fire('¡Éxito!', 'El reporte PDF se ha generado correctamente.', 'success')
-  } catch (error) {
-    console.error('Error generando PDF Wizard', error)
-    Swal.fire('Error', 'Hubo un error al generar el PDF', 'error')
-  }
-}
-
-const exportarCSVWizard = () => {
-  exportarCSV(wizardDatosFiltrados.value, `Reporte_Wizard_${wizardCategoria.value}`)
-}
 
 const logout = () => {
   localStorage.clear()
@@ -2819,6 +2405,8 @@ onMounted(async () => {
 
   // Iniciar Polling en tiempo real (cada 15 segundos)
   pollingInterval = setInterval(() => {
+    ultimaActualizacion.value = new Date().toLocaleTimeString('es-HN')
+
     cargarStats(true)
     cargarDepartamentosStats(true)
     cargarEstadoContratos(true)

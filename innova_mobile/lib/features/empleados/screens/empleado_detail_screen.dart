@@ -106,10 +106,26 @@ class _EmpleadoDetailScreenState extends ConsumerState<EmpleadoDetailScreen> {
       length: tabs.length,
       initialIndex: initialIndex,
       child: Scaffold(
+        backgroundColor: Colors.grey.shade100,
         appBar: AppBar(
-          title: Text(empleado.nombreCompleto),
+          elevation: 0,
+          backgroundColor: const Color(0xFF1E3A8A), // Un azul oscuro moderno (Tailwind blue-900)
+          foregroundColor: Colors.white,
+          title: Text(
+            empleado.nombreCompleto, 
+            style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 18, letterSpacing: 0.5)
+          ),
           actions: [
             PopupMenuButton<String>(
+              iconColor: Colors.white,
+              color: Colors.white,
+              surfaceTintColor: Colors.white,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16),
+                side: BorderSide(color: Colors.grey.shade200, width: 1.5),
+              ),
+              elevation: 6,
+              offset: const Offset(0, 45),
               onSelected: (value) => _handleMenuSelection(context, ref, value, empleado),
               itemBuilder: (BuildContext context) {
                 final isActivo = empleado.estado == 1;
@@ -120,70 +136,95 @@ class _EmpleadoDetailScreenState extends ConsumerState<EmpleadoDetailScreen> {
                 final puedeEditarNotas = authState.hasPermission('Notas', 'puedeCrear');
                 final puedeVerPerfil = authState.hasPermission('Perfil del Empleado', 'puedeVer');
                 
-                return <PopupMenuEntry<String>>[
-                  const PopupMenuItem<String>(
+                PopupMenuEntry<String> menuHeader(String title) {
+                  return PopupMenuItem<String>(
                     enabled: false,
-                    child: Text('PERFIL', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black54, fontSize: 12)),
-                  ),
-                  if (puedeEditar)
-                    const PopupMenuItem<String>(
-                      value: 'editar',
-                      child: ListTile(leading: Icon(Icons.edit_outlined), title: Text('Editar empleado')),
+                    height: 32,
+                    child: Text(
+                      title, 
+                      style: TextStyle(fontWeight: FontWeight.w900, color: Colors.blueGrey.shade400, fontSize: 10, letterSpacing: 1.2),
                     ),
-                  if (puedeEditar)
-                    const PopupMenuItem<String>(
-                      value: 'contacto',
-                      child: ListTile(leading: Icon(Icons.person_add_alt_1_outlined), title: Text('Registrar contacto')),
-                    ),
-                  if (puedeEditar)
-                    PopupMenuItem<String>(
-                      value: 'estado',
-                      child: ListTile(
-                        leading: Icon(
-                          isActivo ? Icons.do_not_disturb_on_outlined : Icons.check_circle_outline,
-                          color: isActivo ? Colors.orange.shade700 : Colors.green.shade700,
+                  );
+                }
+
+                PopupMenuEntry<String> menuItem(String value, IconData icon, String text, {Color? iconColor, Color? textColor}) {
+                  return PopupMenuItem<String>(
+                    value: value,
+                    height: 48,
+                    child: Row(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.all(6),
+                          decoration: BoxDecoration(
+                            color: (iconColor ?? Colors.blueGrey.shade700).withValues(alpha: 0.08),
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: Icon(icon, size: 18, color: iconColor ?? Colors.blueGrey.shade700),
                         ),
-                        title: Text(isActivo ? 'Desactivar' : 'Activar'),
-                      ),
+                        const SizedBox(width: 12),
+                        Text(
+                          text, 
+                          style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: textColor ?? Colors.blueGrey.shade800),
+                        ),
+                      ],
+                    ),
+                  );
+                }
+                
+                return <PopupMenuEntry<String>>[
+                  menuHeader('PERFIL'),
+                  if (puedeEditar)
+                    menuItem('editar', Icons.edit_outlined, 'Editar empleado', iconColor: Colors.blue.shade700),
+                  if (puedeEditar)
+                    menuItem('contacto', Icons.person_add_alt_1_outlined, 'Registrar contacto', iconColor: Colors.purple.shade600),
+                  if (puedeEditar)
+                    menuItem(
+                      'estado', 
+                      isActivo ? Icons.do_not_disturb_on_outlined : Icons.check_circle_outline, 
+                      isActivo ? 'Desactivar' : 'Activar',
+                      iconColor: isActivo ? Colors.orange.shade700 : Colors.green.shade700,
                     ),
                   if (puedeVerPerfil) ...[
-                    const PopupMenuDivider(),
-                    const PopupMenuItem<String>(
-                      value: 'pdf',
-                      child: ListTile(leading: Icon(Icons.picture_as_pdf_outlined), title: Text('Crear Pdf Perfil del Empleado')),
-                    ),
+                    const PopupMenuDivider(height: 16),
+                    menuItem('pdf', Icons.picture_as_pdf_outlined, 'Crear Pdf Perfil del Empleado', iconColor: Colors.red.shade600),
                   ],
                   if (puedeEditarContratos || puedeEditarFaltas || puedeEditarNotas) ...[
-                    const PopupMenuDivider(),
-                    const PopupMenuItem<String>(
-                      enabled: false,
-                      child: Text('EXPEDIENTE', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black54, fontSize: 12)),
-                    ),
+                    const PopupMenuDivider(height: 16),
+                    menuHeader('EXPEDIENTE'),
                   ],
                   if (puedeEditarContratos)
-                    const PopupMenuItem<String>(
-                      value: 'contrato',
-                      child: ListTile(leading: Icon(Icons.description_outlined), title: Text('Registrar contrato')),
-                    ),
+                    menuItem('contrato', Icons.description_outlined, 'Registrar contrato', iconColor: Colors.indigo.shade600),
                   if (puedeEditarFaltas)
-                    const PopupMenuItem<String>(
-                      value: 'falta',
-                      child: ListTile(leading: Icon(Icons.event_busy_outlined), title: Text('Registrar falta')),
-                    ),
+                    menuItem('falta', Icons.event_busy_outlined, 'Registrar falta', iconColor: Colors.redAccent.shade700),
                   if (puedeEditarNotas)
-                    const PopupMenuItem<String>(
-                      value: 'nota',
-                      child: ListTile(leading: Icon(Icons.note_add_outlined), title: Text('Registrar nota')),
-                    ),
+                    menuItem('nota', Icons.note_add_outlined, 'Registrar nota', iconColor: Colors.teal.shade600),
                 ];
               },
               icon: const Icon(Icons.more_vert_outlined),
               tooltip: 'Opciones',
             ),
           ],
-          bottom: TabBar(
-            isScrollable: true,
-            tabs: tabs,
+          bottom: PreferredSize(
+            preferredSize: const Size.fromHeight(56),
+            child: Container(
+              width: double.infinity,
+              decoration: BoxDecoration(
+                color: Colors.white,
+                boxShadow: [
+                  BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 4, offset: const Offset(0, 2))
+                ]
+              ),
+              child: TabBar(
+                isScrollable: true,
+                indicatorColor: const Color(0xFF1E3A8A),
+                indicatorWeight: 3,
+                labelColor: const Color(0xFF1E3A8A),
+                unselectedLabelColor: Colors.blueGrey.shade400,
+                labelStyle: const TextStyle(fontWeight: FontWeight.w800, fontSize: 13, letterSpacing: 0.5),
+                unselectedLabelStyle: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13),
+                tabs: tabs,
+              ),
+            ),
           ),
         ),
         body: TabBarView(
@@ -199,61 +240,84 @@ class _EmpleadoDetailScreenState extends ConsumerState<EmpleadoDetailScreen> {
     return ListView(
       padding: const EdgeInsets.all(16.0),
       children: [
-        Card(
-          elevation: 2,
-          shape:
-              RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+        Container(
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(20),
+            boxShadow: [
+              BoxShadow(color: Colors.black.withValues(alpha: 0.04), blurRadius: 10, offset: const Offset(0, 4))
+            ],
+            border: Border.all(color: Colors.grey.shade100, width: 1.5),
+          ),
           child: Padding(
-            padding:
-                const EdgeInsets.symmetric(vertical: 24.0, horizontal: 16.0),
+            padding: const EdgeInsets.symmetric(vertical: 32.0, horizontal: 16.0),
             child: Column(
               children: [
-                CircleAvatar(
-                  radius: 45,
-                  backgroundColor: Theme.of(context).primaryColor.withAlpha(26),
-                  backgroundImage: empleado.foto != null
-                      ? NetworkImage('${ApiConstants.baseUrl}${empleado.foto}')
-                      : null,
-                  child: empleado.foto == null
-                      ? Text(
-                          empleado.nombre.isNotEmpty
-                              ? empleado.nombre[0].toUpperCase()
-                              : 'E',
-                          style: textTheme.displaySmall
-                              ?.copyWith(color: Theme.of(context).primaryColor),
-                        )
-                      : null,
+                Container(
+                  padding: const EdgeInsets.all(4),
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    border: Border.all(color: const Color(0xFF1E3A8A).withValues(alpha: 0.1), width: 3),
+                  ),
+                  child: CircleAvatar(
+                    radius: 50,
+                    backgroundColor: const Color(0xFF1E3A8A).withValues(alpha: 0.05),
+                    backgroundImage: empleado.foto != null
+                        ? NetworkImage('${ApiConstants.baseUrl}${empleado.foto}')
+                        : null,
+                    child: empleado.foto == null
+                        ? Text(
+                            empleado.nombre.isNotEmpty
+                                ? empleado.nombre[0].toUpperCase()
+                                : 'E',
+                            style: textTheme.displaySmall?.copyWith(
+                              color: const Color(0xFF1E3A8A),
+                              fontWeight: FontWeight.w900,
+                            ),
+                          )
+                        : null,
+                  ),
+                ),
+                const SizedBox(height: 20),
+                Text(
+                  empleado.nombreCompleto,
+                  style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w900, color: Color(0xFF1E293B), letterSpacing: -0.5),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 6),
+                Text(
+                  empleado.cargo?.toUpperCase() ?? 'PUESTO NO ESPECIFICADO',
+                  style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.blueGrey.shade400, letterSpacing: 1.0),
+                  textAlign: TextAlign.center,
                 ),
                 const SizedBox(height: 16),
-                Text(empleado.nombreCompleto,
-                    style: textTheme.headlineSmall
-                        ?.copyWith(fontWeight: FontWeight.bold),
-                    textAlign: TextAlign.center),
-                const SizedBox(height: 4),
-                Text(empleado.cargo ?? 'Puesto no especificado',
-                    style: textTheme.titleMedium?.copyWith(color: Colors.black54)),
-                const SizedBox(height: 12),
-                Chip(
-                  avatar: Icon(
-                    empleado.estado == 1
-                        ? Icons.check_circle_outline
-                        : Icons.highlight_off_outlined,
-                    color: empleado.estado == 1
-                        ? Colors.green.shade800
-                        : Colors.red.shade800,
-                    size: 18,
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+                  decoration: BoxDecoration(
+                    color: empleado.estado == 1 ? Colors.green.shade50 : Colors.red.shade50,
+                    borderRadius: BorderRadius.circular(20),
+                    border: Border.all(color: empleado.estado == 1 ? Colors.green.shade200 : Colors.red.shade200),
                   ),
-                  label: Text(empleado.estado == 1 ? 'Activo' : 'Inactivo'),
-                  backgroundColor: empleado.estado == 1
-                      ? Colors.green.shade50
-                      : Colors.red.shade50,
-                  labelStyle: TextStyle(
-                      color: empleado.estado == 1
-                          ? Colors.green.shade800
-                          : Colors.red.shade800,
-                      fontWeight: FontWeight.bold),
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(
+                        empleado.estado == 1 ? Icons.check_circle : Icons.cancel,
+                        color: empleado.estado == 1 ? Colors.green.shade700 : Colors.red.shade700,
+                        size: 16,
+                      ),
+                      const SizedBox(width: 6),
+                      Text(
+                        empleado.estado == 1 ? 'ACTIVO' : 'INACTIVO',
+                        style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w900,
+                          color: empleado.estado == 1 ? Colors.green.shade800 : Colors.red.shade800,
+                          letterSpacing: 0.5,
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ],
             ),
@@ -390,7 +454,7 @@ class _EmpleadoDetailScreenState extends ConsumerState<EmpleadoDetailScreen> {
       builder: (context, ref, child) {
         final contratosAsync = ref.watch(contratosProvider(empleado.id));
         return Scaffold(
-          backgroundColor: Colors.grey.shade50,
+          backgroundColor: Colors.grey.shade100,
           body: contratosAsync.when(
             data: (contratos) {
               if (contratos.isEmpty) {
@@ -415,12 +479,15 @@ class _EmpleadoDetailScreenState extends ConsumerState<EmpleadoDetailScreen> {
                   itemBuilder: (context, index) {
                     final contrato = contratos[index];
                     final bool isActivo = contrato.estado == 'Activo';
-                    return Card(
-                      elevation: 1,
-                      margin: const EdgeInsets.only(bottom: 12),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                        side: BorderSide(color: isActivo ? Colors.green.shade200 : Colors.grey.shade200),
+                    return Container(
+                      margin: const EdgeInsets.only(bottom: 16),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(color: isActivo ? Colors.green.shade200 : Colors.grey.shade200, width: 1.5),
+                        boxShadow: [
+                          BoxShadow(color: Colors.black.withValues(alpha: 0.02), blurRadius: 8, offset: const Offset(0, 2))
+                        ]
                       ),
                       child: Padding(
                         padding: const EdgeInsets.all(16.0),
@@ -618,23 +685,40 @@ class _EmpleadoDetailScreenState extends ConsumerState<EmpleadoDetailScreen> {
 
   // Widget reutilizable para las tarjetas de información
   Widget _buildInfoCard(String title, List<Widget> children) {
-    return Card(
-      elevation: 0,
-      shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
-          side: BorderSide(color: Colors.grey.shade200)),
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: Colors.grey.shade200, width: 1.5),
+        boxShadow: [
+          BoxShadow(color: Colors.black.withValues(alpha: 0.02), blurRadius: 8, offset: const Offset(0, 2))
+        ]
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Padding(
-            padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
-            child: Text(title,
-                style: Theme.of(context)
-                    .textTheme
-                    .titleMedium
-                    ?.copyWith(fontWeight: FontWeight.bold)),
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            decoration: BoxDecoration(
+              color: Colors.grey.shade50,
+              borderRadius: const BorderRadius.only(topLeft: Radius.circular(15), topRight: Radius.circular(15)),
+              border: Border(bottom: BorderSide(color: Colors.grey.shade200, width: 1.5)),
+            ),
+            child: Text(
+              title.toUpperCase(),
+              style: TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.w900,
+                color: Colors.blueGrey.shade600,
+                letterSpacing: 1.0,
+              ),
+            ),
           ),
-          ...children,
+          Padding(
+            padding: const EdgeInsets.symmetric(vertical: 8.0),
+            child: Column(children: children),
+          ),
         ],
       ),
     );
@@ -643,15 +727,26 @@ class _EmpleadoDetailScreenState extends ConsumerState<EmpleadoDetailScreen> {
   // Widget reutilizable para cada fila de información
   Widget _buildInfoTile(IconData icon, String title, String subtitle, {VoidCallback? onTap, Widget? trailing}) {
     return ListTile(
-      leading: Icon(icon, color: Theme.of(context).primaryColor),
-      title: Text(title,
-          style: const TextStyle(
-              fontWeight: FontWeight.w500, color: Colors.black54)),
-      subtitle: Text(subtitle,
-          style: Theme.of(context)
-              .textTheme
-              .titleSmall
-              ?.copyWith(fontWeight: FontWeight.bold, color: Colors.black87)),
+      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 2),
+      leading: Container(
+        padding: const EdgeInsets.all(8),
+        decoration: BoxDecoration(
+          color: const Color(0xFF1E3A8A).withValues(alpha: 0.08),
+          borderRadius: BorderRadius.circular(8),
+        ),
+        child: Icon(icon, color: const Color(0xFF1E3A8A), size: 20),
+      ),
+      title: Text(
+        title,
+        style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: Colors.blueGrey.shade400),
+      ),
+      subtitle: Padding(
+        padding: const EdgeInsets.only(top: 2.0),
+        child: Text(
+          subtitle,
+          style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Color(0xFF1E293B)),
+        ),
+      ),
       trailing: trailing,
       onTap: onTap,
     );
@@ -674,7 +769,7 @@ class _EmpleadoDetailScreenState extends ConsumerState<EmpleadoDetailScreen> {
       builder: (context, ref, child) {
         final vacacionesAsync = ref.watch(vacacionesEmpleadoProvider(empleado.id));
         return Scaffold(
-          backgroundColor: Colors.grey.shade50,
+          backgroundColor: Colors.grey.shade100,
           body: vacacionesAsync.when(
             data: (vacacionesData) {
               if (vacacionesData.isEmpty) {
@@ -766,12 +861,15 @@ class _EmpleadoDetailScreenState extends ConsumerState<EmpleadoDetailScreen> {
                               }
                             }
 
-                            return Card(
-                              elevation: 1,
-                              margin: const EdgeInsets.only(bottom: 12),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(12),
-                                side: BorderSide(color: Colors.blue.shade100),
+                            return Container(
+                              margin: const EdgeInsets.only(bottom: 16),
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                borderRadius: BorderRadius.circular(16),
+                                border: Border.all(color: Colors.blue.shade200, width: 1.5),
+                                boxShadow: [
+                                  BoxShadow(color: Colors.black.withValues(alpha: 0.02), blurRadius: 8, offset: const Offset(0, 2))
+                                ]
                               ),
                               child: Padding(
                                 padding: const EdgeInsets.all(16.0),
@@ -974,7 +1072,7 @@ class _EmpleadoDetailScreenState extends ConsumerState<EmpleadoDetailScreen> {
       builder: (context, ref, child) {
         final faltasAsync = ref.watch(faltasEmpleadoProvider(empleado.id));
         return Scaffold(
-          backgroundColor: Colors.grey.shade50,
+          backgroundColor: Colors.grey.shade100,
           body: faltasAsync.when(
             data: (faltasData) {
               if (faltasData.isEmpty) {
@@ -1005,12 +1103,15 @@ class _EmpleadoDetailScreenState extends ConsumerState<EmpleadoDetailScreen> {
                       return _formatDate(d);
                     }
 
-                    return Card(
-                      elevation: 1,
-                      margin: const EdgeInsets.only(bottom: 12),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                        side: BorderSide(color: Colors.red.shade100),
+                    return Container(
+                      margin: const EdgeInsets.only(bottom: 16),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(color: Colors.red.shade200, width: 1.5),
+                        boxShadow: [
+                          BoxShadow(color: Colors.black.withValues(alpha: 0.02), blurRadius: 8, offset: const Offset(0, 2))
+                        ]
                       ),
                       child: Padding(
                         padding: const EdgeInsets.all(16.0),
@@ -1311,7 +1412,7 @@ class _EmpleadoDetailScreenState extends ConsumerState<EmpleadoDetailScreen> {
       builder: (context, ref, child) {
         final notasAsync = ref.watch(notasEmpleadoProvider(empleado.id));
         return Scaffold(
-          backgroundColor: Colors.grey.shade50,
+          backgroundColor: Colors.grey.shade100,
           body: notasAsync.when(
             data: (notasData) {
               if (notasData.isEmpty) {
@@ -1342,12 +1443,15 @@ class _EmpleadoDetailScreenState extends ConsumerState<EmpleadoDetailScreen> {
                       return _formatDate(d);
                     }
 
-                    return Card(
-                      elevation: 1,
-                      margin: const EdgeInsets.only(bottom: 12),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                        side: BorderSide(color: Colors.blue.shade100),
+                    return Container(
+                      margin: const EdgeInsets.only(bottom: 16),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(color: Colors.indigo.shade200, width: 1.5),
+                        boxShadow: [
+                          BoxShadow(color: Colors.black.withValues(alpha: 0.02), blurRadius: 8, offset: const Offset(0, 2))
+                        ]
                       ),
                       child: Padding(
                         padding: const EdgeInsets.all(16.0),
@@ -1606,7 +1710,7 @@ class _EmpleadoDetailScreenState extends ConsumerState<EmpleadoDetailScreen> {
       builder: (context, ref, child) {
         final documentosAsync = ref.watch(documentosEmpleadoProvider(empleado.id));
         return Scaffold(
-          backgroundColor: Colors.grey.shade50,
+          backgroundColor: Colors.grey.shade100,
           body: documentosAsync.when(
             data: (documentosData) {
               if (documentosData.isEmpty) {
@@ -1637,12 +1741,15 @@ class _EmpleadoDetailScreenState extends ConsumerState<EmpleadoDetailScreen> {
                       return _formatDate(d);
                     }
 
-                    return Card(
-                      elevation: 1,
-                      margin: const EdgeInsets.only(bottom: 12),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                        side: BorderSide(color: Colors.orange.shade100),
+                    return Container(
+                      margin: const EdgeInsets.only(bottom: 16),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(color: Colors.orange.shade200, width: 1.5),
+                        boxShadow: [
+                          BoxShadow(color: Colors.black.withValues(alpha: 0.02), blurRadius: 8, offset: const Offset(0, 2))
+                        ]
                       ),
                       child: Padding(
                         padding: const EdgeInsets.all(16.0),

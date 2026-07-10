@@ -149,15 +149,17 @@ class NotificacionesButton extends ConsumerWidget {
                             } else {
                               if (context.mounted) context.push('/reportes-incidencias');
                             }
-                          } else if (titulo.contains('vacacion') || titulo.contains('vacaciones')) {
+                          } else if (titulo.contains('vacacion') || titulo.contains('vacaciones') || titulo.contains('falta') || titulo.contains('nota') || titulo.contains('documento') || titulo.contains('contrato')) {
                             if (entityId != null) {
                               try {
                                 final empleados = await ref.read(empleadosProvider.future);
                                 final empleado = empleados.firstWhere((e) => e.id == entityId);
                                 if (context.mounted) {
+                                  int tabIndex = 0; // Default: Perfil
+                                  if (titulo.contains('vacacion') || titulo.contains('vacaciones')) tabIndex = 2; // Asumiendo tab 2 es Vacaciones
                                   context.push('/empleado', extra: {
                                     'empleado': empleado,
-                                    'initialTabIndex': 2,
+                                    'initialTabIndex': tabIndex,
                                   });
                                 }
                               } catch (e) {
@@ -168,7 +170,7 @@ class NotificacionesButton extends ConsumerWidget {
                             }
                           } else if (titulo.contains('empleado inactivo')) {
                             if (context.mounted) context.push('/empleados', extra: 'inactivos');
-                          } else if (titulo.contains('empleado') || titulo.contains('cumpleaños') || titulo.contains('contrato')) {
+                          } else if (titulo.contains('empleado') || titulo.contains('cumpleaños')) {
                             if (context.mounted) context.push('/empleados');
                           } else if (titulo.contains('departamento')) {
                             if (context.mounted) context.push('/departamentos');
