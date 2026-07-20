@@ -1,0 +1,187 @@
+﻿
+>       <!-- TAB: TICKETS -->
+        <div v-if="activeTab === 'tickets'" class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
+          <div class="flex flex-col md:flex-row justify-between items-center mb-6 gap-4 border-b border-slate-100 
+pb-4">
+            <h2 class="text-lg font-black text-slate-800 uppercase tracking-tighter">Análisis de Soporte</h2>
+            <div class="flex flex-col md:flex-row gap-3 w-full md:w-auto items-center">
+              <input v-model="searchQuery" type="text" placeholder="Buscar ticket, usuario..." class="p-2 border 
+border-slate-200 rounded-lg text-sm bg-slate-50 w-full md:w-48 focus:border-blue-500 outline-none">
+              <select v-model="ticketsFiltroEstado" class="p-2 border border-slate-200 rounded-lg text-sm bg-slate-50 
+focus:border-blue-500 outline-none">
+                <option value="todos">Todos los Estados</option>
+                <option value="pendientes_progreso">Pendientes / Progreso</option>
+                <option value="resueltos_cerrados">Resueltos / Cerrados</option>
+                <option value="Pendiente">Pendientes</option>
+                <option value="En Progreso">En Progreso</option>
+                <option value="Resuelto">Resueltos</option>
+                <option value="Cerrado">Cerrados</option>
+              </select>
+              <select v-model="ticketsFiltroPrioridad" class="p-2 border border-slate-200 rounded-lg text-sm 
+bg-slate-50 focus:border-blue-500 outline-none">
+                <option value="todos">Todas las Prioridades</option>
+                <option value="Baja">Baja</option>
+                <option value="Media">Media</option>
+                <option value="Alta">Alta</option>
+                <option value="Urgente">Urgente</option>
+              </select>
+              <button @click="generarPDFTickets" class="px-4 py-2 bg-slate-800 hover:bg-slate-900 text-white 
+rounded-lg font-bold text-xs uppercase tracking-widest transition-colors shadow-sm flex items-center justify-center 
+gap-2 whitespace-nowrap">
+                <span>📄</span> Crear PDF Tickets
+              </button>
+              <button @click="exportarCSV(ticketsFiltrados, 'Reporte_Tickets')" class="px-4 py-2 bg-emerald-600 
+hover:bg-emerald-700 text-white rounded-lg font-bold text-xs uppercase tracking-widest transition-colors shadow-sm 
+flex items-center justify-center gap-2">
+                <span>📊</span> CSV
+              </button>
+            </div>
+          </div>
+  
+          <!-- Resumen General -->
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+            <div @click="ticketsFiltroEstado = 'todos'" class="cursor-pointer bg-gradient-to-br from-slate-800 
+to-slate-900 p-5 rounded-2xl shadow-sm text-white flex items-center justify-between transition-transform 
+hover:scale-[1.02]">
+              <div>
+                <p class="text-[10px] font-black uppercase tracking-widest text-slate-400">Total Tickets</p>
+                <p class="text-3xl font-black mt-1">{{ tickets.length }}</p>
+              </div>
+              <div class="w-12 h-12 bg-white/10 rounded-full flex items-center justify-center text-2xl">📋</div>
+            </div>
+            <div @click="ticketsFiltroEstado = 'pendientes_progreso'" class="cursor-pointer bg-gradient-to-br 
+from-yellow-400 to-orange-500 p-5 rounded-2xl shadow-sm text-white flex items-center justify-between 
+transition-transform hover:scale-[1.02]">
+              <div>
+                <p class="text-[10px] font-black uppercase tracking-widest text-yellow-100">Pendientes / Progreso</p>
+                <p class="text-3xl font-black mt-1">{{ tickets.filter(t => t.estado === 'Pendiente' || t.estado === 
+'En Progreso').length }}</p>
+              </div>
+              <div class="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center text-2xl">⏳</div>
+            </div>
+            <div @click="ticketsFiltroEstado = 'resueltos_cerrados'" class="cursor-pointer bg-gradient-to-br 
+from-emerald-500 to-teal-600 p-5 rounded-2xl shadow-sm text-white flex items-center justify-between 
+transition-transform hover:scale-[1.02]">
+              <div>
+                <p class="text-[10px] font-black uppercase tracking-widest text-emerald-100">Resueltos / Cerrados</p>
+                <p class="text-3xl font-black mt-1">{{ tickets.filter(t => t.estado === 'Resuelto' || t.estado === 
+'Cerrado').length }}</p>
+              </div>
+              <div class="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center text-2xl">✅</div>
+            </div>
+          </div>
+  
+          <!-- Gráficos de Tickets -->
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+            <div class="bg-slate-50 p-5 rounded-2xl border border-slate-100 h-[300px] flex flex-col items-center">
+               <h3 class="text-sm font-black text-slate-800 uppercase tracking-widest mb-4">Tickets por Estado</h3>
+               <div class="flex-1 w-full relative">
+                 <Doughnut v-if="!loadingTickets && chartEstadoTicketsData" :data="chartEstadoTicketsData" 
+:options="doughnutOptions" />
+               </div>
+            </div>
+            <div class="bg-slate-50 p-5 rounded-2xl border border-slate-100 h-[300px] flex flex-col items-center">
+               <h3 class="text-sm font-black text-slate-800 uppercase tracking-widest mb-4">Tickets por Prioridad</h3>
+               <div class="flex-1 w-full relative">
+                 <Doughnut v-if="!loadingTickets && chartPrioridadTicketsData" :data="chartPrioridadTicketsData" 
+:options="doughnutOptions" />
+               </div>
+            </div>
+          </div>
+  
+          <div v-if="loadingTickets" class="flex flex-col items-center justify-center py-16">
+            <div class="animate-spin rounded-full h-10 w-10 border-b-2 border-emerald-600 mb-4"></div>
+            <span class="text-slate-500 font-medium text-sm">Cargando tickets...</span>
+          </div>
+          <div v-else class="overflow-x-auto">
+            <table class="w-full text-left border-collapse">
+              <thead>
+                <tr class="bg-slate-50 border-b border-slate-200">
+                  <th class="p-3 text-[10px] font-black text-slate-500 uppercase tracking-widest">ID</th>
+                  <th class="p-3 text-[10px] font-black text-slate-500 uppercase tracking-widest">Asunto</th>
+                  <th class="p-3 text-[10px] font-black text-slate-500 uppercase tracking-widest">Prioridad</th>
+                  <th class="p-3 text-[10px] font-black text-slate-500 uppercase tracking-widest">Estado</th>
+                  <th class="p-3 text-[10px] font-black text-slate-500 uppercase tracking-widest">Creado Por</th>
+                  <th class="p-3 text-[10px] font-black text-slate-500 uppercase tracking-widest">Fecha</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-for="ticket in ticketsFiltrados" :key="ticket.id" class="border-b border-slate-100 
+hover:bg-slate-50 transition-colors">
+                  <td class="p-3 text-xs font-bold text-slate-500">#{{ ticket.id }}</td>
+                  <td class="p-3 text-sm font-bold text-slate-800">{{ ticket.asunto }}</td>
+                  <td class="p-3 text-xs">
+                    <span :class="getBadgeClass(ticket.prioridad)" class="px-2 py-1 rounded text-[10px] font-bold 
+uppercase tracking-widest">
+                      {{ ticket.prioridad }}
+                    </span>
+                  </td>
+                  <td class="p-3 text-xs">
+                    <span :class="getBadgeClass(ticket.estado)" class="px-2 py-1 rounded text-[10px] font-bold 
+uppercase tracking-widest">
+                      {{ ticket.estado }}
+                    </span>
+                  </td>
+                  <td class="p-3 text-xs">
+                    <div class="flex items-center gap-2">
+                      <div class="w-6 h-6 rounded-full bg-slate-200 flex items-center justify-center text-[10px] 
+font-bold text-slate-600">
+                        {{ (ticket.creadoPorNombre || ticket.empleado_nombre || '?').charAt(0).toUpperCase() }}
+                      </div>
+                      <span class="text-slate-700 font-bold">{{ ticket.creadoPorNombre || (ticket.empleado_nombre ? 
+`${ticket.empleado_nombre} ${ticket.empleado_apellido || ''}`.trim() : 'Desconocido') }}</span>
+                    </div>
+                  </td>
+                  <td class="p-3 text-xs text-slate-500">{{ new Date(ticket.fecha_creacion).toLocaleDateString() 
+}}</td>
+                </tr>
+                <tr v-if="ticketsFiltrados.length === 0">
+                  <td colspan="6" class="p-8">
+                    <div class="flex flex-col items-center justify-center text-center">
+                      <div class="w-16 h-16 bg-slate-50 rounded-full flex items-center justify-center mb-3">
+                        <span class="text-3xl">🎫</span>
+                      </div>
+                      <h3 class="text-slate-800 font-black text-lg mb-1">Sin Tickets</h3>
+                      <p class="text-slate-500 text-sm max-w-md">No se encontraron tickets con los filtros actuales o 
+la búsqueda "{{ searchQuery }}".</p>
+                    </div>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+  
+        <!-- TAB: CONTROL DE TIEMPOS -->
+        <div v-if="activeTab === 'tiempos'" class="space-y-6 animate-in fade-in duration-300">
+          
+          <!-- ENCABEZADO Y PDF CONTROL DE TIEMPOS -->
+          <div class="flex flex-col md:flex-row justify-between items-center bg-white p-6 rounded-2xl shadow-sm border 
+border-slate-200 gap-4">
+             <div>
+               <h2 class="text-xl font-black text-slate-800 uppercase tracking-tighter text-emerald-600">⏳ Reporte de 
+Control de Tiempos</h2>
+               <p class="text-xs text-slate-500 font-medium mt-1">Genera un reporte consolidado con proyecciones, 
+ausentismo y saldos de vacaciones.</p>
+             </div>
+             <button @click="generarPDFControlTiempos" class="px-5 py-2.5 bg-slate-800 hover:bg-slate-900 text-white 
+rounded-lg font-bold text-xs uppercase tracking-widest transition-colors shadow-sm flex items-center justify-center 
+gap-2 whitespace-nowrap">
+                <span>📄</span> Crear PDF Control de Tiempos
+             </button>
+          </div>
+  
+          <!-- Proyecciones Vacaciones -->
+          <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
+          <div class="flex flex-col md:flex-row justify-between items-center mb-6 gap-4 border-b border-slate-100 
+pb-4">
+            <h2 class="text-lg font-black text-slate-800 uppercase tracking-tighter">Proyecciones de Vacaciones</h2>
+            <div class="flex flex-col md:flex-row gap-3 w-full md:w-auto">
+              <button @click="exportarCSV(proyeccionesVacaciones, 'Proyecciones_Vacaciones')" class="px-4 py-2 
+bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg font-bold text-xs uppercase tracking-widest 
+transition-colors shadow-sm flex items-center justify-center gap-2">
+                <span>📊</span> CSV
+              </button>
+            </div>
+
+

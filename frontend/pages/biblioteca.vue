@@ -36,9 +36,11 @@
           <h3 class="text-xl font-black text-slate-800 mb-2">{{ manual.titulo }}</h3>
           <p class="text-slate-500 text-sm leading-relaxed mb-6 italic">{{ manual.descripcion }}</p>
           
-          <button @click="descargarManual(manual)" 
+          <button @click="abrirArchivo(manual)" 
             class="w-full py-4 bg-slate-900 text-white rounded-2xl font-bold uppercase text-xs tracking-widest hover:bg-blue-600 transition-colors flex items-center justify-center gap-3">
-            <span>📥</span> Descargar PDF
+            <span v-if="esVideo(manual.archivo)">▶️</span>
+            <span v-else>📥</span> 
+            {{ esVideo(manual.archivo) ? 'Ver Video' : 'Descargar PDF' }}
           </button>
         </div>
       </div>
@@ -82,7 +84,12 @@ const manualesFiltrados = computed(() => {
   )
 })
 
-const descargarManual = (manual) => {
+const esVideo = (archivo) => {
+  if (!archivo) return false;
+  return archivo.match(/\.(mp4|webm|ogg|mov)$/i);
+}
+
+const abrirArchivo = (manual) => {
   if (manual.archivo) {
     window.open(`${config.public.apiBase}${manual.archivo}`, '_blank');
   } else {

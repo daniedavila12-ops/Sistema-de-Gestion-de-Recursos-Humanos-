@@ -144,6 +144,9 @@
           🎫 Soporte & Tickets
           <span v-if="tickets.length" class="text-[9px] font-black bg-amber-100 text-amber-600 px-1.5 py-0.5 rounded-full">{{ tickets.length }}</span>
         </button>
+        <button @click="activeTab = 'general'" :class="['px-6 py-3 font-bold text-xs uppercase tracking-widest whitespace-nowrap border-b-2 transition-colors flex items-center gap-2', activeTab === 'general' ? 'border-violet-500 text-violet-600' : 'border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300']">
+          📑 Reporte General
+        </button>
       </div>
 
       <!-- TAB: DASHBOARD -->
@@ -981,6 +984,47 @@
       </div>
     </div>
 
+      <!-- TAB: REPORTE GENERAL -->
+      <div v-if="activeTab === 'general'" class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 animate-in fade-in duration-300">
+        <div class="flex flex-col md:flex-row justify-between items-center mb-6 gap-4 border-b border-slate-100 pb-4">
+          <h2 class="text-lg font-black text-slate-800 uppercase tracking-tight text-violet-600">📑 Reporte General por Empleado</h2>
+        </div>
+        
+        <div class="flex flex-col md:flex-row gap-4 items-end mb-8">
+          <div class="w-full md:w-1/2">
+            <label class="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-2">Seleccionar Empleado</label>
+            <select v-model="empleadoSeleccionadoGeneral" class="w-full p-3 border border-slate-200 rounded-xl text-sm bg-slate-50 focus:border-violet-500 outline-none">
+              <option value="">Seleccione un empleado...</option>
+              <option v-for="emp in empleados" :key="emp.id" :value="emp.id">
+                {{ emp.nombre }} {{ emp.apellido }} - {{ emp.identidad }}
+              </option>
+            </select>
+          </div>
+          
+          <button 
+            @click="generarPDFGeneralEmpleado" 
+            :disabled="!empleadoSeleccionadoGeneral || isLoadingGeneralPDF"
+            class="px-6 py-3 bg-violet-600 hover:bg-violet-700 disabled:bg-slate-300 disabled:cursor-not-allowed text-white rounded-xl font-bold text-xs uppercase tracking-widest transition-colors shadow-sm flex items-center justify-center gap-2 whitespace-nowrap"
+          >
+            <span v-if="isLoadingGeneralPDF" class="animate-spin">⏳</span>
+            <span v-else>📄</span>
+            {{ isLoadingGeneralPDF ? 'Generando...' : 'Generar PDF Consolidado' }}
+          </button>
+        </div>
+        
+        <div class="bg-slate-50 rounded-xl p-6 border border-slate-100">
+          <h3 class="text-sm font-bold text-slate-700 mb-3">El reporte incluirá:</h3>
+          <ul class="text-xs text-slate-500 space-y-2 list-disc pl-5">
+            <li>Historial completo de Contratos</li>
+            <li>Historial de Vacaciones detallado</li>
+            <li>Historial de Faltas registradas</li>
+            <li>Historial de Notas de desempeño/observaciones</li>
+            <li>Historial de Documentos Legales y Vencimientos</li>
+            <li>Reportes de Incidencias y Tickets de Soporte vinculados</li>
+          </ul>
+        </div>
+      </div>
+
     </main>
   </div>
 </template>
@@ -1006,6 +1050,8 @@ const mobileMenuOpen = ref(false)
 const activeTab = ref('dashboard')
 const ultimaActualizacion = ref(new Date().toLocaleTimeString('es-HN'))
 const searchQuery = ref('')
+const empleadoSeleccionadoGeneral = ref('')
+const isLoadingGeneralPDF = ref(false)
 
 watch(activeTab, () => {
   searchQuery.value = ''
@@ -1816,15 +1862,20 @@ const generarPDFIncidencias = async () => {
     const doc = new jsPDF();
     
     let tituloReporte = 'REPORTE DE INCIDENCIAS LABORALES';
-    let headers = ['Código', 'Empleado', 'Fecha', 'Categoría', 'Prioridad', 'Estado'];
-    let tableData = incidenciasDatos.value.map(inc => [
-      `INC-${inc.id}`,
-      inc.empleado_nombre || 'Desconocido',
-      inc.fecha_creacion ? new Date(inc.fecha_creacion).toLocaleDateString() : 'N/A',
-      inc.categoria || 'N/A',
-      inc.prioridad || 'Media',
-      inc.estado || 'Pendiente'
-    ]);
+    let headers = ['Código', 'Empleado(s) Reportado(s)', 'Detalle/Tema', 'Fecha', 'Categoría', 'Prioridad', 'Estado'];
+    let tableData = incidenciasDatos.value.map(inc => {
+      const nombreCompleto = inc.empleado_nombre ? `${inc.empleado_nombre} ${inc.empleado_apellido || ''}`.trim() : 'General / Sin Asignar';
+      const detalle = inc.tema ? inc.tema : (inc.descripcion ? (inc.descripcion.length > 30 ? inc.descripcion.substring(0, 30) + '...' : inc.descripcion) : 'N/A');
+      return [
+        `INC-${inc.id}`,
+        nombreCompleto,
+        detalle,
+        inc.fecha_creacion ? new Date(inc.fecha_creacion).toLocaleDateString() : 'N/A',
+        inc.categoria || 'N/A',
+        inc.prioridad || 'Media',
+        inc.estado || 'Pendiente'
+      ];
+    });
 
     // Encabezado
     doc.setFontSize(16);
@@ -2426,6 +2477,462 @@ onMounted(async () => {
 onUnmounted(() => {
   if (pollingInterval) clearInterval(pollingInterval)
 })
+
+// --- REPORTE GENERAL ---
+const generarPDFGeneralEmpleado = async () => {
+  if (!empleadoSeleccionadoGeneral.value) {
+    Swal.fire('Aviso', 'Por favor seleccione un empleado primero.', 'warning');
+    return;
+  }
+
+  isLoadingGeneralPDF.value = true;
+  
+  try {
+    const empId = empleadoSeleccionadoGeneral.value;
+    const empleadoInfo = empleados.value.find(e => e.id == empId);
+    
+    if (!empleadoInfo) {
+      Swal.fire('Error', 'No se encontró la información del empleado seleccionado.', 'error');
+      return;
+    }
+
+    const [resContratos, resVacaciones, resFaltas, resNotas, resDocs] = await Promise.all([
+      axios.get(`http://localhost:3007/api/empleados/${empId}/contratos`).catch(() => ({ data: [] })),
+      axios.get(`http://localhost:3007/api/vacaciones/empleado/${empId}`).catch(() => ({ data: [] })),
+      axios.get(`http://localhost:3007/api/faltas/empleado/${empId}`).catch(() => ({ data: [] })),
+      axios.get(`http://localhost:3007/api/notas/empleado/${empId}`).catch(() => ({ data: [] })),
+      axios.get(`http://localhost:3007/api/documentos/empleado/${empId}`).catch(() => ({ data: [] }))
+    ]);
+
+    const contratosData = Array.isArray(resContratos.data) ? resContratos.data : [];
+    const vacacionesData = Array.isArray(resVacaciones.data) ? resVacaciones.data : [];
+    const faltasData = Array.isArray(resFaltas.data) ? resFaltas.data : [];
+    const notasData = Array.isArray(resNotas.data) ? resNotas.data : [];
+    const docsData = Array.isArray(resDocs.data) ? resDocs.data : [];
+    
+    const ticketsData = (tickets.value || []).filter(t => t.empleado_id == empId || t.asignado_empleado_id == empId);
+    const incidenciasData = (incidenciasDatos.value || []).filter(i => i.empleado_reportado_id == empId);
+
+    const doc = new jsPDF();
+    const pageHeight = doc.internal.pageSize.height;
+    
+    // Foto del Empleado (Izquierda Superior)
+    let photoX = 14;
+    let photoY = 12;
+    let photoSize = 22;
+    
+    // Marco para la foto
+    doc.setDrawColor(203, 213, 225); // Slate 300
+    doc.setLineWidth(0.5);
+    doc.setFillColor(248, 250, 252); // Slate 50
+    doc.rect(photoX, photoY, photoSize, photoSize, 'FD');
+
+    if (empleadoInfo.foto) {
+      const imgFoto = new Image();
+      imgFoto.crossOrigin = 'Anonymous';
+      imgFoto.src = `http://localhost:3007${empleadoInfo.foto}`;
+      
+      await new Promise((resolve) => {
+        imgFoto.onload = resolve;
+        imgFoto.onerror = resolve;
+      });
+
+      try {
+        const imgExt = empleadoInfo.foto.toUpperCase().includes('.PNG') ? 'PNG' : 'JPEG';
+        doc.addImage(imgFoto, imgExt, photoX, photoY, photoSize, photoSize);
+      } catch (e) {
+        console.error("Error al incrustar la foto del empleado:", e);
+        doc.setFontSize(8);
+        doc.setTextColor(148, 163, 184);
+        doc.text('Sin Foto', photoX + 4, photoY + 12);
+      }
+    } else {
+      doc.setFontSize(8);
+      doc.setTextColor(148, 163, 184);
+      doc.text('Sin Foto', photoX + 4, photoY + 12);
+    }
+
+    // Logo - intentar cargar, si falla continuar sin él (Derecha Superior)
+    try {
+      const imgLogo = new Image();
+      imgLogo.crossOrigin = 'anonymous';
+      imgLogo.src = 'http://localhost:3007/uploads/Logo/Logo.png';
+      await new Promise((resolve, reject) => {
+        imgLogo.onload = resolve;
+        imgLogo.onerror = reject;
+        setTimeout(reject, 3000);
+      });
+      // Ajustamos el logo a la derecha (ancho pag 210) -> 210 - 14 (margen) - 30 (ancho) = 166
+      doc.addImage(imgLogo, 'PNG', 166, 10, 30, 20); // Ancho 30, alto 20 para no sobrecargar
+    } catch (e) {
+      // Sin logo, continuar sin problema
+    }
+    
+    doc.setFontSize(16); // Letra más pequeña para que no se monte
+    doc.setTextColor(15, 23, 42); // Un azul más oscuro / Slate 900
+    doc.setFont('helvetica', 'bold');
+    doc.text('REPORTE GENERAL DE EMPLEADO', 42, 20); // Ajuste X = 42
+    
+    doc.setFontSize(10);
+    doc.setTextColor(100, 116, 139); // Slate 500
+    doc.setFont('helvetica', 'normal');
+    doc.text(`Generado: ${new Date().toLocaleDateString('es-HN')} ${new Date().toLocaleTimeString('es-HN')}`, 42, 26);
+    
+    doc.setDrawColor(226, 232, 240); // Slate 200
+    doc.setLineWidth(0.5);
+    doc.line(14, 40, 196, 40); // Subida un poco la linea divisoria
+
+    doc.setFontSize(12);
+    doc.setTextColor(15, 23, 42);
+    doc.setFont('helvetica', 'bold');
+    doc.text('Datos del Empleado:', 14, 50);
+    
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(10);
+    doc.text(`Nombre: ${empleadoInfo.nombre || ''} ${empleadoInfo.apellido || ''}`, 14, 57);
+    doc.text(`Código: ${empleadoInfo.codigo_empleado || 'N/A'}`, 14, 63);
+    doc.text(`Identidad: ${empleadoInfo.identidad || 'N/A'}`, 14, 69);
+    doc.text(`Departamento: ${empleadoInfo.departamento_nombre || empleadoInfo.departamento || 'N/A'}`, 14, 75);
+    doc.text(`Tipo Contrato: ${empleadoInfo.tipo_contrato || 'N/A'}`, 110, 63);
+    doc.text(`Estado: ${empleadoInfo.estado == 1 ? 'Activo' : 'Inactivo'}`, 110, 69);
+    doc.text(`Correo: ${empleadoInfo.correo || 'N/A'}`, 110, 75);
+
+    let currentY = 90;
+    
+    const checkPageBreak = (neededSpace = 30) => {
+      if (currentY + neededSpace >= pageHeight - 20) {
+        doc.addPage();
+        currentY = 20;
+      }
+    };
+
+    const formatFecha = (fecha) => {
+      if (!fecha) return 'N/A';
+      try {
+        return new Date(fecha).toLocaleDateString('es-HN', { timeZone: 'UTC' });
+      } catch { return 'N/A'; }
+    };
+
+    // 1. CONTRATOS
+    checkPageBreak(40);
+    doc.setFontSize(14);
+    doc.setTextColor(30, 58, 138);
+    doc.setFont('helvetica', 'bold');
+    doc.text('1. Historial de Contratos', 14, currentY);
+    currentY += 8;
+    
+    if (contratosData.length > 0) {
+      autoTable(doc, {
+        startY: currentY,
+        head: [['Tipo', 'Estado', 'Inicio', 'Fin', 'Observación']],
+        body: contratosData.map(c => [
+          c.tipoContrato || 'N/A', 
+          c.estado || 'N/A', 
+          formatFecha(c.fechaInicio),
+          c.fechaFinal ? formatFecha(c.fechaFinal) : 'Indefinido',
+          c.observacion || '-'
+        ]),
+        theme: 'grid',
+        headStyles: { fillColor: [59, 130, 246] },
+        styles: { fontSize: 8 }
+      });
+      currentY = doc.lastAutoTable.finalY + 15;
+    } else {
+      doc.setFontSize(9);
+      doc.setTextColor(100);
+      doc.text('No hay contratos registrados.', 14, currentY);
+      currentY += 15;
+    }
+
+    // 2. VACACIONES
+    checkPageBreak(40);
+    doc.setFontSize(14);
+    doc.setTextColor(30, 58, 138);
+    doc.setFont('helvetica', 'bold');
+    doc.text('2. Historial de Vacaciones / Permisos', 14, currentY);
+    currentY += 8;
+    
+    if (vacacionesData.length > 0) {
+      autoTable(doc, {
+        startY: currentY,
+        head: [['Tipo', 'Inicio', 'Fin', 'Días', 'Período', 'Observaciones']],
+        body: vacacionesData.map(v => [
+          v.tipoSolicitud || 'Vacaciones',
+          formatFecha(v.fechaInicio),
+          formatFecha(v.fechaFinal),
+          (v.diasVacaciones || 0).toString(),
+          v.periodo || 'N/A',
+          v.observaciones || '-'
+        ]),
+        theme: 'grid',
+        headStyles: { fillColor: [16, 185, 129] },
+        styles: { fontSize: 8 }
+      });
+      currentY = doc.lastAutoTable.finalY + 15;
+    } else {
+      doc.setFontSize(9);
+      doc.setTextColor(100);
+      doc.text('No hay vacaciones registradas.', 14, currentY);
+      currentY += 15;
+    }
+
+    // 3. FALTAS
+    checkPageBreak(40);
+    doc.setFontSize(14);
+    doc.setTextColor(30, 58, 138);
+    doc.setFont('helvetica', 'bold');
+    doc.text('3. Historial de Faltas', 14, currentY);
+    currentY += 8;
+    
+    if (faltasData.length > 0) {
+      autoTable(doc, {
+        startY: currentY,
+        head: [['Fecha', 'Motivo', 'Sanción']],
+        body: faltasData.map(f => [
+          formatFecha(f.fecha),
+          f.motivo || 'N/A',
+          f.sancion || 'Sin sanción'
+        ]),
+        theme: 'grid',
+        headStyles: { fillColor: [245, 158, 11] },
+        styles: { fontSize: 8 }
+      });
+      currentY = doc.lastAutoTable.finalY + 15;
+    } else {
+      doc.setFontSize(9);
+      doc.setTextColor(100);
+      doc.text('No hay faltas registradas.', 14, currentY);
+      currentY += 15;
+    }
+
+    // 4. NOTAS
+    checkPageBreak(40);
+    doc.setFontSize(14);
+    doc.setTextColor(30, 58, 138);
+    doc.setFont('helvetica', 'bold');
+    doc.text('4. Historial de Notas', 14, currentY);
+    currentY += 8;
+    
+    if (notasData.length > 0) {
+      autoTable(doc, {
+        startY: currentY,
+        head: [['Fecha', 'Asunto', 'Descripción']],
+        body: notasData.map(n => [
+          formatFecha(n.fechaCreacion),
+          n.asunto || 'N/A',
+          (n.descripcion || '').substring(0, 80) + ((n.descripcion || '').length > 80 ? '...' : '')
+        ]),
+        theme: 'grid',
+        headStyles: { fillColor: [99, 102, 241] },
+        styles: { fontSize: 8 }
+      });
+      currentY = doc.lastAutoTable.finalY + 15;
+    } else {
+      doc.setFontSize(9);
+      doc.setTextColor(100);
+      doc.text('No hay notas registradas.', 14, currentY);
+      currentY += 15;
+    }
+
+    // 5. DOCUMENTOS
+    checkPageBreak(40);
+    doc.setFontSize(14);
+    doc.setTextColor(30, 58, 138);
+    doc.setFont('helvetica', 'bold');
+    doc.text('5. Historial de Documentos', 14, currentY);
+    currentY += 8;
+    
+    if (docsData.length > 0) {
+      autoTable(doc, {
+        startY: currentY,
+        head: [['Título', 'Tipo', 'Fecha']],
+        body: docsData.map(d => [
+          d.titulo || 'Documento',
+          d.tipo || 'General',
+          formatFecha(d.fecha_creacion)
+        ]),
+        theme: 'grid',
+        headStyles: { fillColor: [71, 85, 105] },
+        styles: { fontSize: 8 }
+      });
+      currentY = doc.lastAutoTable.finalY + 15;
+    } else {
+      doc.setFontSize(9);
+      doc.setTextColor(100);
+      doc.text('No hay documentos registrados.', 14, currentY);
+      currentY += 15;
+    }
+
+    // 6. INCIDENCIAS
+    checkPageBreak(40);
+    doc.setFontSize(14);
+    doc.setTextColor(30, 58, 138);
+    doc.setFont('helvetica', 'bold');
+    doc.text('6. Reportes de Incidencia', 14, currentY);
+    currentY += 10;
+    
+    if (incidenciasData.length > 0) {
+      for (const inc of incidenciasData) {
+        checkPageBreak(50);
+        
+        // Encabezado de la incidencia
+        doc.setFontSize(12);
+        doc.setTextColor(220, 38, 38);
+        doc.setFont('helvetica', 'bold');
+        doc.text(`Incidencia #${inc.id} - ${inc.tema || inc.categoria}`, 14, currentY);
+        currentY += 6;
+        
+        doc.setFontSize(9);
+        doc.setTextColor(100, 116, 139);
+        doc.setFont('helvetica', 'normal');
+        doc.text(`Fecha: ${new Date(inc.fecha_creacion).toLocaleString('es-HN')} | Prioridad: ${inc.prioridad || 'Media'} | Estado: ${(inc.estado || '').toUpperCase()}`, 14, currentY);
+        currentY += 8;
+        
+        doc.setFontSize(10);
+        doc.setTextColor(15, 23, 42);
+        doc.setFont('helvetica', 'bold');
+        doc.text('Descripción:', 14, currentY);
+        currentY += 5;
+        
+        doc.setFont('helvetica', 'normal');
+        const splitDesc = doc.splitTextToSize(inc.descripcion || 'Sin descripción detallada.', 180);
+        doc.text(splitDesc, 14, currentY);
+        currentY += splitDesc.length * 5 + 5;
+        
+        // Evidencias (si tiene archivo adjunto)
+        if (inc.archivo) {
+          checkPageBreak(25);
+          doc.setFontSize(10);
+          doc.setFont('helvetica', 'bold');
+          doc.setTextColor(15, 23, 42);
+          doc.text('Evidencia Adjunta:', 14, currentY);
+          currentY += 5;
+          
+          if (inc.archivo.match(/\.(jpeg|jpg|png)$/i)) {
+             try {
+               const imgEvi = new Image();
+               imgEvi.crossOrigin = 'anonymous';
+               imgEvi.src = `http://localhost:3007${inc.archivo}`;
+               await new Promise((resolve, reject) => {
+                 imgEvi.onload = resolve;
+                 imgEvi.onerror = reject;
+                 setTimeout(reject, 3000);
+               });
+               const extEvi = inc.archivo.toLowerCase().endsWith('.png') ? 'PNG' : 'JPEG';
+               // Check page break for image
+               checkPageBreak(55);
+               doc.addImage(imgEvi, extEvi, 14, currentY, 45, 45);
+               currentY += 50;
+             } catch(e) {
+               doc.setFont('helvetica', 'normal');
+               doc.setTextColor(59, 130, 246);
+               doc.text('Documento adjunto (Imagen no pudo cargarse)', 14, currentY);
+               currentY += 8;
+             }
+          } else {
+             doc.setFont('helvetica', 'normal');
+             doc.setTextColor(59, 130, 246);
+             doc.text(`Documento adjunto: ${inc.archivo}`, 14, currentY);
+             currentY += 8;
+          }
+        }
+        
+        // Conversaciones y Resoluciones
+        try {
+          const resRespuestas = await axios.get(`http://localhost:3007/api/reportes-incidencia/${inc.id}/respuestas`);
+          const respuestas = resRespuestas.data || [];
+          
+          if (respuestas.length > 0) {
+            checkPageBreak(20);
+            doc.setFontSize(10);
+            doc.setFont('helvetica', 'bold');
+            doc.setTextColor(15, 23, 42);
+            doc.text('Conversación y Resoluciones:', 14, currentY);
+            currentY += 6;
+            
+            for (const r of respuestas) {
+              checkPageBreak(15);
+              const autorNombre = r.usuario_id ? r.usuario_nombre : (r.empleado_id ? `${r.empleado_nombre} ${r.empleado_apellido}` : 'Desconocido');
+              const fechaRes = new Date(r.fecha_creacion).toLocaleString('es-HN');
+              
+              doc.setFontSize(9);
+              doc.setFont('helvetica', 'bold');
+              doc.setTextColor(71, 85, 105);
+              doc.text(`${autorNombre} (${fechaRes}):`, 14, currentY);
+              currentY += 5;
+              
+              doc.setFont('helvetica', 'normal');
+              doc.setTextColor(15, 23, 42);
+              const splitMsj = doc.splitTextToSize(r.mensaje || '', 180);
+              doc.text(splitMsj, 14, currentY);
+              currentY += splitMsj.length * 5 + 3;
+            }
+          }
+        } catch(e) {
+           console.error("Error cargando respuestas", e);
+        }
+        
+        currentY += 10;
+        doc.setDrawColor(226, 232, 240);
+        doc.setLineWidth(0.5);
+        doc.line(14, currentY - 5, 196, currentY - 5);
+      }
+    } else {
+      doc.setFontSize(9);
+      doc.setTextColor(100);
+      doc.text('No hay incidencias registradas.', 14, currentY);
+      currentY += 15;
+    }
+
+    // 7. TICKETS
+    checkPageBreak(40);
+    doc.setFontSize(14);
+    doc.setTextColor(30, 58, 138);
+    doc.setFont('helvetica', 'bold');
+    doc.text('7. Tickets de Soporte', 14, currentY);
+    currentY += 8;
+    
+    if (ticketsData.length > 0) {
+      autoTable(doc, {
+        startY: currentY,
+        head: [['ID', 'Prioridad', 'Categoría', 'Estado']],
+        body: ticketsData.map(t => [
+          `#${t.id}`,
+          t.prioridad || 'N/A',
+          t.Categoria || t.categoria || 'N/A',
+          t.estado || 'N/A'
+        ]),
+        theme: 'grid',
+        headStyles: { fillColor: [217, 119, 6] },
+        styles: { fontSize: 8 }
+      });
+      currentY = doc.lastAutoTable.finalY + 15;
+    } else {
+      doc.setFontSize(9);
+      doc.setTextColor(100);
+      doc.text('No hay tickets registrados.', 14, currentY);
+      currentY += 15;
+    }
+    
+    // Paginación
+    const pageCount = doc.internal.getNumberOfPages();
+    for (let i = 1; i <= pageCount; i++) {
+      doc.setPage(i);
+      doc.setFontSize(8);
+      doc.setTextColor(150);
+      doc.text(`Página ${i} de ${pageCount}`, doc.internal.pageSize.width / 2, pageHeight - 10, { align: 'center' });
+    }
+
+    doc.save(`Reporte_General_${empleadoInfo.nombre}_${empleadoInfo.apellido}.pdf`);
+    
+    Swal.fire('¡Listo!', 'El reporte general se ha descargado correctamente.', 'success');
+  } catch (error) {
+    console.error("Error al generar PDF General:", error);
+    Swal.fire('Error', 'Hubo un error al generar el PDF consolidado. Detalle: ' + (error.message || 'Error desconocido'), 'error');
+  } finally {
+    isLoadingGeneralPDF.value = false;
+  }
+}
 </script>
 
 <style>

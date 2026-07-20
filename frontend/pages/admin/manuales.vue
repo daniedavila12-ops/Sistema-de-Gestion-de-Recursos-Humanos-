@@ -229,8 +229,8 @@
             </div>
             
             <div>
-              <label class="block text-[10px] font-black text-slate-500 uppercase mb-1">Archivo PDF</label>
-              <input type="file" ref="archivoInput" accept=".pdf" :required="!editandoId" class="w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-bold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100">
+              <label class="block text-[10px] font-black text-slate-500 uppercase mb-1">Archivo PDF o Video</label>
+              <input type="file" ref="archivoInput" accept=".pdf,video/*" :required="!editandoId" class="w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-bold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100">
               <p v-if="editandoId" class="text-xs text-slate-500 mt-1">Opcional. Sube un archivo solo si deseas reemplazar el actual.</p>
             </div>
 
@@ -418,7 +418,7 @@ const cerrarModal = () => {
 
 const subirManual = async () => {
   const file = archivoInput.value?.files[0]
-  if (!editandoId.value && !file) return alert('Por favor selecciona un archivo PDF')
+  if (!editandoId.value && !file) return alert('Por favor selecciona un archivo PDF o Video')
 
   subiendo.value = true
   

@@ -215,9 +215,14 @@
                 <div v-if="activeTab === 'CONTRATOS' && hasPermission('Contratos', 'puedeVer') === true" class="w-full">
                   <div class="flex justify-between items-center mb-6">
                     <h4 class="text-lg font-black text-slate-800 uppercase tracking-tight">Historial de Contratos</h4>
-                    <button @click="abrirModalContrato" class="px-4 py-2 bg-blue-600 text-white rounded-xl font-bold text-xs uppercase tracking-widest hover:bg-blue-700 transition-colors shadow-sm">
-                      ➕ Nuevo Contrato
-                    </button>
+                    <div class="flex gap-2">
+                      <button @click="generarPDFHistorialContratos" class="px-4 py-2 bg-slate-800 text-white rounded-xl font-bold text-xs uppercase tracking-widest hover:bg-slate-900 transition-colors shadow-sm flex items-center gap-2">
+                        📄 Crear PDF
+                      </button>
+                      <button @click="abrirModalContrato" class="px-4 py-2 bg-blue-600 text-white rounded-xl font-bold text-xs uppercase tracking-widest hover:bg-blue-700 transition-colors shadow-sm">
+                        ➕ Nuevo Contrato
+                      </button>
+                    </div>
                   </div>
                   
                   <div v-if="contratos.length === 0" class="bg-white rounded-xl border border-slate-200 p-8 text-center text-slate-400 italic shadow-sm">
@@ -276,6 +281,12 @@
                           <option value="">Todos</option>
                           <option v-for="p in periodosHistorialUnicos" :key="p" :value="p">{{ p }}</option>
                         </select>
+                        <button @click="generarPDFHistorialVacaciones" class="px-4 py-2 bg-slate-800 text-white rounded-xl font-bold text-xs uppercase tracking-widest hover:bg-slate-900 transition-colors shadow-sm flex items-center gap-2">
+                          📄 Crear PDF
+                        </button>
+                        <button @click="generarPDFHistorialVacacionesDetallado" class="px-4 py-2 bg-blue-600 text-white rounded-xl font-bold text-xs uppercase tracking-widest hover:bg-blue-700 transition-colors shadow-sm flex items-center gap-2">
+                          📄 PDF Detallado
+                        </button>
                       </div>
                       <NuxtLink :to="`/vacaciones?empleadoId=${route.params.id}`" class="px-4 py-2 bg-blue-600 text-white rounded-xl font-bold text-xs uppercase tracking-widest hover:bg-blue-700 transition-colors shadow-sm">
                         ➕ Registrar Vacaciones
@@ -357,9 +368,14 @@
                 <div v-if="activeTab === 'FALTAS' && hasPermission('Faltas', 'puedeVer') === true" class="w-full">
                   <div class="flex justify-between items-center mb-6">
                     <h4 class="text-lg font-black text-slate-800 uppercase tracking-tight">Historial de Faltas</h4>
-                    <button @click="abrirModalFalta" class="px-4 py-2 bg-blue-600 text-white rounded-xl font-bold text-xs uppercase tracking-widest hover:bg-blue-700 transition-colors shadow-sm">
-                      ➕ Registrar Falta
-                    </button>
+                    <div class="flex items-center gap-2">
+                      <button v-if="faltas.length > 0" @click="generarPDFHistorialFaltas" class="px-3 py-1.5 bg-slate-800 text-white rounded-xl font-bold text-xs uppercase tracking-widest hover:bg-slate-900 transition-colors shadow-sm flex items-center gap-1.5">
+                        📄 Crear PDF
+                      </button>
+                      <button @click="abrirModalFalta" class="px-3 py-1.5 bg-blue-600 text-white rounded-xl font-bold text-xs uppercase tracking-widest hover:bg-blue-700 transition-colors shadow-sm">
+                        ➕ Registrar Falta
+                      </button>
+                    </div>
                   </div>
                   <div v-if="faltas.length === 0" class="bg-white rounded-xl border border-slate-200 p-8 text-center text-slate-400 italic shadow-sm">
                     No hay registros de faltas para este empleado.
@@ -400,9 +416,14 @@
                 <div v-if="activeTab === 'NOTAS' && hasPermission('Notas', 'puedeVer') === true" class="w-full">
                   <div class="flex justify-between items-center mb-6">
                     <h4 class="text-lg font-black text-slate-800 uppercase tracking-tight">Historial de Notas</h4>
-                    <button @click="abrirModalNota" class="px-4 py-2 bg-blue-600 text-white rounded-xl font-bold text-xs uppercase tracking-widest hover:bg-blue-700 transition-colors shadow-sm">
-                      ➕ Registrar Nota
-                    </button>
+                    <div class="flex items-center gap-2">
+                      <button v-if="notas.length > 0" @click="generarPDFHistorialNotas" class="px-3 py-1.5 bg-slate-800 text-white rounded-xl font-bold text-xs uppercase tracking-widest hover:bg-slate-900 transition-colors shadow-sm flex items-center gap-1.5">
+                        📄 Crear PDF
+                      </button>
+                      <button @click="abrirModalNota" class="px-3 py-1.5 bg-blue-600 text-white rounded-xl font-bold text-xs uppercase tracking-widest hover:bg-blue-700 transition-colors shadow-sm">
+                        ➕ Registrar Nota
+                      </button>
+                    </div>
                   </div>
                   <div v-if="notas.length === 0" class="bg-white rounded-xl border border-slate-200 p-8 text-center text-slate-400 italic shadow-sm">
                     No hay registros de notas para este empleado.
@@ -441,9 +462,14 @@
                 <div v-if="activeTab === 'DOCUMENTOS' && hasPermission('Documentos', 'puedeVer') === true" class="w-full">
                   <div class="flex justify-between items-center mb-6">
                     <h4 class="text-lg font-black text-slate-800 uppercase tracking-tight">Historial de Documentos</h4>
-                    <button @click="abrirModalDocumento" class="px-4 py-2 bg-blue-600 text-white rounded-xl font-bold text-xs uppercase tracking-widest hover:bg-blue-700 transition-colors shadow-sm">
-                      ➕ Subir Documento
-                    </button>
+                    <div class="flex items-center gap-2">
+                      <button v-if="documentos.length > 0" @click="generarPDFHistorialDocumentos" class="px-3 py-1.5 bg-slate-800 text-white rounded-xl font-bold text-xs uppercase tracking-widest hover:bg-slate-900 transition-colors shadow-sm flex items-center gap-1.5">
+                        📄 Crear PDF
+                      </button>
+                      <button @click="abrirModalDocumento" class="px-3 py-1.5 bg-blue-600 text-white rounded-xl font-bold text-xs uppercase tracking-widest hover:bg-blue-700 transition-colors shadow-sm">
+                        ➕ Subir Documento
+                      </button>
+                    </div>
                   </div>
                   <div v-if="documentos.length === 0" class="bg-white rounded-xl border border-slate-200 p-8 text-center text-slate-400 italic shadow-sm">
                     No hay documentos registrados para este empleado.
@@ -998,6 +1024,12 @@ const cargarVacaciones = async () => {
     const records = res.data;
     
     let empFechaInicio = empleado.value?.fecha_inicio;
+    if (contratos.value && contratos.value.length > 0) {
+      const firstContrato = [...contratos.value].sort((a, b) => new Date(a.fechaInicio) - new Date(b.fechaInicio))[0];
+      if (firstContrato && firstContrato.fechaInicio) {
+        empFechaInicio = firstContrato.fechaInicio;
+      }
+    }
     
     // Recalcular días pendientes dinámicamente para el historial basado en los registros actuales
     const periodos = {};
@@ -1415,6 +1447,339 @@ const logout = () => {
   navigateTo('/login')
 }
 
+const generarPDFHistorialContratos = async () => {
+  if (!empleado.value || !contratos.value || contratos.value.length === 0) {
+    alert('No hay contratos para generar el PDF');
+    return;
+  }
+
+  try {
+    const doc = new jsPDF();
+    
+    // Cargar Logo
+    const imgLogo = new Image();
+    imgLogo.crossOrigin = "Anonymous";
+    imgLogo.src = 'http://localhost:3007/uploads/Logo/Logo.png';
+    await new Promise((resolve) => {
+      imgLogo.onload = resolve;
+      imgLogo.onerror = resolve; // Continuar aunque falle
+    });
+
+    // Encabezado
+    doc.setFontSize(22);
+    doc.setTextColor(30, 58, 138); // blue-900
+    doc.setFont('helvetica', 'bold');
+    doc.text(`HISTORIAL DE CONTRATOS`, 14, 20);
+    
+    // Dibujar logo superior derecho
+    try {
+      doc.addImage(imgLogo, 'PNG', 160, 15, 35, 14);
+    } catch(e) {}
+    
+    doc.setFontSize(11);
+    doc.setTextColor(100, 116, 139);
+    doc.setFont('helvetica', 'normal');
+    doc.text(`Empleado: ${empleado.value.nombre || ''} ${empleado.value.apellido || ''}`, 14, 28);
+    doc.text(`Código: ${empleado.value.codigo_empleado || 'N/A'} | Identidad: ${empleado.value.identidad || 'N/A'}`, 14, 33);
+    doc.text(`Generado el: ${new Date().toLocaleString('es-HN')}`, 14, 38);
+    
+    // Línea divisoria
+    doc.setDrawColor(30, 58, 138);
+    doc.setLineWidth(0.5);
+    doc.line(14, 43, 196, 43);
+
+    let startYTable = 50;
+    // Cargar foto del empleado
+    if (empleado.value.foto) {
+      const imgEmp = new Image();
+      imgEmp.crossOrigin = 'Anonymous';
+      imgEmp.src = `http://localhost:3007${empleado.value.foto}`;
+      await new Promise((resolve) => { imgEmp.onload = resolve; imgEmp.onerror = resolve; });
+      try {
+        const imgWidth = 30;
+        const imgHeight = 30;
+        const imgX = 14;
+        const imgY = 47;
+        
+        doc.setFillColor(241, 245, 249);
+        doc.roundedRect(imgX - 1, imgY - 1, imgWidth + 2, imgHeight + 2, 2, 2, 'F');
+        const ext = imgEmp.src.toUpperCase().includes('.PNG') ? 'PNG' : 'JPEG';
+        doc.addImage(imgEmp, ext, imgX, imgY, imgWidth, imgHeight);
+        doc.setDrawColor(203, 213, 225);
+        doc.setLineWidth(0.3);
+        doc.roundedRect(imgX - 1, imgY - 1, imgWidth + 2, imgHeight + 2, 2, 2, 'S');
+        
+        startYTable = 85;
+      } catch(e) {}
+    }
+
+    // Tabla de Contratos
+    const tableData = contratos.value.map(c => [
+      c.tipoContrato || 'N/A',
+      c.estado || 'N/A',
+      c.fechaInicio ? new Date(c.fechaInicio).toLocaleDateString('es-HN') : 'N/A',
+      c.fechaFinal ? new Date(c.fechaFinal).toLocaleDateString('es-HN') : 'N/A',
+      c.fechaSalida ? new Date(c.fechaSalida).toLocaleDateString('es-HN') : 'N/A',
+      c.observacion || 'N/A',
+      c.archivo ? 'Adjunto' : 'N/A'
+    ]);
+
+    autoTable(doc, {
+      startY: startYTable,
+      head: [['Tipo de Contrato', 'Estado', 'Fecha Inicio', 'Fecha Final', 'Fecha Salida', 'Observación', 'Documento']],
+      body: tableData,
+      theme: 'grid',
+      headStyles: { fillColor: [30, 58, 138], textColor: [255, 255, 255] },
+      styles: { fontSize: 8 }, // reduced font size slightly to fit more columns
+      alternateRowStyles: { fillColor: [248, 250, 252] }
+    });
+
+    // Pie de página
+    const totalPages = doc.internal.getNumberOfPages();
+    for (let i = 1; i <= totalPages; i++) {
+      doc.setPage(i);
+      const pageHeight = doc.internal.pageSize.height;
+      doc.setFontSize(8);
+      doc.setTextColor(100, 116, 139);
+      doc.text(`INNOVA SISTEMA RRHH - Página ${i} de ${totalPages}`, 196, pageHeight - 10, { align: 'right' });
+    }
+
+    // Guardar archivo
+    doc.save(`Historial_Contratos_${empleado.value.identidad}.pdf`);
+  } catch (error) {
+    console.error("Error al generar PDF:", error);
+    alert('❌ Error al generar el PDF: ' + error.message);
+  }
+}
+
+const generarPDFHistorialVacaciones = async () => {
+  if (!empleado.value || !vacacionesHistorialFiltrado.value || vacacionesHistorialFiltrado.value.length === 0) {
+    alert('No hay registros de vacaciones para generar el PDF');
+    return;
+  }
+
+  try {
+    const doc = new jsPDF();
+    
+    // Cargar Logo
+    const imgLogo = new Image();
+    imgLogo.crossOrigin = "Anonymous";
+    imgLogo.src = 'http://localhost:3007/uploads/Logo/Logo.png';
+    await new Promise((resolve) => {
+      imgLogo.onload = resolve;
+      imgLogo.onerror = resolve; // Continuar aunque falle
+    });
+
+    // Encabezado
+    doc.setFontSize(22);
+    doc.setTextColor(30, 58, 138); // blue-900
+    doc.setFont('helvetica', 'bold');
+    doc.text(`HISTORIAL DE VACACIONES`, 14, 20);
+    
+    // Dibujar logo superior derecho
+    try {
+      doc.addImage(imgLogo, 'PNG', 160, 15, 35, 14);
+    } catch(e) {}
+    
+    doc.setFontSize(11);
+    doc.setTextColor(100, 116, 139);
+    doc.setFont('helvetica', 'normal');
+    doc.text(`Empleado: ${empleado.value.nombre || ''} ${empleado.value.apellido || ''}`, 14, 28);
+    doc.text(`Código: ${empleado.value.codigo_empleado || 'N/A'} | Identidad: ${empleado.value.identidad || 'N/A'}`, 14, 33);
+    doc.text(`Generado el: ${new Date().toLocaleString('es-HN')}`, 14, 38);
+    
+    // Línea divisoria
+    doc.setDrawColor(30, 58, 138);
+    doc.setLineWidth(0.5);
+    doc.line(14, 43, 196, 43);
+
+    let startYTable = 50;
+    // Cargar foto del empleado
+    if (empleado.value.foto) {
+      const imgEmp = new Image();
+      imgEmp.crossOrigin = 'Anonymous';
+      imgEmp.src = `http://localhost:3007${empleado.value.foto}`;
+      await new Promise((resolve) => { imgEmp.onload = resolve; imgEmp.onerror = resolve; });
+      try {
+        const imgWidth = 30;
+        const imgHeight = 30;
+        const imgX = 14;
+        const imgY = 47;
+        
+        doc.setFillColor(241, 245, 249);
+        doc.roundedRect(imgX - 1, imgY - 1, imgWidth + 2, imgHeight + 2, 2, 2, 'F');
+        const ext = imgEmp.src.toUpperCase().includes('.PNG') ? 'PNG' : 'JPEG';
+        doc.addImage(imgEmp, ext, imgX, imgY, imgWidth, imgHeight);
+        doc.setDrawColor(203, 213, 225);
+        doc.setLineWidth(0.3);
+        doc.roundedRect(imgX - 1, imgY - 1, imgWidth + 2, imgHeight + 2, 2, 2, 'S');
+        
+        startYTable = 85;
+      } catch(e) {}
+    }
+
+    // Tabla de Vacaciones
+    const tableData = vacacionesHistorialFiltrado.value.map(v => [
+      v.periodo || 'N/A',
+      v.tipoSolicitud || 'N/A',
+      Number(v.diasCorrespondientes || 0),
+      v.tipoSolicitud === 'Adelantadas' ? 0 : Number(v.diasVacaciones || 0),
+      v.tipoSolicitud === 'Adelantadas' ? Number(v.diasVacaciones || 0) : 0,
+      Number(v.diasPagados || 0),
+      Number(v.diasPendientes || 0),
+      v.fechaInicio ? new Date(v.fechaInicio).toLocaleDateString('es-HN', {timeZone: 'UTC'}) : 'N/A',
+      v.fechaFinal ? new Date(v.fechaFinal).toLocaleDateString('es-HN', {timeZone: 'UTC'}) : 'N/A',
+      v.fechaRegreso ? new Date(v.fechaRegreso).toLocaleDateString('es-HN', {timeZone: 'UTC'}) : 'N/A',
+    ]);
+
+    autoTable(doc, {
+      startY: startYTable,
+      head: [['Periodo', 'Tipo Solicitud', 'D. Corresp.', 'D. Disfrutados', 'D. Adelan.', 'D. Pagados', 'D. Pendientes', 'Fecha Inicio', 'Fecha Final', 'Fecha Regreso']],
+      body: tableData,
+      theme: 'grid',
+      headStyles: { fillColor: [30, 58, 138], textColor: [255, 255, 255], fontStyle: 'bold' },
+      alternateRowStyles: { fillColor: [248, 250, 252] },
+      styles: { fontSize: 7, cellPadding: 2, halign: 'center' },
+      columnStyles: {
+        0: { halign: 'left' },
+        1: { halign: 'left' }
+      }
+    });
+
+    // Pie de página
+    const totalPages = doc.internal.getNumberOfPages();
+    for (let i = 1; i <= totalPages; i++) {
+      doc.setPage(i);
+      const pageHeight = doc.internal.pageSize.height;
+      doc.setFontSize(8);
+      doc.setTextColor(100, 116, 139);
+      doc.text(`INNOVA SISTEMA RRHH - Página ${i} de ${totalPages}`, 196, pageHeight - 10, { align: 'right' });
+    }
+
+    // Guardar archivo
+    doc.save(`Historial_Vacaciones_${empleado.value.identidad}.pdf`);
+  } catch (error) {
+    console.error("Error al generar PDF:", error);
+    alert('❌ Error al generar el PDF: ' + error.message);
+  }
+}
+
+const generarPDFHistorialVacacionesDetallado = async () => {
+  if (!empleado.value || !vacacionesHistorialFiltrado.value || vacacionesHistorialFiltrado.value.length === 0) {
+    alert('No hay registros de vacaciones para generar el PDF');
+    return;
+  }
+
+  try {
+    const doc = new jsPDF('landscape');
+    
+    // Cargar Logo
+    const imgLogo = new Image();
+    imgLogo.crossOrigin = "Anonymous";
+    imgLogo.src = 'http://localhost:3007/uploads/Logo/Logo.png';
+    await new Promise((resolve) => {
+      imgLogo.onload = resolve;
+      imgLogo.onerror = resolve; // Continuar aunque falle
+    });
+
+    // Encabezado
+    doc.setFontSize(22);
+    doc.setTextColor(30, 58, 138); // blue-900
+    doc.setFont('helvetica', 'bold');
+    doc.text(`HISTORIAL DE VACACIONES DETALLADO`, 14, 20);
+    
+    // Dibujar logo superior derecho
+    try {
+      doc.addImage(imgLogo, 'PNG', 240, 15, 35, 14);
+    } catch(e) {}
+    
+    doc.setFontSize(11);
+    doc.setTextColor(100, 116, 139);
+    doc.setFont('helvetica', 'normal');
+    doc.text(`Empleado: ${empleado.value.nombre || ''} ${empleado.value.apellido || ''}`, 14, 28);
+    doc.text(`Código: ${empleado.value.codigo_empleado || 'N/A'} | Identidad: ${empleado.value.identidad || 'N/A'}`, 14, 33);
+    doc.text(`Generado el: ${new Date().toLocaleString('es-HN')}`, 14, 38);
+    
+    // Línea divisoria
+    doc.setDrawColor(30, 58, 138);
+    doc.setLineWidth(0.5);
+    doc.line(14, 43, 280, 43);
+
+    let startYTable = 50;
+    // Cargar foto del empleado
+    if (empleado.value.foto) {
+      const imgEmp = new Image();
+      imgEmp.crossOrigin = 'Anonymous';
+      imgEmp.src = `http://localhost:3007${empleado.value.foto}`;
+      await new Promise((resolve) => { imgEmp.onload = resolve; imgEmp.onerror = resolve; });
+      try {
+        const imgWidth = 30;
+        const imgHeight = 30;
+        const imgX = 14;
+        const imgY = 47;
+        
+        doc.setFillColor(241, 245, 249);
+        doc.roundedRect(imgX - 1, imgY - 1, imgWidth + 2, imgHeight + 2, 2, 2, 'F');
+        const ext = imgEmp.src.toUpperCase().includes('.PNG') ? 'PNG' : 'JPEG';
+        doc.addImage(imgEmp, ext, imgX, imgY, imgWidth, imgHeight);
+        doc.setDrawColor(203, 213, 225);
+        doc.setLineWidth(0.3);
+        doc.roundedRect(imgX - 1, imgY - 1, imgWidth + 2, imgHeight + 2, 2, 2, 'S');
+        
+        startYTable = 85;
+      } catch(e) {}
+    }
+
+    // Tabla de Vacaciones Detallada
+    const tableData = vacacionesHistorialFiltrado.value.map(v => [
+      v.periodo || 'N/A',
+      v.tipoSolicitud || 'N/A',
+      Number(v.diasCorrespondientes || 0),
+      v.tipoSolicitud === 'Adelantadas' ? 0 : Number(v.diasVacaciones || 0),
+      v.tipoSolicitud === 'Adelantadas' ? Number(v.diasVacaciones || 0) : 0,
+      Number(v.diasPagados || 0),
+      Number(v.diasPendientes || 0),
+      v.fechaInicio ? new Date(v.fechaInicio).toLocaleDateString('es-HN', {timeZone: 'UTC'}) : 'N/A',
+      v.fechaFinal ? new Date(v.fechaFinal).toLocaleDateString('es-HN', {timeZone: 'UTC'}) : 'N/A',
+      v.fechaRegreso ? new Date(v.fechaRegreso).toLocaleDateString('es-HN', {timeZone: 'UTC'}) : 'N/A',
+      v.autorizadoPor || 'N/A',
+      v.observaciones || 'N/A'
+    ]);
+
+    autoTable(doc, {
+      startY: startYTable,
+      head: [['Periodo', 'Tipo Solicitud', 'D. Corresp.', 'D. Disfrutados', 'D. Adelan.', 'D. Pagados', 'D. Pendientes', 'Fecha Inicio', 'Fecha Final', 'Fecha Regreso', 'Autorizado Por', 'Observaciones']],
+      body: tableData,
+      theme: 'grid',
+      headStyles: { fillColor: [30, 58, 138], textColor: [255, 255, 255], fontStyle: 'bold' },
+      alternateRowStyles: { fillColor: [248, 250, 252] },
+      styles: { fontSize: 7, cellPadding: 2, halign: 'center' },
+      columnStyles: {
+        0: { halign: 'left' },
+        1: { halign: 'left' },
+        10: { halign: 'left' },
+        11: { halign: 'left' }
+      }
+    });
+
+    // Pie de página
+    const totalPages = doc.internal.getNumberOfPages();
+    for (let i = 1; i <= totalPages; i++) {
+      doc.setPage(i);
+      const pageHeight = doc.internal.pageSize.height;
+      doc.setFontSize(8);
+      doc.setTextColor(100, 116, 139);
+      doc.text(`INNOVA SISTEMA RRHH - Página ${i} de ${totalPages}`, 280, pageHeight - 10, { align: 'right' });
+    }
+
+    // Guardar archivo
+    doc.save(`Historial_Vacaciones_Detallado_${empleado.value.identidad}.pdf`);
+  } catch (error) {
+    console.error("Error al generar PDF:", error);
+    alert('❌ Error al generar el PDF: ' + error.message);
+  }
+}
+
 const generarPDFPerfilEmpleado = async () => {
   if (!empleado.value) return;
 
@@ -1626,6 +1991,284 @@ const eliminarTipoDocumento = async (id) => {
     } catch (err) {
       alert('❌ ' + (err.response?.data?.error || 'Error al eliminar tipo de documento'))
     }
+  }
+}
+
+const generarPDFHistorialNotas = async () => {
+  if (!empleado.value || !notas.value || notas.value.length === 0) {
+    alert('No hay notas para generar el PDF');
+    return;
+  }
+  try {
+    const doc = new jsPDF();
+
+    const imgLogo = new Image();
+    imgLogo.crossOrigin = "Anonymous";
+    imgLogo.src = 'http://localhost:3007/uploads/Logo/Logo.png';
+    await new Promise((resolve) => { imgLogo.onload = resolve; imgLogo.onerror = resolve; });
+
+    doc.setFontSize(22);
+    doc.setTextColor(30, 58, 138);
+    doc.setFont('helvetica', 'bold');
+    doc.text('HISTORIAL DE NOTAS', 14, 20);
+    try { doc.addImage(imgLogo, 'PNG', 160, 15, 35, 14); } catch(e) {}
+
+    doc.setFontSize(11);
+    doc.setTextColor(100, 116, 139);
+    doc.setFont('helvetica', 'normal');
+    doc.text(`Empleado: ${empleado.value.nombre || ''} ${empleado.value.apellido || ''}`, 14, 28);
+    doc.text(`Código: ${empleado.value.codigo_empleado || 'N/A'} | Identidad: ${empleado.value.identidad || 'N/A'}`, 14, 33);
+    doc.text(`Generado el: ${new Date().toLocaleString('es-HN')}`, 14, 38);
+
+    doc.setDrawColor(30, 58, 138);
+    doc.setLineWidth(0.5);
+    doc.line(14, 43, 196, 43);
+
+    let startYTable = 50;
+    if (empleado.value.foto) {
+      const imgEmp = new Image();
+      imgEmp.crossOrigin = 'Anonymous';
+      imgEmp.src = `http://localhost:3007${empleado.value.foto}`;
+      await new Promise((resolve) => { imgEmp.onload = resolve; imgEmp.onerror = resolve; });
+      try {
+        const imgWidth = 30, imgHeight = 30, imgX = 14, imgY = 47;
+        doc.setFillColor(241, 245, 249);
+        doc.roundedRect(imgX - 1, imgY - 1, imgWidth + 2, imgHeight + 2, 2, 2, 'F');
+        const ext = imgEmp.src.toUpperCase().includes('.PNG') ? 'PNG' : 'JPEG';
+        doc.addImage(imgEmp, ext, imgX, imgY, imgWidth, imgHeight);
+        doc.setDrawColor(203, 213, 225);
+        doc.setLineWidth(0.3);
+        doc.roundedRect(imgX - 1, imgY - 1, imgWidth + 2, imgHeight + 2, 2, 2, 'S');
+        startYTable = 85;
+      } catch(e) {}
+    }
+
+    const tableData = notas.value.map(n => [
+      n.asunto || 'N/A',
+      n.descripcion || 'N/A',
+      n.documento ? 'Adjunto' : 'N/A',
+      n.creadoPorNombre || 'N/A',
+      n.fechaCreacion ? new Date(n.fechaCreacion).toLocaleDateString('es-HN') : 'N/A'
+    ]);
+
+    autoTable(doc, {
+      startY: startYTable,
+      head: [['Asunto', 'Descripción', 'Documento', 'Creado Por', 'Fecha']],
+      body: tableData,
+      theme: 'grid',
+      headStyles: { fillColor: [30, 58, 138], textColor: [255, 255, 255], fontStyle: 'bold' },
+      alternateRowStyles: { fillColor: [248, 250, 252] },
+      styles: { fontSize: 8, cellPadding: 3 },
+      columnStyles: {
+        0: { cellWidth: 35 },
+        1: { cellWidth: 80 },
+        2: { cellWidth: 22, halign: 'center' },
+        3: { cellWidth: 30 },
+        4: { cellWidth: 25, halign: 'center' }
+      }
+    });
+
+    const totalPages = doc.internal.getNumberOfPages();
+    for (let i = 1; i <= totalPages; i++) {
+      doc.setPage(i);
+      const pageHeight = doc.internal.pageSize.height;
+      doc.setFontSize(8);
+      doc.setTextColor(100, 116, 139);
+      doc.text(`INNOVA SISTEMA RRHH - Página ${i} de ${totalPages}`, 196, pageHeight - 10, { align: 'right' });
+    }
+
+    doc.save(`Historial_Notas_${empleado.value.identidad}.pdf`);
+  } catch (error) {
+    console.error('Error al generar PDF:', error);
+    alert('❌ Error al generar el PDF: ' + error.message);
+  }
+}
+
+const generarPDFHistorialDocumentos = async () => {
+  if (!empleado.value || !documentos.value || documentos.value.length === 0) {
+    alert('No hay documentos para generar el PDF');
+    return;
+  }
+  try {
+    const doc = new jsPDF();
+
+    const imgLogo = new Image();
+    imgLogo.crossOrigin = "Anonymous";
+    imgLogo.src = 'http://localhost:3007/uploads/Logo/Logo.png';
+    await new Promise((resolve) => { imgLogo.onload = resolve; imgLogo.onerror = resolve; });
+
+    doc.setFontSize(22);
+    doc.setTextColor(30, 58, 138);
+    doc.setFont('helvetica', 'bold');
+    doc.text('HISTORIAL DE DOCUMENTOS', 14, 20);
+    try { doc.addImage(imgLogo, 'PNG', 160, 15, 35, 14); } catch(e) {}
+
+    doc.setFontSize(11);
+    doc.setTextColor(100, 116, 139);
+    doc.setFont('helvetica', 'normal');
+    doc.text(`Empleado: ${empleado.value.nombre || ''} ${empleado.value.apellido || ''}`, 14, 28);
+    doc.text(`Código: ${empleado.value.codigo_empleado || 'N/A'} | Identidad: ${empleado.value.identidad || 'N/A'}`, 14, 33);
+    doc.text(`Generado el: ${new Date().toLocaleString('es-HN')}`, 14, 38);
+
+    doc.setDrawColor(30, 58, 138);
+    doc.setLineWidth(0.5);
+    doc.line(14, 43, 196, 43);
+
+    let startYTable = 50;
+    if (empleado.value.foto) {
+      const imgEmp = new Image();
+      imgEmp.crossOrigin = 'Anonymous';
+      imgEmp.src = `http://localhost:3007${empleado.value.foto}`;
+      await new Promise((resolve) => { imgEmp.onload = resolve; imgEmp.onerror = resolve; });
+      try {
+        const imgWidth = 30, imgHeight = 30, imgX = 14, imgY = 47;
+        doc.setFillColor(241, 245, 249);
+        doc.roundedRect(imgX - 1, imgY - 1, imgWidth + 2, imgHeight + 2, 2, 2, 'F');
+        const ext = imgEmp.src.toUpperCase().includes('.PNG') ? 'PNG' : 'JPEG';
+        doc.addImage(imgEmp, ext, imgX, imgY, imgWidth, imgHeight);
+        doc.setDrawColor(203, 213, 225);
+        doc.setLineWidth(0.3);
+        doc.roundedRect(imgX - 1, imgY - 1, imgWidth + 2, imgHeight + 2, 2, 2, 'S');
+        startYTable = 85;
+      } catch(e) {}
+    }
+
+    const tableData = documentos.value.map(d => [
+      d.titulo || 'Sin título',
+      d.tipo || 'Documento General',
+      d.archivo_url ? 'Adjunto' : 'N/A',
+      d.creadoPorNombre || 'N/A',
+      d.fecha_creacion ? new Date(d.fecha_creacion).toLocaleDateString('es-HN') : 'N/A'
+    ]);
+
+    autoTable(doc, {
+      startY: startYTable,
+      head: [['Título', 'Tipo', 'Archivo', 'Creado Por', 'Fecha']],
+      body: tableData,
+      theme: 'grid',
+      headStyles: { fillColor: [30, 58, 138], textColor: [255, 255, 255], fontStyle: 'bold' },
+      alternateRowStyles: { fillColor: [248, 250, 252] },
+      styles: { fontSize: 8, cellPadding: 3 },
+      columnStyles: {
+        0: { cellWidth: 60 },
+        1: { cellWidth: 45 },
+        2: { cellWidth: 22, halign: 'center' },
+        3: { cellWidth: 35 },
+        4: { cellWidth: 25, halign: 'center' }
+      }
+    });
+
+    const totalPages = doc.internal.getNumberOfPages();
+    for (let i = 1; i <= totalPages; i++) {
+      doc.setPage(i);
+      const pageHeight = doc.internal.pageSize.height;
+      doc.setFontSize(8);
+      doc.setTextColor(100, 116, 139);
+      doc.text(`INNOVA SISTEMA RRHH - Página ${i} de ${totalPages}`, 196, pageHeight - 10, { align: 'right' });
+    }
+
+    doc.save(`Historial_Documentos_${empleado.value.identidad}.pdf`);
+  } catch (error) {
+    console.error('Error al generar PDF:', error);
+    alert('❌ Error al generar el PDF: ' + error.message);
+  }
+}
+
+const generarPDFHistorialFaltas = async () => {
+  if (!empleado.value || !faltas.value || faltas.value.length === 0) {
+    alert('No hay registros de faltas para generar el PDF');
+    return;
+  }
+
+  try {
+    const doc = new jsPDF();
+
+    // Cargar Logo
+    const imgLogo = new Image();
+    imgLogo.crossOrigin = "Anonymous";
+    imgLogo.src = 'http://localhost:3007/uploads/Logo/Logo.png';
+    await new Promise((resolve) => { imgLogo.onload = resolve; imgLogo.onerror = resolve; });
+
+    // Encabezado
+    doc.setFontSize(22);
+    doc.setTextColor(30, 58, 138);
+    doc.setFont('helvetica', 'bold');
+    doc.text('HISTORIAL DE FALTAS', 14, 20);
+
+    try { doc.addImage(imgLogo, 'PNG', 160, 15, 35, 14); } catch(e) {}
+
+    doc.setFontSize(11);
+    doc.setTextColor(100, 116, 139);
+    doc.setFont('helvetica', 'normal');
+    doc.text(`Empleado: ${empleado.value.nombre || ''} ${empleado.value.apellido || ''}`, 14, 28);
+    doc.text(`Código: ${empleado.value.codigo_empleado || 'N/A'} | Identidad: ${empleado.value.identidad || 'N/A'}`, 14, 33);
+    doc.text(`Generado el: ${new Date().toLocaleString('es-HN')}`, 14, 38);
+
+    doc.setDrawColor(30, 58, 138);
+    doc.setLineWidth(0.5);
+    doc.line(14, 43, 196, 43);
+
+    let startYTable = 50;
+
+    // Foto del empleado
+    if (empleado.value.foto) {
+      const imgEmp = new Image();
+      imgEmp.crossOrigin = 'Anonymous';
+      imgEmp.src = `http://localhost:3007${empleado.value.foto}`;
+      await new Promise((resolve) => { imgEmp.onload = resolve; imgEmp.onerror = resolve; });
+      try {
+        const imgWidth = 30, imgHeight = 30, imgX = 14, imgY = 47;
+        doc.setFillColor(241, 245, 249);
+        doc.roundedRect(imgX - 1, imgY - 1, imgWidth + 2, imgHeight + 2, 2, 2, 'F');
+        const ext = imgEmp.src.toUpperCase().includes('.PNG') ? 'PNG' : 'JPEG';
+        doc.addImage(imgEmp, ext, imgX, imgY, imgWidth, imgHeight);
+        doc.setDrawColor(203, 213, 225);
+        doc.setLineWidth(0.3);
+        doc.roundedRect(imgX - 1, imgY - 1, imgWidth + 2, imgHeight + 2, 2, 2, 'S');
+        startYTable = 85;
+      } catch(e) {}
+    }
+
+    // Tabla de Faltas
+    const tableData = faltas.value.map(f => [
+      f.fecha ? new Date(f.fecha).toLocaleDateString('es-HN', { timeZone: 'UTC' }) : 'N/A',
+      f.motivo || 'N/A',
+      f.sancion || 'Sin sanción',
+      f.documento ? 'Adjunto' : 'N/A',
+      f.creadoPorNombre || 'N/A'
+    ]);
+
+    autoTable(doc, {
+      startY: startYTable,
+      head: [['Fecha', 'Motivo', 'Sanción', 'Documento', 'Registrado Por']],
+      body: tableData,
+      theme: 'grid',
+      headStyles: { fillColor: [30, 58, 138], textColor: [255, 255, 255], fontStyle: 'bold' },
+      alternateRowStyles: { fillColor: [248, 250, 252] },
+      styles: { fontSize: 8, cellPadding: 3 },
+      columnStyles: {
+        0: { cellWidth: 28, halign: 'center' },
+        1: { cellWidth: 65 },
+        2: { cellWidth: 45 },
+        3: { cellWidth: 22, halign: 'center' },
+        4: { cellWidth: 30 }
+      }
+    });
+
+    // Pie de página
+    const totalPages = doc.internal.getNumberOfPages();
+    for (let i = 1; i <= totalPages; i++) {
+      doc.setPage(i);
+      const pageHeight = doc.internal.pageSize.height;
+      doc.setFontSize(8);
+      doc.setTextColor(100, 116, 139);
+      doc.text(`INNOVA SISTEMA RRHH - Página ${i} de ${totalPages}`, 196, pageHeight - 10, { align: 'right' });
+    }
+
+    doc.save(`Historial_Faltas_${empleado.value.identidad}.pdf`);
+  } catch (error) {
+    console.error('Error al generar PDF:', error);
+    alert('❌ Error al generar el PDF: ' + error.message);
   }
 }
 

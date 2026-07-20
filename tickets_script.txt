@@ -1,0 +1,581 @@
+﻿
+  reportes_7a4d321.vue:142:          🚪 Bajas y Despidos
+  reportes_7a4d321.vue:143:        </button>
+> reportes_7a4d321.vue:144:        <button @click="activeTab = 'tickets'" :class="['px-6 py-3 font-bold text-xs 
+uppercase tracking-widest whitespace-nowrap border-b-2 transition-colors', activeTab === 'tickets' ? 'border-amber-500 
+text-amber-600' : 'border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300']">
+> reportes_7a4d321.vue:145:          🎫 Soporte & Tickets
+  reportes_7a4d321.vue:146:        </button>
+  reportes_7a4d321.vue:147:        <button @click="activeTab = 'wizard'" :class="['px-6 py-3 font-bold text-xs 
+uppercase tracking-widest whitespace-nowrap border-b-2 transition-colors', activeTab === 'wizard' ? 'border-purple-500 
+text-purple-600' : 'border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300']">
+  reportes_7a4d321.vue:148:          🧙‍♂️ Generador Asistido
+  reportes_7a4d321.vue:149:        </button>
+  reportes_7a4d321.vue:150:      </div>
+  reportes_7a4d321.vue:151:
+  reportes_7a4d321.vue:152:      <!-- TAB: DASHBOARD -->
+  reportes_7a4d321.vue:153:      <div v-if="activeTab === 'dashboard'" class="space-y-6 animate-in fade-in 
+duration-300">
+  reportes_7a4d321.vue:154:        <!-- HEADER DASHBOARD -->
+  reportes_7a4d321.vue:155:        <div class="flex justify-between items-center bg-white p-4 rounded-2xl shadow-sm 
+border border-slate-200">
+  reportes_7a4d321.vue:180:          </div>
+  reportes_7a4d321.vue:181:          
+> reportes_7a4d321.vue:182:          <!-- Tickets Ptes. -->
+> reportes_7a4d321.vue:183:          <div @click="activeTab = 'tickets'" class="bg-gradient-to-br from-amber-400 
+to-orange-500 p-5 rounded-2xl shadow-lg shadow-orange-500/20 text-white relative overflow-hidden group 
+hover:-translate-y-1 transition-transform cursor-pointer active:scale-95">
+  reportes_7a4d321.vue:184:            <div class="absolute -right-4 -top-4 text-white/20 text-7xl 
+group-hover:scale-110 transition-transform">🎫</div>
+> reportes_7a4d321.vue:185:            <p class="text-[10px] font-black uppercase tracking-widest text-orange-100 mb-1 
+relative z-10">Tickets Ptes.</p>
+> reportes_7a4d321.vue:186:            <p class="text-4xl font-black relative z-10">{{ stats.tickets || 0 }}</p>
+  reportes_7a4d321.vue:187:            <div class="mt-2 text-[10px] font-medium text-orange-100 relative z-10">Soporte 
+IT Pendiente</div>
+  reportes_7a4d321.vue:188:          </div>
+  reportes_7a4d321.vue:189:
+  reportes_7a4d321.vue:190:          <!-- De Vacaciones -->
+  reportes_7a4d321.vue:191:          <div @click="activeTab = 'proyecciones'" class="bg-white p-5 rounded-2xl 
+shadow-sm border border-slate-200 flex flex-col justify-between hover:shadow-md transition-shadow group relative 
+overflow-hidden cursor-pointer active:scale-95">
+  reportes_7a4d321.vue:192:            <div class="absolute top-0 right-0 w-16 h-16 bg-emerald-500/5 rounded-bl-full 
+-z-10 group-hover:scale-150 transition-transform"></div>
+  reportes_7a4d321.vue:193:            <div class="flex items-start justify-between">
+  reportes_7a4d321.vue:194:              <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest 
+leading-tight">De Vacaciones<br>(Actual)</p>
+  reportes_7a4d321.vue:195:              <span class="text-2xl opacity-80 group-hover:scale-110 
+transition-transform">🏖️</span>
+  reportes_7a4d321.vue:196:            </div>
+  reportes_7a4d321.vue:366:          </div>
+  reportes_7a4d321.vue:367:          
+> reportes_7a4d321.vue:368:          <!-- Evolución de Tickets -->
+  reportes_7a4d321.vue:369:          <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 flex 
+flex-col min-h-[320px]">
+  reportes_7a4d321.vue:370:            <div class="flex justify-between items-center mb-4">
+  reportes_7a4d321.vue:371:              <h2 class="text-sm font-black text-slate-800 uppercase tracking-widest flex 
+items-center gap-2">
+  reportes_7a4d321.vue:372:                 <span class="w-2 h-2 rounded-full bg-amber-500"></span>
+> reportes_7a4d321.vue:373:                 Evolución de Tickets (30 Días)
+  reportes_7a4d321.vue:374:              </h2>
+  reportes_7a4d321.vue:375:            </div>
+  reportes_7a4d321.vue:376:            <div class="flex-1 relative w-full h-full flex justify-center items-center">
+> reportes_7a4d321.vue:377:              <Line v-if="chartTendenciaTicketsData" :data="chartTendenciaTicketsData" 
+:options="lineOptions" />
+  reportes_7a4d321.vue:378:              <span v-else class="text-slate-400 italic text-xs">Cargando 
+evolución...</span>
+  reportes_7a4d321.vue:379:            </div>
+  reportes_7a4d321.vue:380:          </div>
+  reportes_7a4d321.vue:381:        </div>
+  reportes_7a4d321.vue:382:      </div>
+  reportes_7a4d321.vue:383:
+  reportes_7a4d321.vue:384:      <!-- TAB: EMPLEADOS -->
+  reportes_7a4d321.vue:385:      <div v-if="activeTab === 'empleados'" class="bg-white p-6 rounded-2xl shadow-sm 
+border border-slate-200">
+  reportes_7a4d321.vue:386:        <div class="flex flex-col md:flex-row justify-between items-center mb-6 gap-4 
+border-b border-slate-100 pb-4">
+  reportes_7a4d321.vue:387:          <h2 class="text-lg font-black text-slate-800 uppercase 
+tracking-tighter">Directorio Analítico</h2>
+  reportes_7a4d321.vue:700:      </div>
+  reportes_7a4d321.vue:701:
+> reportes_7a4d321.vue:702:      <!-- TAB: TICKETS -->
+> reportes_7a4d321.vue:703:      <div v-if="activeTab === 'tickets'" class="bg-white p-6 rounded-2xl shadow-sm border 
+border-slate-200">
+  reportes_7a4d321.vue:704:        <div class="flex flex-col md:flex-row justify-between items-center mb-6 gap-4 
+border-b border-slate-100 pb-4">
+  reportes_7a4d321.vue:705:          <h2 class="text-lg font-black text-slate-800 uppercase tracking-tighter">Análisis 
+de Soporte</h2>
+  reportes_7a4d321.vue:706:          <div class="flex flex-col md:flex-row gap-3 w-full md:w-auto items-center">
+  reportes_7a4d321.vue:707:            <input v-model="searchQuery" type="text" placeholder="Buscar ticket, 
+usuario..." class="p-2 border border-slate-200 rounded-lg text-sm bg-slate-50 w-full md:w-48 focus:border-blue-500 
+outline-none">
+> reportes_7a4d321.vue:708:            <select v-model="ticketsFiltroEstado" class="p-2 border border-slate-200 
+rounded-lg text-sm bg-slate-50 focus:border-blue-500 outline-none">
+  reportes_7a4d321.vue:709:              <option value="todos">Todos los Estados</option>
+  reportes_7a4d321.vue:710:              <option value="pendientes_progreso">Pendientes / Progreso</option>
+  reportes_7a4d321.vue:711:              <option value="resueltos_cerrados">Resueltos / Cerrados</option>
+  reportes_7a4d321.vue:712:              <option value="Pendiente">Pendientes</option>
+  reportes_7a4d321.vue:713:              <option value="En Progreso">En Progreso</option>
+  reportes_7a4d321.vue:714:              <option value="Resuelto">Resueltos</option>
+  reportes_7a4d321.vue:715:              <option value="Cerrado">Cerrados</option>
+  reportes_7a4d321.vue:716:            </select>
+> reportes_7a4d321.vue:717:            <select v-model="ticketsFiltroPrioridad" class="p-2 border border-slate-200 
+rounded-lg text-sm bg-slate-50 focus:border-blue-500 outline-none">
+  reportes_7a4d321.vue:718:              <option value="todos">Todas las Prioridades</option>
+  reportes_7a4d321.vue:719:              <option value="Baja">Baja</option>
+  reportes_7a4d321.vue:720:              <option value="Media">Media</option>
+  reportes_7a4d321.vue:721:              <option value="Alta">Alta</option>
+  reportes_7a4d321.vue:722:              <option value="Urgente">Urgente</option>
+  reportes_7a4d321.vue:723:            </select>
+> reportes_7a4d321.vue:724:            <button @click="generarPDFTickets" class="px-4 py-2 bg-slate-800 
+hover:bg-slate-900 text-white rounded-lg font-bold text-xs uppercase tracking-widest transition-colors shadow-sm flex 
+items-center justify-center gap-2 whitespace-nowrap">
+> reportes_7a4d321.vue:725:              <span>📄</span> Crear PDF Tickets
+  reportes_7a4d321.vue:726:            </button>
+> reportes_7a4d321.vue:727:            <button @click="exportarCSV(ticketsFiltrados, 'Reporte_Tickets')" class="px-4 
+py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg font-bold text-xs uppercase tracking-widest 
+transition-colors shadow-sm flex items-center justify-center gap-2">
+  reportes_7a4d321.vue:728:              <span>📊</span> CSV
+  reportes_7a4d321.vue:729:            </button>
+  reportes_7a4d321.vue:730:          </div>
+  reportes_7a4d321.vue:731:        </div>
+  reportes_7a4d321.vue:732:
+  reportes_7a4d321.vue:733:        <!-- Resumen General -->
+  reportes_7a4d321.vue:734:        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+> reportes_7a4d321.vue:735:          <div @click="ticketsFiltroEstado = 'todos'" class="cursor-pointer 
+bg-gradient-to-br from-slate-800 to-slate-900 p-5 rounded-2xl shadow-sm text-white flex items-center justify-between 
+transition-transform hover:scale-[1.02]">
+  reportes_7a4d321.vue:736:            <div>
+> reportes_7a4d321.vue:737:              <p class="text-[10px] font-black uppercase tracking-widest 
+text-slate-400">Total Tickets</p>
+> reportes_7a4d321.vue:738:              <p class="text-3xl font-black mt-1">{{ tickets.length }}</p>
+  reportes_7a4d321.vue:739:            </div>
+  reportes_7a4d321.vue:740:            <div class="w-12 h-12 bg-white/10 rounded-full flex items-center justify-center 
+text-2xl">📋</div>
+  reportes_7a4d321.vue:741:          </div>
+> reportes_7a4d321.vue:742:          <div @click="ticketsFiltroEstado = 'pendientes_progreso'" class="cursor-pointer 
+bg-gradient-to-br from-yellow-400 to-orange-500 p-5 rounded-2xl shadow-sm text-white flex items-center justify-between 
+transition-transform hover:scale-[1.02]">
+  reportes_7a4d321.vue:743:            <div>
+  reportes_7a4d321.vue:744:              <p class="text-[10px] font-black uppercase tracking-widest 
+text-yellow-100">Pendientes / Progreso</p>
+> reportes_7a4d321.vue:745:              <p class="text-3xl font-black mt-1">{{ tickets.filter(t => t.estado === 
+'Pendiente' || t.estado === 'En Progreso').length }}</p>
+  reportes_7a4d321.vue:746:            </div>
+  reportes_7a4d321.vue:747:            <div class="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center 
+text-2xl">⏳</div>
+  reportes_7a4d321.vue:748:          </div>
+> reportes_7a4d321.vue:749:          <div @click="ticketsFiltroEstado = 'resueltos_cerrados'" class="cursor-pointer 
+bg-gradient-to-br from-emerald-500 to-teal-600 p-5 rounded-2xl shadow-sm text-white flex items-center justify-between 
+transition-transform hover:scale-[1.02]">
+  reportes_7a4d321.vue:750:            <div>
+  reportes_7a4d321.vue:751:              <p class="text-[10px] font-black uppercase tracking-widest 
+text-emerald-100">Resueltos / Cerrados</p>
+> reportes_7a4d321.vue:752:              <p class="text-3xl font-black mt-1">{{ tickets.filter(t => t.estado === 
+'Resuelto' || t.estado === 'Cerrado').length }}</p>
+  reportes_7a4d321.vue:753:            </div>
+  reportes_7a4d321.vue:754:            <div class="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center 
+text-2xl">✅</div>
+  reportes_7a4d321.vue:755:          </div>
+  reportes_7a4d321.vue:756:        </div>
+  reportes_7a4d321.vue:757:
+> reportes_7a4d321.vue:758:        <!-- Gráficos de Tickets -->
+  reportes_7a4d321.vue:759:        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+  reportes_7a4d321.vue:760:          <div class="bg-slate-50 p-5 rounded-2xl border border-slate-100 h-[300px] flex 
+flex-col items-center">
+> reportes_7a4d321.vue:761:             <h3 class="text-sm font-black text-slate-800 uppercase tracking-widest 
+mb-4">Tickets por Estado</h3>
+  reportes_7a4d321.vue:762:             <div class="flex-1 w-full relative">
+> reportes_7a4d321.vue:763:               <Doughnut v-if="!loadingTickets && chartEstadoTicketsData" 
+:data="chartEstadoTicketsData" :options="doughnutOptions" />
+  reportes_7a4d321.vue:764:             </div>
+  reportes_7a4d321.vue:765:          </div>
+  reportes_7a4d321.vue:766:          <div class="bg-slate-50 p-5 rounded-2xl border border-slate-100 h-[300px] flex 
+flex-col items-center">
+> reportes_7a4d321.vue:767:             <h3 class="text-sm font-black text-slate-800 uppercase tracking-widest 
+mb-4">Tickets por Prioridad</h3>
+  reportes_7a4d321.vue:768:             <div class="flex-1 w-full relative">
+> reportes_7a4d321.vue:769:               <Doughnut v-if="!loadingTickets && chartPrioridadTicketsData" 
+:data="chartPrioridadTicketsData" :options="doughnutOptions" />
+  reportes_7a4d321.vue:770:             </div>
+  reportes_7a4d321.vue:771:          </div>
+  reportes_7a4d321.vue:772:        </div>
+  reportes_7a4d321.vue:773:
+> reportes_7a4d321.vue:774:        <div v-if="loadingTickets" class="flex flex-col items-center justify-center py-16">
+  reportes_7a4d321.vue:775:          <div class="animate-spin rounded-full h-10 w-10 border-b-2 border-emerald-600 
+mb-4"></div>
+> reportes_7a4d321.vue:776:          <span class="text-slate-500 font-medium text-sm">Cargando tickets...</span>
+  reportes_7a4d321.vue:777:        </div>
+  reportes_7a4d321.vue:778:        <div v-else class="overflow-x-auto">
+  reportes_7a4d321.vue:779:          <table class="w-full text-left border-collapse">
+  reportes_7a4d321.vue:780:            <thead>
+  reportes_7a4d321.vue:781:              <tr class="bg-slate-50 border-b border-slate-200">
+  reportes_7a4d321.vue:782:                <th class="p-3 text-[10px] font-black text-slate-500 uppercase 
+tracking-widest">ID</th>
+  reportes_7a4d321.vue:783:                <th class="p-3 text-[10px] font-black text-slate-500 uppercase 
+tracking-widest">Asunto</th>
+  reportes_7a4d321.vue:784:                <th class="p-3 text-[10px] font-black text-slate-500 uppercase 
+tracking-widest">Prioridad</th>
+  reportes_7a4d321.vue:785:                <th class="p-3 text-[10px] font-black text-slate-500 uppercase 
+tracking-widest">Estado</th>
+  reportes_7a4d321.vue:786:                <th class="p-3 text-[10px] font-black text-slate-500 uppercase 
+tracking-widest">Creado Por</th>
+  reportes_7a4d321.vue:789:            </thead>
+  reportes_7a4d321.vue:790:            <tbody>
+> reportes_7a4d321.vue:791:              <tr v-for="ticket in ticketsFiltrados" :key="ticket.id" class="border-b 
+border-slate-100 hover:bg-slate-50 transition-colors">
+  reportes_7a4d321.vue:792:                <td class="p-3 text-xs font-bold text-slate-500">#{{ ticket.id }}</td>
+  reportes_7a4d321.vue:793:                <td class="p-3 text-sm font-bold text-slate-800">{{ ticket.asunto }}</td>
+  reportes_7a4d321.vue:794:                <td class="p-3 text-xs">
+  reportes_7a4d321.vue:795:                  <span :class="getBadgeClass(ticket.prioridad)" class="px-2 py-1 rounded 
+text-[10px] font-bold uppercase tracking-widest">
+  reportes_7a4d321.vue:796:                    {{ ticket.prioridad }}
+  reportes_7a4d321.vue:797:                  </span>
+  reportes_7a4d321.vue:798:                </td>
+  reportes_7a4d321.vue:799:                <td class="p-3 text-xs">
+  reportes_7a4d321.vue:800:                  <span :class="getBadgeClass(ticket.estado)" class="px-2 py-1 rounded 
+text-[10px] font-bold uppercase tracking-widest">
+  reportes_7a4d321.vue:801:                    {{ ticket.estado }}
+  reportes_7a4d321.vue:812:                <td class="p-3 text-xs text-slate-500">{{ new 
+Date(ticket.fecha_creacion).toLocaleDateString() }}</td>
+  reportes_7a4d321.vue:813:              </tr>
+> reportes_7a4d321.vue:814:              <tr v-if="ticketsFiltrados.length === 0">
+  reportes_7a4d321.vue:815:                <td colspan="6" class="p-8">
+  reportes_7a4d321.vue:816:                  <div class="flex flex-col items-center justify-center text-center">
+  reportes_7a4d321.vue:817:                    <div class="w-16 h-16 bg-slate-50 rounded-full flex items-center 
+justify-center mb-3">
+  reportes_7a4d321.vue:818:                      <span class="text-3xl">🎫</span>
+  reportes_7a4d321.vue:819:                    </div>
+> reportes_7a4d321.vue:820:                    <h3 class="text-slate-800 font-black text-lg mb-1">Sin Tickets</h3>
+> reportes_7a4d321.vue:821:                    <p class="text-slate-500 text-sm max-w-md">No se encontraron tickets 
+con los filtros actuales o la búsqueda "{{ searchQuery }}".</p>
+  reportes_7a4d321.vue:822:                  </div>
+  reportes_7a4d321.vue:823:                </td>
+  reportes_7a4d321.vue:824:              </tr>
+  reportes_7a4d321.vue:825:            </tbody>
+  reportes_7a4d321.vue:826:          </table>
+  reportes_7a4d321.vue:827:        </div>
+  reportes_7a4d321.vue:828:      </div>
+  reportes_7a4d321.vue:829:
+  reportes_7a4d321.vue:830:      <!-- TAB: CONTROL DE TIEMPOS -->
+  reportes_7a4d321.vue:831:      <div v-if="activeTab === 'tiempos'" class="space-y-6 animate-in fade-in duration-300">
+  reportes_7a4d321.vue:1058:                <p class="text-xs text-slate-500 mt-1">Días acumulados, gozados y saldos 
+pendientes.</p>
+  reportes_7a4d321.vue:1059:              </div>
+> reportes_7a4d321.vue:1060:              <div @click="wizardCategoria = 'tickets'" :class="['p-5 rounded-xl border-2 
+cursor-pointer transition-all hover:-translate-y-1', wizardCategoria === 'tickets' ? 'border-amber-500 bg-amber-50 
+shadow-md' : 'border-slate-100 bg-white hover:border-slate-300']">
+  reportes_7a4d321.vue:1061:                <div class="text-3xl mb-2">🎫</div>
+> reportes_7a4d321.vue:1062:                <h4 class="font-black text-slate-800 text-sm">Soporte y Tickets</h4>
+  reportes_7a4d321.vue:1063:                <p class="text-xs text-slate-500 mt-1">Solicitudes de soporte y estado de 
+resolución.</p>
+  reportes_7a4d321.vue:1064:              </div>
+  reportes_7a4d321.vue:1065:            </div>
+  reportes_7a4d321.vue:1066:          </div>
+  reportes_7a4d321.vue:1067:
+  reportes_7a4d321.vue:1068:          <!-- Step 2: Filtros -->
+  reportes_7a4d321.vue:1069:          <div v-if="wizardPaso === 2" class="animate-in slide-in-from-right-4 space-y-4">
+  reportes_7a4d321.vue:1070:            <h3 class="text-sm font-black text-slate-800 uppercase tracking-widest 
+mb-4">Configura los filtros de tu reporte</h3>
+  reportes_7a4d321.vue:1071:            
+  reportes_7a4d321.vue:1072:            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 bg-slate-50 p-5 rounded-xl 
+border border-slate-100">
+  reportes_7a4d321.vue:1083:                </select>
+  reportes_7a4d321.vue:1084:              </div>
+> reportes_7a4d321.vue:1085:              <div v-if="wizardCategoria === 'incidencias' || wizardCategoria === 
+'tickets'">
+  reportes_7a4d321.vue:1086:                <label class="block text-[10px] font-bold text-slate-500 uppercase 
+tracking-widest mb-2">Estado del caso</label>
+  reportes_7a4d321.vue:1087:                <select v-model="wizardFiltros.estado_caso" class="w-full p-3 border 
+border-slate-200 rounded-lg text-sm bg-white focus:border-purple-500 outline-none">
+  reportes_7a4d321.vue:1088:                  <option value="todos">Todos</option>
+  reportes_7a4d321.vue:1089:                  <option value="Abierto">Abierto/Pendiente</option>
+  reportes_7a4d321.vue:1090:                  <option value="Cerrado">Cerrado/Resuelto</option>
+  reportes_7a4d321.vue:1091:                </select>
+  reportes_7a4d321.vue:1092:              </div>
+  reportes_7a4d321.vue:1093:              <div>
+  reportes_7a4d321.vue:1094:                <label class="block text-[10px] font-bold text-slate-500 uppercase 
+tracking-widest mb-2">Filtrar por Departamento</label>
+  reportes_7a4d321.vue:1095:                <select v-model="wizardFiltros.departamento" class="w-full p-3 border 
+border-slate-200 rounded-lg text-sm bg-white focus:border-purple-500 outline-none">
+  reportes_7a4d321.vue:1557:})
+  reportes_7a4d321.vue:1558:
+> reportes_7a4d321.vue:1559:const tendenciaTickets = ref([])
+> reportes_7a4d321.vue:1560:const chartTendenciaTicketsData = computed(() => {
+> reportes_7a4d321.vue:1561:  if (tendenciaTickets.value.length === 0) return null;
+> reportes_7a4d321.vue:1562:  const labels = tendenciaTickets.value.map(row => {
+  reportes_7a4d321.vue:1563:    const d = new Date(row.fecha);
+  reportes_7a4d321.vue:1564:    return d.toLocaleDateString('es-HN', { day: '2-digit', month: 'short' });
+  reportes_7a4d321.vue:1565:  });
+> reportes_7a4d321.vue:1566:  const creados = tendenciaTickets.value.map(row => row.creados);
+> reportes_7a4d321.vue:1567:  const resueltos = tendenciaTickets.value.map(row => row.resueltos);
+  reportes_7a4d321.vue:1568:
+  reportes_7a4d321.vue:1569:  return {
+  reportes_7a4d321.vue:1570:    labels: labels,
+  reportes_7a4d321.vue:1571:    datasets: [
+  reportes_7a4d321.vue:1572:      {
+> reportes_7a4d321.vue:1573:        label: 'Tickets Creados',
+  reportes_7a4d321.vue:1574:        borderColor: '#f59e0b',
+  reportes_7a4d321.vue:1575:        backgroundColor: '#f59e0b',
+  reportes_7a4d321.vue:1576:        data: creados,
+  reportes_7a4d321.vue:1577:        tension: 0.4,
+  reportes_7a4d321.vue:1578:        fill: false
+  reportes_7a4d321.vue:1579:      },
+  reportes_7a4d321.vue:1580:      {
+> reportes_7a4d321.vue:1581:        label: 'Tickets Resueltos',
+  reportes_7a4d321.vue:1582:        borderColor: '#10b981',
+  reportes_7a4d321.vue:1583:        backgroundColor: '#10b981',
+  reportes_7a4d321.vue:1584:        data: resueltos,
+  reportes_7a4d321.vue:1585:        tension: 0.4,
+  reportes_7a4d321.vue:1586:        fill: false
+  reportes_7a4d321.vue:1587:      }
+  reportes_7a4d321.vue:1588:    ]
+  reportes_7a4d321.vue:1589:  };
+  reportes_7a4d321.vue:1590:})
+  reportes_7a4d321.vue:1591:
+  reportes_7a4d321.vue:1635:}
+  reportes_7a4d321.vue:1636:
+> reportes_7a4d321.vue:1637:const cargarTendenciaTickets = async (isPolling = false) => {
+  reportes_7a4d321.vue:1638:  try {
+> reportes_7a4d321.vue:1639:    const res = await axios.get('http://localhost:3007/api/stats/tendencia-tickets')
+> reportes_7a4d321.vue:1640:    tendenciaTickets.value = res.data
+  reportes_7a4d321.vue:1641:  } catch (e) {
+> reportes_7a4d321.vue:1642:    console.error('Error cargando tendencia tickets:', e)
+  reportes_7a4d321.vue:1643:  }
+  reportes_7a4d321.vue:1644:}
+  reportes_7a4d321.vue:1645:
+  reportes_7a4d321.vue:1646:// --- EMPLEADOS REPORTE ---
+  reportes_7a4d321.vue:1647:const empleados = ref([])
+  reportes_7a4d321.vue:1648:const loadingEmpleados = ref(false)
+  reportes_7a4d321.vue:1649:const empleadosFiltro = ref('')
+  reportes_7a4d321.vue:1650:const empleadosEstado = ref('todos')
+  reportes_7a4d321.vue:1651:const empleadosVista = ref('general')
+  reportes_7a4d321.vue:1652:
+  reportes_7a4d321.vue:1689:})
+  reportes_7a4d321.vue:1690:
+> reportes_7a4d321.vue:1691:// --- TICKETS REPORTE ---
+> reportes_7a4d321.vue:1692:const tickets = ref([])
+> reportes_7a4d321.vue:1693:const loadingTickets = ref(false)
+> reportes_7a4d321.vue:1694:const ticketsFiltroEstado = ref('todos')
+> reportes_7a4d321.vue:1695:const ticketsFiltroPrioridad = ref('todos')
+  reportes_7a4d321.vue:1696:
+> reportes_7a4d321.vue:1697:const cargarTickets = async (isPolling = false) => {
+  reportes_7a4d321.vue:1698:  try {
+> reportes_7a4d321.vue:1699:    if (!isPolling) loadingTickets.value = true
+> reportes_7a4d321.vue:1700:    const res = await axios.get('http://localhost:3007/api/tickets/lista')
+> reportes_7a4d321.vue:1701:    tickets.value = res.data
+  reportes_7a4d321.vue:1702:  } catch (e) {
+> reportes_7a4d321.vue:1703:    console.error('Error cargando tickets:', e)
+  reportes_7a4d321.vue:1704:  } finally {
+> reportes_7a4d321.vue:1705:    loadingTickets.value = false
+  reportes_7a4d321.vue:1706:  }
+  reportes_7a4d321.vue:1707:}
+  reportes_7a4d321.vue:1708:
+> reportes_7a4d321.vue:1709:const ticketsFiltrados = computed(() => {
+> reportes_7a4d321.vue:1710:  let list = tickets.value
+> reportes_7a4d321.vue:1711:  if (ticketsFiltroEstado.value !== 'todos') {
+> reportes_7a4d321.vue:1712:    if (ticketsFiltroEstado.value === 'pendientes_progreso') {
+  reportes_7a4d321.vue:1713:      list = list.filter(t => t.estado === 'Pendiente' || t.estado === 'En Progreso')
+> reportes_7a4d321.vue:1714:    } else if (ticketsFiltroEstado.value === 'resueltos_cerrados') {
+  reportes_7a4d321.vue:1715:      list = list.filter(t => t.estado === 'Resuelto' || t.estado === 'Cerrado')
+  reportes_7a4d321.vue:1716:    } else {
+> reportes_7a4d321.vue:1717:      list = list.filter(t => t.estado === ticketsFiltroEstado.value)
+  reportes_7a4d321.vue:1718:    }
+  reportes_7a4d321.vue:1719:  }
+> reportes_7a4d321.vue:1720:  if (ticketsFiltroPrioridad.value !== 'todos') {
+> reportes_7a4d321.vue:1721:    list = list.filter(t => t.prioridad === ticketsFiltroPrioridad.value)
+  reportes_7a4d321.vue:1722:  }
+  reportes_7a4d321.vue:1723:  if (searchQuery.value.trim() !== '') {
+  reportes_7a4d321.vue:1724:    const q = searchQuery.value.toLowerCase()
+  reportes_7a4d321.vue:1725:    list = list.filter(t => 
+  reportes_7a4d321.vue:1726:      (t.asunto && t.asunto.toLowerCase().includes(q)) || 
+  reportes_7a4d321.vue:1727:      (t.creadoPorNombre && t.creadoPorNombre.toLowerCase().includes(q)) ||
+  reportes_7a4d321.vue:1728:      (t.asignado_usuario_nombre && t.asignado_usuario_nombre.toLowerCase().includes(q)) ||
+  reportes_7a4d321.vue:1729:      (t.empleado_nombre && t.empleado_nombre.toLowerCase().includes(q))
+  reportes_7a4d321.vue:1730:    )
+  reportes_7a4d321.vue:1731:  }
+  reportes_7a4d321.vue:1733:})
+  reportes_7a4d321.vue:1734:
+> reportes_7a4d321.vue:1735:const chartEstadoTicketsData = computed(() => {
+> reportes_7a4d321.vue:1736:  if (ticketsFiltrados.value.length === 0) return null;
+  reportes_7a4d321.vue:1737:  let pendiente = 0, progreso = 0, resuelto = 0, cerrado = 0;
+> reportes_7a4d321.vue:1738:  ticketsFiltrados.value.forEach(t => {
+  reportes_7a4d321.vue:1739:    if (t.estado === 'Pendiente') pendiente++;
+  reportes_7a4d321.vue:1740:    else if (t.estado === 'En Progreso') progreso++;
+  reportes_7a4d321.vue:1741:    else if (t.estado === 'Resuelto') resuelto++;
+  reportes_7a4d321.vue:1742:    else if (t.estado === 'Cerrado') cerrado++;
+  reportes_7a4d321.vue:1743:  });
+  reportes_7a4d321.vue:1744:  return {
+  reportes_7a4d321.vue:1745:    labels: ['Pendiente', 'En Progreso', 'Resuelto', 'Cerrado'],
+  reportes_7a4d321.vue:1746:    datasets: [{ backgroundColor: ['#fde047', '#3b82f6', '#10b981', '#64748b'], 
+borderWidth: 0, data: [pendiente, progreso, resuelto, cerrado] }]
+  reportes_7a4d321.vue:1747:  }
+  reportes_7a4d321.vue:1748:})
+  reportes_7a4d321.vue:1749:
+> reportes_7a4d321.vue:1750:const chartPrioridadTicketsData = computed(() => {
+> reportes_7a4d321.vue:1751:  if (ticketsFiltrados.value.length === 0) return null;
+  reportes_7a4d321.vue:1752:  let baja = 0, media = 0, alta = 0, urgente = 0;
+> reportes_7a4d321.vue:1753:  ticketsFiltrados.value.forEach(t => {
+  reportes_7a4d321.vue:1754:    if (t.prioridad === 'Baja') baja++;
+  reportes_7a4d321.vue:1755:    else if (t.prioridad === 'Media') media++;
+  reportes_7a4d321.vue:1756:    else if (t.prioridad === 'Alta') alta++;
+  reportes_7a4d321.vue:1757:    else if (t.prioridad === 'Urgente') urgente++;
+  reportes_7a4d321.vue:1758:  });
+  reportes_7a4d321.vue:1759:  return {
+  reportes_7a4d321.vue:1760:    labels: ['Baja', 'Media', 'Alta', 'Urgente'],
+  reportes_7a4d321.vue:1761:    datasets: [{ backgroundColor: ['#fde047', '#3b82f6', '#f97316', '#ef4444'], 
+borderWidth: 0, data: [baja, media, alta, urgente] }]
+  reportes_7a4d321.vue:1762:  }
+  reportes_7a4d321.vue:1763:})
+  reportes_7a4d321.vue:2199:}
+  reportes_7a4d321.vue:2200:
+> reportes_7a4d321.vue:2201:const generarPDFTickets = async () => {
+> reportes_7a4d321.vue:2202:  if (ticketsFiltrados.value.length === 0) {
+> reportes_7a4d321.vue:2203:    Swal.fire('Aviso', 'No hay tickets para exportar con los filtros actuales.', 
+'warning');
+  reportes_7a4d321.vue:2204:    return;
+  reportes_7a4d321.vue:2205:  }
+  reportes_7a4d321.vue:2206:
+  reportes_7a4d321.vue:2207:  try {
+  reportes_7a4d321.vue:2208:    const doc = new jsPDF();
+  reportes_7a4d321.vue:2209:    const pageHeight = doc.internal.pageSize.height;
+  reportes_7a4d321.vue:2210:    
+  reportes_7a4d321.vue:2211:    // Encabezado
+  reportes_7a4d321.vue:2212:    doc.setFontSize(16);
+  reportes_7a4d321.vue:2213:    doc.setTextColor(15, 23, 42);
+  reportes_7a4d321.vue:2214:    doc.setFont('helvetica', 'bold');
+> reportes_7a4d321.vue:2215:    doc.text('REPORTE DE SOPORTE Y TICKETS', 14, 20);
+  reportes_7a4d321.vue:2216:    
+  reportes_7a4d321.vue:2217:    doc.setFontSize(10);
+  reportes_7a4d321.vue:2218:    doc.setTextColor(100, 116, 139);
+  reportes_7a4d321.vue:2219:    doc.setFont('helvetica', 'normal');
+  reportes_7a4d321.vue:2220:    doc.text(`Generado el: ${new Date().toLocaleString('es-HN')}`, 14, 28);
+> reportes_7a4d321.vue:2221:    doc.text(`Total de registros: ${ticketsFiltrados.value.length}`, 14, 33);
+  reportes_7a4d321.vue:2222:    
+  reportes_7a4d321.vue:2223:    // Cargar Logo
+  reportes_7a4d321.vue:2224:    const imgLogo = new Image();
+  reportes_7a4d321.vue:2225:    imgLogo.crossOrigin = "Anonymous";
+  reportes_7a4d321.vue:2226:    imgLogo.src = 'http://localhost:3007/uploads/Logo/Logo.png';
+  reportes_7a4d321.vue:2227:    await new Promise((resolve) => {
+  reportes_7a4d321.vue:2228:      imgLogo.onload = resolve;
+  reportes_7a4d321.vue:2229:      imgLogo.onerror = resolve;
+  reportes_7a4d321.vue:2230:    });
+  reportes_7a4d321.vue:2231:    try { doc.addImage(imgLogo, 'PNG', 160, 10, 35, 15); } catch(e) {}
+  reportes_7a4d321.vue:2239:
+  reportes_7a4d321.vue:2240:    let headers = ['ID', 'Asunto', 'Prioridad', 'Estado', 'Creado Por', 'Asignado', 
+'Respuestas', 'Fecha'];
+> reportes_7a4d321.vue:2241:    let tableData = ticketsFiltrados.value.map(ticket => {
+  reportes_7a4d321.vue:2242:      let asignado = ticket.asignado_usuario_nombre || ticket.asignado_empleado_nombre || 
+'Sin asignar';
+  reportes_7a4d321.vue:2243:      let creador = ticket.creadoPorNombre || (ticket.empleado_nombre ? 
+`${ticket.empleado_nombre} ${ticket.empleado_apellido || ''}`.trim() : 'Desconocido');
+  reportes_7a4d321.vue:2244:      return [
+  reportes_7a4d321.vue:2245:        `#${ticket.id}`,
+  reportes_7a4d321.vue:2246:        ticket.asunto || 'N/A',
+  reportes_7a4d321.vue:2247:        ticket.prioridad || 'N/A',
+  reportes_7a4d321.vue:2248:        ticket.estado || 'N/A',
+  reportes_7a4d321.vue:2249:        creador,
+  reportes_7a4d321.vue:2250:        asignado,
+  reportes_7a4d321.vue:2251:        ticket.respuestas_count ? `${ticket.respuestas_count}` : '0',
+  reportes_7a4d321.vue:2273:    }
+  reportes_7a4d321.vue:2274:
+> reportes_7a4d321.vue:2275:    doc.save('Reporte_Tickets.pdf');
+  reportes_7a4d321.vue:2276:  } catch (error) {
+> reportes_7a4d321.vue:2277:    console.error("Error al generar PDF de Tickets:", error);
+  reportes_7a4d321.vue:2278:    Swal.fire('Error', 'No se pudo generar el PDF', 'error');
+  reportes_7a4d321.vue:2279:  }
+  reportes_7a4d321.vue:2280:}
+  reportes_7a4d321.vue:2281:
+  reportes_7a4d321.vue:2282:const generarPDFDashboard = async () => {
+  reportes_7a4d321.vue:2283:  try {
+  reportes_7a4d321.vue:2284:    const doc = new jsPDF();
+  reportes_7a4d321.vue:2285:    const pageHeight = doc.internal.pageSize.height;
+  reportes_7a4d321.vue:2286:    
+  reportes_7a4d321.vue:2287:    // Función para añadir Logo
+  reportes_7a4d321.vue:2335:      ['Documentos Legales Registrados', stats.value.doc_legales || 0],
+  reportes_7a4d321.vue:2336:      ['Contratos por Vencer (30 días)', stats.value.vencimientos || 0],
+> reportes_7a4d321.vue:2337:      ['Tickets de Soporte Pendientes', stats.value.tickets || 0]
+  reportes_7a4d321.vue:2338:    ];
+  reportes_7a4d321.vue:2339:
+  reportes_7a4d321.vue:2340:    autoTable(doc, {
+  reportes_7a4d321.vue:2341:      startY: startY,
+  reportes_7a4d321.vue:2342:      head: [['Métrica / Indicador', 'Valor Registrado']],
+  reportes_7a4d321.vue:2343:      body: kpiData,
+  reportes_7a4d321.vue:2344:      theme: 'grid',
+  reportes_7a4d321.vue:2345:      headStyles: { fillColor: [37, 99, 235], textColor: [255, 255, 255], fontStyle: 
+'bold' }, // Blue 600
+  reportes_7a4d321.vue:2346:      alternateRowStyles: { fillColor: [239, 246, 255] }, // Blue 50
+  reportes_7a4d321.vue:2347:      styles: { fontSize: 10, cellPadding: 5 },
+  reportes_7a4d321.vue:2598:// --- WIZARD GENERADOR DE REPORTES ---
+  reportes_7a4d321.vue:2599:const wizardPaso = ref(1)
+> reportes_7a4d321.vue:2600:const wizardCategoria = ref('') // 'empleados', 'incidencias', 'vacaciones', 'tickets'
+  reportes_7a4d321.vue:2601:const wizardFiltros = ref({
+  reportes_7a4d321.vue:2602:  busqueda: '',
+  reportes_7a4d321.vue:2603:  estado: 'todos',
+  reportes_7a4d321.vue:2604:  estado_caso: 'todos',
+  reportes_7a4d321.vue:2605:  departamento: 'todos'
+  reportes_7a4d321.vue:2606:})
+  reportes_7a4d321.vue:2607:
+  reportes_7a4d321.vue:2608:const wizardCategoriaNombre = computed(() => {
+  reportes_7a4d321.vue:2609:  const cats = {
+  reportes_7a4d321.vue:2610:    'empleados': 'Directorio Analítico',
+  reportes_7a4d321.vue:2611:    'incidencias': 'Incidencias Laborales',
+  reportes_7a4d321.vue:2612:    'vacaciones': 'Vacaciones y Saldos',
+> reportes_7a4d321.vue:2613:    'tickets': 'Soporte y Tickets'
+  reportes_7a4d321.vue:2614:  }
+  reportes_7a4d321.vue:2615:  return cats[wizardCategoria.value] || 'Personalizado'
+  reportes_7a4d321.vue:2616:})
+  reportes_7a4d321.vue:2617:
+  reportes_7a4d321.vue:2618:const wizardDatosBrutos = computed(() => {
+  reportes_7a4d321.vue:2619:  if (wizardCategoria.value === 'empleados') return empleados.value
+  reportes_7a4d321.vue:2620:  if (wizardCategoria.value === 'incidencias') return incidencias.value
+  reportes_7a4d321.vue:2621:  if (wizardCategoria.value === 'vacaciones') return saldosDatos.value || []
+> reportes_7a4d321.vue:2622:  if (wizardCategoria.value === 'tickets') return tickets.value
+  reportes_7a4d321.vue:2623:  return []
+  reportes_7a4d321.vue:2624:})
+  reportes_7a4d321.vue:2625:
+  reportes_7a4d321.vue:2626:const wizardDatosFiltrados = computed(() => {
+  reportes_7a4d321.vue:2627:  let list = wizardDatosBrutos.value
+  reportes_7a4d321.vue:2628:  const q = wizardFiltros.value.busqueda.toLowerCase().trim()
+  reportes_7a4d321.vue:2629:  
+  reportes_7a4d321.vue:2630:  if (q !== '') {
+  reportes_7a4d321.vue:2631:    list = list.filter(item => {
+  reportes_7a4d321.vue:2632:      const vals = Object.values(item).map(v => String(v).toLowerCase())
+  reportes_7a4d321.vue:2646:  }
+  reportes_7a4d321.vue:2647:
+> reportes_7a4d321.vue:2648:  if ((wizardCategoria.value === 'incidencias' || wizardCategoria.value === 'tickets') && 
+wizardFiltros.value.estado_caso !== 'todos') {
+  reportes_7a4d321.vue:2649:    if (wizardFiltros.value.estado_caso === 'Abierto') {
+  reportes_7a4d321.vue:2650:      list = list.filter(item => item.estado !== 'Cerrado' && item.estado !== 'Resuelto')
+  reportes_7a4d321.vue:2651:    } else if (wizardFiltros.value.estado_caso === 'Cerrado') {
+  reportes_7a4d321.vue:2652:      list = list.filter(item => item.estado === 'Cerrado' || item.estado === 'Resuelto')
+  reportes_7a4d321.vue:2653:    }
+  reportes_7a4d321.vue:2654:  }
+  reportes_7a4d321.vue:2655:
+  reportes_7a4d321.vue:2656:  return list
+  reportes_7a4d321.vue:2657:})
+  reportes_7a4d321.vue:2658:
+  reportes_7a4d321.vue:2683:    ]
+  reportes_7a4d321.vue:2684:  }
+> reportes_7a4d321.vue:2685:  if (wizardCategoria.value === 'tickets') {
+  reportes_7a4d321.vue:2686:    return [
+  reportes_7a4d321.vue:2687:      { key: 'id', label: 'ID' },
+  reportes_7a4d321.vue:2688:      { key: 'asunto', label: 'Asunto' },
+  reportes_7a4d321.vue:2689:      { key: 'prioridad', label: 'Prioridad' },
+  reportes_7a4d321.vue:2690:      { key: 'estado', label: 'Estado' }
+  reportes_7a4d321.vue:2691:    ]
+  reportes_7a4d321.vue:2692:  }
+  reportes_7a4d321.vue:2693:  return []
+  reportes_7a4d321.vue:2694:})
+  reportes_7a4d321.vue:2695:
+  reportes_7a4d321.vue:2809:  cargarTiposFaltas(false)
+  reportes_7a4d321.vue:2810:  cargarTendenciaAusentismo(false)
+> reportes_7a4d321.vue:2811:  cargarTendenciaTickets(false)
+  reportes_7a4d321.vue:2812:  cargarEmpleados(false)
+> reportes_7a4d321.vue:2813:  cargarTickets(false)
+  reportes_7a4d321.vue:2814:  cargarProyecciones(false)
+  reportes_7a4d321.vue:2815:  cargarAusentismo(false)
+  reportes_7a4d321.vue:2816:  cargarSaldos(false)
+  reportes_7a4d321.vue:2817:  cargarIncidencias(false)
+  reportes_7a4d321.vue:2818:  cargarLegales(false)
+  reportes_7a4d321.vue:2819:
+  reportes_7a4d321.vue:2820:  // Iniciar Polling en tiempo real (cada 15 segundos)
+  reportes_7a4d321.vue:2821:  pollingInterval = setInterval(() => {
+  reportes_7a4d321.vue:2822:    cargarStats(true)
+  reportes_7a4d321.vue:2823:    cargarDepartamentosStats(true)
+  reportes_7a4d321.vue:2825:    cargarTiposFaltas(true)
+  reportes_7a4d321.vue:2826:    cargarTendenciaAusentismo(true)
+> reportes_7a4d321.vue:2827:    cargarTendenciaTickets(true)
+  reportes_7a4d321.vue:2828:    cargarEmpleados(true)
+> reportes_7a4d321.vue:2829:    cargarTickets(true)
+  reportes_7a4d321.vue:2830:    cargarProyecciones(true)
+  reportes_7a4d321.vue:2831:    cargarAusentismo(true)
+  reportes_7a4d321.vue:2832:    cargarSaldos(true)
+  reportes_7a4d321.vue:2833:    cargarIncidencias(true)
+  reportes_7a4d321.vue:2834:    cargarLegales(true)
+  reportes_7a4d321.vue:2835:  }, 15000)
+  reportes_7a4d321.vue:2836:})
+  reportes_7a4d321.vue:2837:
+  reportes_7a4d321.vue:2838:onUnmounted(() => {
+  reportes_7a4d321.vue:2839:  if (pollingInterval) clearInterval(pollingInterval)
+
+

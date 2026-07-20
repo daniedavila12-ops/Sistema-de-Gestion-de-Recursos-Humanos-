@@ -98,10 +98,11 @@ class _PermisosDialogState extends ConsumerState<PermisosDialog> {
     return Scaffold(
       backgroundColor: Colors.grey[100],
       appBar: AppBar(
-        title: const Text('PERMISOS DEL ROL', style: TextStyle(fontWeight: FontWeight.w900, letterSpacing: 1.0)),
-        backgroundColor: Colors.purple.shade800,
+        title: const Text('PERMISOS DEL ROL', style: TextStyle(fontWeight: FontWeight.w900, letterSpacing: 1.0, fontSize: 16)),
+        backgroundColor: const Color(0xFF1E293B), // Slate 800 like web
         foregroundColor: Colors.white,
         elevation: 0,
+        centerTitle: true,
       ),
       body: permisosAsync.when(
         data: (permisosData) {
@@ -174,30 +175,31 @@ class _PermisosDialogState extends ConsumerState<PermisosDialog> {
             if (entry.value.isEmpty) continue;
 
             IconData categoryIcon = Icons.folder;
-            if (entry.key == 'RRHH Innova') categoryIcon = Icons.dashboard_customize;
-            if (entry.key == 'RECURSOS HUMANOS') categoryIcon = Icons.people_alt;
-            if (entry.key == 'Departamento de IT') categoryIcon = Icons.computer;
+            Color categoryColor = Colors.indigo.shade600;
+            if (entry.key == 'RRHH Innova') { categoryIcon = Icons.dashboard_customize; categoryColor = Colors.indigo.shade600; }
+            if (entry.key == 'RECURSOS HUMANOS') { categoryIcon = Icons.people_alt; categoryColor = Colors.teal.shade600; }
+            if (entry.key == 'Departamento de IT') { categoryIcon = Icons.computer; categoryColor = Colors.orange.shade600; }
 
             listItems.add(
               Container(
                 margin: const EdgeInsets.only(top: 24, bottom: 12),
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
                 decoration: BoxDecoration(
-                  color: Colors.purple.shade50,
+                  color: categoryColor.withValues(alpha: 0.05),
                   borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: Colors.purple.shade100),
+                  border: Border.all(color: categoryColor.withValues(alpha: 0.15)),
                 ),
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Icon(categoryIcon, size: 18, color: Colors.purple.shade700),
+                    Icon(categoryIcon, size: 18, color: categoryColor),
                     const SizedBox(width: 8),
                     Text(
                       entry.key.toUpperCase(),
                       style: TextStyle(
                         fontSize: 12,
                         fontWeight: FontWeight.w900,
-                        color: Colors.purple.shade900,
+                        color: categoryColor,
                         letterSpacing: 1.2,
                       ),
                     ),
@@ -216,9 +218,9 @@ class _PermisosDialogState extends ConsumerState<PermisosDialog> {
                   decoration: BoxDecoration(
                     color: Colors.white,
                     borderRadius: BorderRadius.circular(20),
-                    border: Border.all(color: Colors.blueGrey.shade100, width: 1.5),
+                    border: Border.all(color: Colors.blueGrey.shade200, width: 1.0),
                     boxShadow: [
-                      BoxShadow(color: Colors.blueGrey.shade100.withValues(alpha: 0.5), blurRadius: 10, offset: const Offset(0, 4)),
+                      BoxShadow(color: Colors.blueGrey.shade100.withValues(alpha: 0.6), blurRadius: 15, offset: const Offset(0, 4)),
                     ],
                   ),
                   child: Padding(
@@ -238,31 +240,33 @@ class _PermisosDialogState extends ConsumerState<PermisosDialog> {
                             ),
                             Row(
                               children: [
-                                Text('TODOS', style: TextStyle(fontSize: 10, fontWeight: FontWeight.w900, color: Colors.grey.shade600)),
+                                Text('TODOS', style: TextStyle(fontSize: 10, fontWeight: FontWeight.w900, color: Colors.blueGrey.shade500)),
                                 const SizedBox(width: 4),
                                 Switch(
                                   value: _todosSeleccionados(permiso),
                                   onChanged: (v) => _toggleTodos(permiso, v),
-                                  activeThumbColor: Colors.purple.shade600,
-                                  activeTrackColor: Colors.purple.shade100,
+                                  activeThumbColor: Colors.white,
+                                  activeTrackColor: Colors.teal.shade500,
+                                  inactiveThumbColor: Colors.blueGrey.shade300,
+                                  inactiveTrackColor: Colors.blueGrey.shade100,
                                 ),
                               ],
                             ),
                           ],
                         ),
-                        const Padding(
-                          padding: EdgeInsets.symmetric(vertical: 8.0),
-                          child: Divider(height: 1),
+                        Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 12.0),
+                          child: Divider(height: 1, color: Colors.blueGrey.shade100),
                         ),
                         Wrap(
                           spacing: 8,
                           runSpacing: 12,
                           alignment: WrapAlignment.start,
                           children: [
-                            _buildActionChip('Ver', permiso.puedeVer, (v) => _onPuedeVerChange(permiso, v), Icons.visibility_outlined),
-                            _buildActionChip('Crear', permiso.puedeCrear, (v) => _onAccionChange(permiso, v, 'crear'), Icons.add_circle_outline),
-                            _buildActionChip('Editar', permiso.puedeEditar, (v) => _onAccionChange(permiso, v, 'editar'), Icons.edit_outlined),
-                            _buildActionChip('Eliminar', permiso.puedeEliminar, (v) => _onAccionChange(permiso, v, 'eliminar'), Icons.delete_outline),
+                            _buildActionChip('Ver', permiso.puedeVer, (v) => _onPuedeVerChange(permiso, v), Icons.visibility_outlined, Colors.indigo),
+                            _buildActionChip('Crear', permiso.puedeCrear, (v) => _onAccionChange(permiso, v, 'crear'), Icons.add_circle_outline, Colors.teal),
+                            _buildActionChip('Editar', permiso.puedeEditar, (v) => _onAccionChange(permiso, v, 'editar'), Icons.edit_outlined, Colors.orange),
+                            _buildActionChip('Eliminar', permiso.puedeEliminar, (v) => _onAccionChange(permiso, v, 'eliminar'), Icons.delete_outline, Colors.red),
                           ],
                         ),
                       ],
@@ -278,31 +282,24 @@ class _PermisosDialogState extends ConsumerState<PermisosDialog> {
               Container(
                 width: double.infinity,
                 padding: const EdgeInsets.all(24),
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [Colors.purple.shade800, Colors.purple.shade600],
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
+                decoration: const BoxDecoration(
+                  color: Color(0xFF1E293B),
+                  borderRadius: BorderRadius.only(
+                    bottomLeft: Radius.circular(32),
+                    bottomRight: Radius.circular(32),
                   ),
-                  borderRadius: const BorderRadius.only(
-                    bottomLeft: Radius.circular(24),
-                    bottomRight: Radius.circular(24),
-                  ),
-                  boxShadow: [
-                    BoxShadow(color: Colors.purple.shade200.withValues(alpha: 0.5), blurRadius: 10, offset: const Offset(0, 4)),
-                  ],
                 ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     const Text(
                       'Configurando accesos para:',
-                      style: TextStyle(color: Colors.white70, fontSize: 14),
+                      style: TextStyle(color: Colors.white70, fontSize: 13, fontWeight: FontWeight.w600),
                     ),
-                    const SizedBox(height: 4),
+                    const SizedBox(height: 6),
                     Text(
                       widget.rol.nombre,
-                      style: const TextStyle(fontWeight: FontWeight.w900, color: Colors.white, fontSize: 24, letterSpacing: 0.5),
+                      style: const TextStyle(fontWeight: FontWeight.w900, color: Colors.white, fontSize: 28, letterSpacing: 0.5),
                     ),
                   ],
                 ),
@@ -338,7 +335,7 @@ class _PermisosDialogState extends ConsumerState<PermisosDialog> {
                       const SizedBox(width: 12),
                       ElevatedButton(
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.purple.shade600,
+                          backgroundColor: Colors.indigo.shade600,
                           foregroundColor: Colors.white,
                           padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 14),
                           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
@@ -361,32 +358,32 @@ class _PermisosDialogState extends ConsumerState<PermisosDialog> {
     );
   }
 
-  Widget _buildActionChip(String label, bool value, ValueChanged<bool?> onChanged, IconData icon) {
+  Widget _buildActionChip(String label, bool value, ValueChanged<bool?> onChanged, IconData icon, MaterialColor themeColor) {
     return GestureDetector(
       onTap: () => onChanged(!value),
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 200),
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
         decoration: BoxDecoration(
-          color: value ? Colors.purple.shade50 : Colors.grey.shade50,
+          color: value ? themeColor.shade50 : Colors.grey.shade50,
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
-            color: value ? Colors.purple.shade300 : Colors.grey.shade300,
+            color: value ? themeColor.shade300 : Colors.grey.shade300,
             width: value ? 1.5 : 1.0,
           ),
-          boxShadow: value ? [BoxShadow(color: Colors.purple.shade100, blurRadius: 4, offset: const Offset(0, 2))] : [],
+          boxShadow: value ? [BoxShadow(color: themeColor.shade100, blurRadius: 4, offset: const Offset(0, 2))] : [],
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(icon, size: 16, color: value ? Colors.purple.shade700 : Colors.blueGrey.shade400),
+            Icon(icon, size: 16, color: value ? themeColor.shade700 : Colors.blueGrey.shade400),
             const SizedBox(width: 6),
             Text(
               label,
               style: TextStyle(
                 fontSize: 12,
                 fontWeight: value ? FontWeight.w900 : FontWeight.w600,
-                color: value ? Colors.purple.shade800 : Colors.blueGrey.shade600,
+                color: value ? themeColor.shade800 : Colors.blueGrey.shade600,
                 letterSpacing: 0.5,
               ),
             ),

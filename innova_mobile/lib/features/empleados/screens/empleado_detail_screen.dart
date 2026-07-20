@@ -154,17 +154,17 @@ class _EmpleadoDetailScreenState extends ConsumerState<EmpleadoDetailScreen> {
                     child: Row(
                       children: [
                         Container(
-                          padding: const EdgeInsets.all(6),
+                          padding: const EdgeInsets.all(8),
                           decoration: BoxDecoration(
                             color: (iconColor ?? Colors.blueGrey.shade700).withValues(alpha: 0.08),
-                            borderRadius: BorderRadius.circular(8),
+                            borderRadius: BorderRadius.circular(10),
                           ),
                           child: Icon(icon, size: 18, color: iconColor ?? Colors.blueGrey.shade700),
                         ),
-                        const SizedBox(width: 12),
+                        const SizedBox(width: 14),
                         Text(
                           text, 
-                          style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: textColor ?? Colors.blueGrey.shade800),
+                          style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: textColor ?? Colors.blueGrey.shade800),
                         ),
                       ],
                     ),
@@ -184,11 +184,11 @@ class _EmpleadoDetailScreenState extends ConsumerState<EmpleadoDetailScreen> {
                       isActivo ? 'Desactivar' : 'Activar',
                       iconColor: isActivo ? Colors.orange.shade700 : Colors.green.shade700,
                     ),
-                  if (puedeVerPerfil) ...[
+                  if (puedeVerPerfil) ...<PopupMenuEntry<String>>[
                     const PopupMenuDivider(height: 16),
                     menuItem('pdf', Icons.picture_as_pdf_outlined, 'Crear Pdf Perfil del Empleado', iconColor: Colors.red.shade600),
                   ],
-                  if (puedeEditarContratos || puedeEditarFaltas || puedeEditarNotas) ...[
+                  if (puedeEditarContratos || puedeEditarFaltas || puedeEditarNotas) ...<PopupMenuEntry<String>>[
                     const PopupMenuDivider(height: 16),
                     menuHeader('EXPEDIENTE'),
                   ],
@@ -205,9 +205,10 @@ class _EmpleadoDetailScreenState extends ConsumerState<EmpleadoDetailScreen> {
             ),
           ],
           bottom: PreferredSize(
-            preferredSize: const Size.fromHeight(56),
+            preferredSize: const Size.fromHeight(64),
             child: Container(
               width: double.infinity,
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
               decoration: BoxDecoration(
                 color: Colors.white,
                 boxShadow: [
@@ -216,9 +217,14 @@ class _EmpleadoDetailScreenState extends ConsumerState<EmpleadoDetailScreen> {
               ),
               child: TabBar(
                 isScrollable: true,
-                indicatorColor: const Color(0xFF1E3A8A),
-                indicatorWeight: 3,
-                labelColor: const Color(0xFF1E3A8A),
+                indicatorSize: TabBarIndicatorSize.tab,
+                dividerColor: Colors.transparent, // clean line
+                indicator: BoxDecoration(
+                  color: Colors.indigo.shade50,
+                  borderRadius: BorderRadius.circular(24),
+                  border: Border.all(color: Colors.indigo.shade200, width: 1.5),
+                ),
+                labelColor: Colors.indigo.shade800,
                 unselectedLabelColor: Colors.blueGrey.shade400,
                 labelStyle: const TextStyle(fontWeight: FontWeight.w800, fontSize: 13, letterSpacing: 0.5),
                 unselectedLabelStyle: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13),
@@ -244,24 +250,27 @@ class _EmpleadoDetailScreenState extends ConsumerState<EmpleadoDetailScreen> {
           decoration: BoxDecoration(
             color: Colors.white,
             borderRadius: BorderRadius.circular(20),
+            border: Border.all(color: Colors.blueGrey.shade100, width: 1.0),
             boxShadow: [
-              BoxShadow(color: Colors.black.withValues(alpha: 0.04), blurRadius: 10, offset: const Offset(0, 4))
+              BoxShadow(color: Colors.blueGrey.shade100.withValues(alpha: 0.8), blurRadius: 15, offset: const Offset(0, 8))
             ],
-            border: Border.all(color: Colors.grey.shade100, width: 1.5),
           ),
           child: Padding(
             padding: const EdgeInsets.symmetric(vertical: 32.0, horizontal: 16.0),
             child: Column(
               children: [
                 Container(
-                  padding: const EdgeInsets.all(4),
+                  padding: const EdgeInsets.all(6),
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
-                    border: Border.all(color: const Color(0xFF1E3A8A).withValues(alpha: 0.1), width: 3),
+                    color: Colors.white,
+                    boxShadow: [
+                      BoxShadow(color: Colors.indigo.shade100.withValues(alpha: 0.5), blurRadius: 12, offset: const Offset(0, 6))
+                    ]
                   ),
                   child: CircleAvatar(
-                    radius: 50,
-                    backgroundColor: const Color(0xFF1E3A8A).withValues(alpha: 0.05),
+                    radius: 54,
+                    backgroundColor: Colors.indigo.shade50,
                     backgroundImage: empleado.foto != null
                         ? NetworkImage('${ApiConstants.baseUrl}${empleado.foto}')
                         : null,
@@ -271,14 +280,14 @@ class _EmpleadoDetailScreenState extends ConsumerState<EmpleadoDetailScreen> {
                                 ? empleado.nombre[0].toUpperCase()
                                 : 'E',
                             style: textTheme.displaySmall?.copyWith(
-                              color: const Color(0xFF1E3A8A),
+                              color: Colors.indigo.shade600,
                               fontWeight: FontWeight.w900,
                             ),
                           )
                         : null,
                   ),
                 ),
-                const SizedBox(height: 20),
+                const SizedBox(height: 24),
                 Text(
                   empleado.nombreCompleto,
                   style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w900, color: Color(0xFF1E293B), letterSpacing: -0.5),
@@ -484,9 +493,9 @@ class _EmpleadoDetailScreenState extends ConsumerState<EmpleadoDetailScreen> {
                       decoration: BoxDecoration(
                         color: Colors.white,
                         borderRadius: BorderRadius.circular(16),
-                        border: Border.all(color: isActivo ? Colors.green.shade200 : Colors.grey.shade200, width: 1.5),
+                        border: Border.all(color: isActivo ? Colors.teal.shade200 : Colors.blueGrey.shade200, width: 1.0),
                         boxShadow: [
-                          BoxShadow(color: Colors.black.withValues(alpha: 0.02), blurRadius: 8, offset: const Offset(0, 2))
+                          BoxShadow(color: Colors.blueGrey.shade100.withValues(alpha: 0.6), blurRadius: 10, offset: const Offset(0, 4))
                         ]
                       ),
                       child: Padding(
@@ -505,28 +514,26 @@ class _EmpleadoDetailScreenState extends ConsumerState<EmpleadoDetailScreen> {
                                     Row(
                                       children: [
                                         Container(
-                                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                                           decoration: BoxDecoration(
-                                            color: Colors.grey.shade100,
-                                            border: Border.all(color: Colors.grey.shade200),
-                                            borderRadius: BorderRadius.circular(6),
+                                            color: Colors.indigo.shade50,
+                                            borderRadius: BorderRadius.circular(8),
                                           ),
                                           child: Text(
                                             contrato.tipoContrato.toUpperCase(),
-                                            style: TextStyle(fontSize: 10, fontWeight: FontWeight.w900, color: Colors.grey.shade600),
+                                            style: TextStyle(fontSize: 10, fontWeight: FontWeight.w900, color: Colors.indigo.shade700),
                                           ),
                                         ),
                                         const SizedBox(width: 8),
                                         Container(
-                                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                                           decoration: BoxDecoration(
-                                            color: isActivo ? Colors.green.shade50 : Colors.red.shade50,
-                                            border: Border.all(color: isActivo ? Colors.green.shade200 : Colors.red.shade200),
-                                            borderRadius: BorderRadius.circular(6),
+                                            color: isActivo ? Colors.teal.shade50 : Colors.red.shade50,
+                                            borderRadius: BorderRadius.circular(8),
                                           ),
                                           child: Text(
                                             contrato.estado.toUpperCase(),
-                                            style: TextStyle(fontSize: 10, fontWeight: FontWeight.w900, color: isActivo ? Colors.green.shade700 : Colors.red.shade700),
+                                            style: TextStyle(fontSize: 10, fontWeight: FontWeight.w900, color: isActivo ? Colors.teal.shade700 : Colors.red.shade700),
                                           ),
                                         ),
                                       ],
@@ -686,37 +693,33 @@ class _EmpleadoDetailScreenState extends ConsumerState<EmpleadoDetailScreen> {
   // Widget reutilizable para las tarjetas de información
   Widget _buildInfoCard(String title, List<Widget> children) {
     return Container(
+      margin: const EdgeInsets.only(bottom: 12),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.grey.shade200, width: 1.5),
+        border: Border.all(color: Colors.blueGrey.shade100, width: 1.0),
         boxShadow: [
-          BoxShadow(color: Colors.black.withValues(alpha: 0.02), blurRadius: 8, offset: const Offset(0, 2))
+          BoxShadow(color: Colors.blueGrey.shade100.withValues(alpha: 0.5), blurRadius: 10, offset: const Offset(0, 4))
         ]
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Container(
-            width: double.infinity,
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-            decoration: BoxDecoration(
-              color: Colors.grey.shade50,
-              borderRadius: const BorderRadius.only(topLeft: Radius.circular(15), topRight: Radius.circular(15)),
-              border: Border(bottom: BorderSide(color: Colors.grey.shade200, width: 1.5)),
-            ),
+          Padding(
+            padding: const EdgeInsets.only(left: 20, top: 16, right: 20, bottom: 4),
             child: Text(
               title.toUpperCase(),
               style: TextStyle(
-                fontSize: 12,
+                fontSize: 11,
                 fontWeight: FontWeight.w900,
-                color: Colors.blueGrey.shade600,
-                letterSpacing: 1.0,
+                color: Colors.indigo.shade600,
+                letterSpacing: 1.2,
               ),
             ),
           ),
+          const Divider(height: 1, color: Colors.transparent),
           Padding(
-            padding: const EdgeInsets.symmetric(vertical: 8.0),
+            padding: const EdgeInsets.only(bottom: 8.0, top: 4.0),
             child: Column(children: children),
           ),
         ],
@@ -727,24 +730,24 @@ class _EmpleadoDetailScreenState extends ConsumerState<EmpleadoDetailScreen> {
   // Widget reutilizable para cada fila de información
   Widget _buildInfoTile(IconData icon, String title, String subtitle, {VoidCallback? onTap, Widget? trailing}) {
     return ListTile(
-      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 2),
+      contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 2),
       leading: Container(
-        padding: const EdgeInsets.all(8),
+        padding: const EdgeInsets.all(10),
         decoration: BoxDecoration(
-          color: const Color(0xFF1E3A8A).withValues(alpha: 0.08),
-          borderRadius: BorderRadius.circular(8),
+          color: Colors.indigo.shade50,
+          borderRadius: BorderRadius.circular(10),
         ),
-        child: Icon(icon, color: const Color(0xFF1E3A8A), size: 20),
+        child: Icon(icon, color: Colors.indigo.shade600, size: 20),
       ),
       title: Text(
         title,
-        style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: Colors.blueGrey.shade400),
+        style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: Colors.blueGrey.shade500),
       ),
       subtitle: Padding(
-        padding: const EdgeInsets.only(top: 2.0),
+        padding: const EdgeInsets.only(top: 4.0),
         child: Text(
           subtitle,
-          style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Color(0xFF1E293B)),
+          style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w900, color: Color(0xFF1E293B)),
         ),
       ),
       trailing: trailing,
@@ -866,9 +869,9 @@ class _EmpleadoDetailScreenState extends ConsumerState<EmpleadoDetailScreen> {
                               decoration: BoxDecoration(
                                 color: Colors.white,
                                 borderRadius: BorderRadius.circular(16),
-                                border: Border.all(color: Colors.blue.shade200, width: 1.5),
+                                border: Border.all(color: Colors.blueGrey.shade200, width: 1.0),
                                 boxShadow: [
-                                  BoxShadow(color: Colors.black.withValues(alpha: 0.02), blurRadius: 8, offset: const Offset(0, 2))
+                                  BoxShadow(color: Colors.blueGrey.shade100.withValues(alpha: 0.6), blurRadius: 10, offset: const Offset(0, 4))
                                 ]
                               ),
                               child: Padding(
@@ -884,29 +887,41 @@ class _EmpleadoDetailScreenState extends ConsumerState<EmpleadoDetailScreen> {
                                         Expanded(
                                           child: Wrap(
                                             spacing: 8,
-                                            runSpacing: 4,
+                                            runSpacing: 8,
                                             children: [
-                                              Chip(
-                                                label: Text('Periodo: ${vacacion.periodo}'),
-                                                backgroundColor: Colors.blue.shade50,
-                                                labelStyle: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Colors.blue.shade800),
-                                                padding: const EdgeInsets.symmetric(horizontal: 4),
-                                                visualDensity: VisualDensity.compact,
+                                              Container(
+                                                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                                                decoration: BoxDecoration(
+                                                  color: Colors.indigo.shade50,
+                                                  borderRadius: BorderRadius.circular(8),
+                                                ),
+                                                child: Text(
+                                                  'PERIODO: ${vacacion.periodo}',
+                                                  style: TextStyle(fontSize: 10, fontWeight: FontWeight.w900, color: Colors.indigo.shade700),
+                                                ),
                                               ),
-                                              Chip(
-                                                label: Text(vacacion.tipoSolicitud),
-                                                backgroundColor: Colors.grey.shade100,
-                                                labelStyle: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Colors.grey.shade700),
-                                                padding: const EdgeInsets.symmetric(horizontal: 4),
-                                                visualDensity: VisualDensity.compact,
+                                              Container(
+                                                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                                                decoration: BoxDecoration(
+                                                  color: Colors.blueGrey.shade50,
+                                                  borderRadius: BorderRadius.circular(8),
+                                                ),
+                                                child: Text(
+                                                  vacacion.tipoSolicitud.toUpperCase(),
+                                                  style: TextStyle(fontSize: 10, fontWeight: FontWeight.w900, color: Colors.blueGrey.shade600),
+                                                ),
                                               ),
                                               if (vacacion.tipoPermiso != null && vacacion.tipoPermiso!.isNotEmpty)
-                                                Chip(
-                                                  label: Text(vacacion.tipoPermiso!),
-                                                  backgroundColor: Colors.purple.shade50,
-                                                  labelStyle: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Colors.purple.shade800),
-                                                  padding: const EdgeInsets.symmetric(horizontal: 4),
-                                                  visualDensity: VisualDensity.compact,
+                                                Container(
+                                                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                                                  decoration: BoxDecoration(
+                                                    color: Colors.purple.shade50,
+                                                    borderRadius: BorderRadius.circular(8),
+                                                  ),
+                                                  child: Text(
+                                                    vacacion.tipoPermiso!.toUpperCase(),
+                                                    style: TextStyle(fontSize: 10, fontWeight: FontWeight.w900, color: Colors.purple.shade700),
+                                                  ),
                                                 ),
                                             ],
                                           ),
@@ -1108,9 +1123,9 @@ class _EmpleadoDetailScreenState extends ConsumerState<EmpleadoDetailScreen> {
                       decoration: BoxDecoration(
                         color: Colors.white,
                         borderRadius: BorderRadius.circular(16),
-                        border: Border.all(color: Colors.red.shade200, width: 1.5),
+                        border: Border.all(color: Colors.blueGrey.shade200, width: 1.0),
                         boxShadow: [
-                          BoxShadow(color: Colors.black.withValues(alpha: 0.02), blurRadius: 8, offset: const Offset(0, 2))
+                          BoxShadow(color: Colors.blueGrey.shade100.withValues(alpha: 0.6), blurRadius: 10, offset: const Offset(0, 4))
                         ]
                       ),
                       child: Padding(
@@ -1122,12 +1137,16 @@ class _EmpleadoDetailScreenState extends ConsumerState<EmpleadoDetailScreen> {
                             Row(
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
-                                Chip(
-                                  label: const Text('Falta Registrada'),
-                                  backgroundColor: Colors.red.shade50,
-                                  labelStyle: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Colors.red.shade800),
-                                  padding: const EdgeInsets.symmetric(horizontal: 4),
-                                  visualDensity: VisualDensity.compact,
+                                Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                                  decoration: BoxDecoration(
+                                    color: Colors.red.shade50,
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                  child: Text(
+                                    'FALTA REGISTRADA',
+                                    style: TextStyle(fontSize: 10, fontWeight: FontWeight.w900, color: Colors.red.shade700),
+                                  ),
                                 ),
                                 Row(
                                   children: [
@@ -1448,9 +1467,9 @@ class _EmpleadoDetailScreenState extends ConsumerState<EmpleadoDetailScreen> {
                       decoration: BoxDecoration(
                         color: Colors.white,
                         borderRadius: BorderRadius.circular(16),
-                        border: Border.all(color: Colors.indigo.shade200, width: 1.5),
+                        border: Border.all(color: Colors.blueGrey.shade200, width: 1.0),
                         boxShadow: [
-                          BoxShadow(color: Colors.black.withValues(alpha: 0.02), blurRadius: 8, offset: const Offset(0, 2))
+                          BoxShadow(color: Colors.blueGrey.shade100.withValues(alpha: 0.6), blurRadius: 10, offset: const Offset(0, 4))
                         ]
                       ),
                       child: Padding(
@@ -1746,9 +1765,9 @@ class _EmpleadoDetailScreenState extends ConsumerState<EmpleadoDetailScreen> {
                       decoration: BoxDecoration(
                         color: Colors.white,
                         borderRadius: BorderRadius.circular(16),
-                        border: Border.all(color: Colors.orange.shade200, width: 1.5),
+                        border: Border.all(color: Colors.blueGrey.shade200, width: 1.0),
                         boxShadow: [
-                          BoxShadow(color: Colors.black.withValues(alpha: 0.02), blurRadius: 8, offset: const Offset(0, 2))
+                          BoxShadow(color: Colors.blueGrey.shade100.withValues(alpha: 0.6), blurRadius: 10, offset: const Offset(0, 4))
                         ]
                       ),
                       child: Padding(
