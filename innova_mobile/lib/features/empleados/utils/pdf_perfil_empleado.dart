@@ -31,13 +31,37 @@ class PdfPerfilEmpleado {
           return pw.Column(
             crossAxisAlignment: pw.CrossAxisAlignment.start,
             children: [
-              pw.Text('PERFIL DEL EMPLEADO',
-                  style: pw.TextStyle(fontSize: 22, fontWeight: pw.FontWeight.bold, color: PdfColors.blue900)),
-              pw.SizedBox(height: 4),
-              pw.Text('Identidad: ${empleado.identidad ?? 'N/A'}',
-                  style: const pw.TextStyle(fontSize: 11, color: PdfColors.grey700)),
-              pw.Text('Generado el: ${DateFormat('dd/MM/yyyy HH:mm:ss').format(DateTime.now())}',
-                  style: const pw.TextStyle(fontSize: 11, color: PdfColors.grey700)),
+              pw.Row(
+                crossAxisAlignment: pw.CrossAxisAlignment.start,
+                children: [
+                  if (profileImage != null)
+                    pw.Container(
+                      width: 80,
+                      height: 80,
+                      margin: const pw.EdgeInsets.only(right: 16),
+                      decoration: pw.BoxDecoration(
+                        shape: pw.BoxShape.rectangle,
+                        borderRadius: const pw.BorderRadius.all(pw.Radius.circular(8)),
+                        image: pw.DecorationImage(image: profileImage, fit: pw.BoxFit.cover),
+                      ),
+                    ),
+                  pw.Expanded(
+                    child: pw.Column(
+                      mainAxisSize: pw.MainAxisSize.min,
+                      crossAxisAlignment: pw.CrossAxisAlignment.start,
+                      children: [
+                        pw.Text('PERFIL DEL EMPLEADO',
+                            style: pw.TextStyle(fontSize: 22, fontWeight: pw.FontWeight.bold, color: PdfColors.blue900)),
+                        pw.SizedBox(height: 4),
+                        pw.Text('Identidad: ${empleado.identidad ?? 'N/A'}',
+                            style: const pw.TextStyle(fontSize: 11, color: PdfColors.grey700)),
+                        pw.Text('Generado el: ${DateFormat('dd/MM/yyyy HH:mm:ss').format(DateTime.now())}',
+                            style: const pw.TextStyle(fontSize: 11, color: PdfColors.grey700)),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
               pw.SizedBox(height: 8),
               pw.Divider(color: PdfColors.blue900, thickness: 1.5),
               pw.SizedBox(height: 12),
@@ -56,19 +80,6 @@ class PdfPerfilEmpleado {
         },
         build: (pw.Context context) {
           return [
-            if (profileImage != null)
-              pw.Container(
-                margin: const pw.EdgeInsets.only(bottom: 20),
-                width: 100,
-                height: 100,
-                decoration: pw.BoxDecoration(
-                  shape: pw.BoxShape.rectangle,
-                  borderRadius: const pw.BorderRadius.all(pw.Radius.circular(8)),
-                  border: pw.Border.all(color: PdfColors.grey300, width: 1),
-                  image: pw.DecorationImage(image: profileImage, fit: pw.BoxFit.cover),
-                ),
-              ),
-              
             // Información Principal
             pw.TableHelper.fromTextArray(
               headers: ['Información Principal', ''],
