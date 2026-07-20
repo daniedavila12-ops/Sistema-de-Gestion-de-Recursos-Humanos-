@@ -24,6 +24,7 @@ const categoriasLegalesRoutes = require('./routes/categorias-legales');
 const reportesIncidenciaRoutes = require('./routes/reportes-incidencia');
 const notificacionesRoutes = require('./routes/notificaciones');
 const candidatosRoutes = require('./routes/candidatos');
+const evaluacionesRoutes = require('./routes/evaluaciones');
 const initCronJobs = require('./cron');
 
 const app = express();
@@ -104,6 +105,7 @@ app.use('/api/reportes-incidencia', reportesIncidenciaRoutes);
 app.use('/api/logs', logsRoutes);
 app.use('/api/notificaciones', notificacionesRoutes);
 app.use('/api/candidatos', candidatosRoutes);
+app.use('/api/evaluaciones', evaluacionesRoutes);
 
 // 1. OBTENER TODOS LOS MÓDULOS
 app.get('/api/modulos', (req, res) => {

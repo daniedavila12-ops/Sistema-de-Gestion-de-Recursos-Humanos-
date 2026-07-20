@@ -1,7 +1,7 @@
 <template>
   <div class="min-h-screen bg-gray-100 flex font-sans">
     <!-- SIDEBAR -->
-    <aside class="w-64 bg-slate-800 text-white flex flex-col shadow-xl fixed h-full z-10">
+    <aside class="w-64 bg-slate-800 text-white flex flex-col shadow-xl fixed left-0 top-0 h-full z-10">
       <div class="p-6 text-2xl font-bold border-b border-slate-700 tracking-tight text-blue-400 uppercase">
         RRHH Innova
       </div>
