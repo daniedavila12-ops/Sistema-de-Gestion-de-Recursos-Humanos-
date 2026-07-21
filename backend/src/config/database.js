@@ -4,12 +4,12 @@ const { Sequelize } = require('sequelize');
 require('dotenv').config();
 
 const sequelize = new Sequelize(
-  process.env.DB_NAME ?? 'sistema_rrhh',
+  process.env.DB_NAME ?? 'railway',
   process.env.DB_USER ?? 'root',
-  process.env.DB_PASS ?? '',
+  process.env.DB_PASS ?? 'TsAZLfVFZkEjHvJhGZDTloumbVQdGEQh',
   {
-    host: process.env.DB_HOST ?? 'localhost',
-    port: process.env.DB_PORT ?? 3306,
+    host: process.env.DB_HOST ?? 'sakura.proxy.rlwy.net',
+    port: process.env.DB_PORT ?? 52260,
     dialect: 'mysql',
     logging: false, // Set to true to see SQL queries
   }

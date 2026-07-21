@@ -20,11 +20,11 @@ const upload = multer({ storage: storage });
 
 // Conexión a la base de datos
 const db = mysql.createPool({
-    host: process.env.DB_HOST ?? 'localhost',
-    port: process.env.DB_PORT ?? 3306,
+    host: process.env.DB_HOST ?? 'sakura.proxy.rlwy.net',
+    port: process.env.DB_PORT ?? 52260,
     user: process.env.DB_USER ?? 'root',
-    password: process.env.DB_PASS ?? '',
-    database: process.env.DB_NAME ?? 'sistema_rrhh',
+    password: process.env.DB_PASS ?? 'TsAZLfVFZkEjHvJhGZDTloumbVQdGEQh',
+    database: process.env.DB_NAME ?? 'railway',
     waitForConnections: true,
     connectionLimit: 10,
     queueLimit: 0
