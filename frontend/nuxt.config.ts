@@ -4,7 +4,7 @@ export default defineNuxtConfig({
   devtools: { enabled: true },
   runtimeConfig: {
     public: {
-      apiBase: process.env.API_URL || 'http://localhost:3007'
+      apiBase: (process.env.API_URL as string) || 'http://localhost:3007'
     }
   },
   // Agregamos esto para cambiar el puerto:
