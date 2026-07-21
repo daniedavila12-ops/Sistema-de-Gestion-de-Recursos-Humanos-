@@ -49,9 +49,9 @@ io.on('connection', (socket) => {
 // --- CONFIGURACIÓN DE MIDDLEWARES ---
 app.use(express.json()); 
 
-// Configuración de CORS para el puerto del Frontend (3001)
+// Configuración dinámica de CORS para producción y desarrollo
 app.use(cors({
-    origin: 'http://localhost:3001',
+    origin: '*', // O puedes colocar un array con tu dominio de frontend en Railway
     methods: ['GET', 'POST', 'PUT', 'DELETE'],
     credentials: true
 }));
