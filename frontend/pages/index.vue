@@ -47,7 +47,7 @@
           <div class="relative">
             <div @click="dropdownPerfilAbierto = !dropdownPerfilAbierto" class="flex items-center gap-3 pl-6 border-l border-slate-200 cursor-pointer hover:bg-slate-50 p-2 rounded-xl transition-colors">
               <div v-if="fotoUsuario" class="h-10 w-10 rounded-full flex items-center justify-center overflow-hidden ring-2 ring-slate-100">
-                <img :src="`http://localhost:3007${fotoUsuario}`" class="w-full h-full object-cover" />
+                <img :src="`${$config.public.apiBase}${fotoUsuario}`" class="w-full h-full object-cover" />
               </div>
               <div v-else class="h-10 w-10 rounded-full bg-slate-800 flex items-center justify-center text-blue-400 font-black text-lg ring-2 ring-slate-100 uppercase">
                 {{ nombreUsuario.charAt(0) }}
@@ -62,7 +62,7 @@
             <div v-if="dropdownPerfilAbierto" class="absolute right-0 mt-2 w-64 bg-white rounded-2xl shadow-xl border border-slate-100 overflow-hidden z-50 animate-in slide-in-from-top-2 duration-200">
               <div class="p-5 border-b border-slate-100 bg-slate-50 flex items-center gap-4">
                 <div v-if="fotoUsuario" class="h-12 w-12 rounded-full flex items-center justify-center overflow-hidden ring-2 ring-white shadow-sm shrink-0">
-                  <img :src="`http://localhost:3007${fotoUsuario}`" class="w-full h-full object-cover" />
+                  <img :src="`${$config.public.apiBase}${fotoUsuario}`" class="w-full h-full object-cover" />
                 </div>
                 <div v-else class="h-12 w-12 rounded-full bg-slate-800 flex items-center justify-center text-blue-400 font-black text-xl ring-2 ring-white shadow-sm shrink-0 uppercase">
                   {{ nombreUsuario.charAt(0) }}
@@ -136,7 +136,7 @@
           <div v-if="dashboardLists.cumpleaneros && dashboardLists.cumpleaneros.length" class="space-y-3 overflow-y-auto pr-2 flex-1 scrollbar-thin">
             <NuxtLink v-for="emp in dashboardLists.cumpleaneros" :key="'cump-'+emp.id" :to="`/empleados/${emp.id}`" class="flex items-center gap-4 p-3 bg-slate-50 rounded-xl hover:bg-slate-100 hover:shadow-sm cursor-pointer transition-all active:scale-[0.98]">
               <div class="relative shrink-0">
-                <div v-if="emp.foto" class="h-10 w-10 rounded-full overflow-hidden" :class="{'ring-2 ring-pink-500 ring-offset-2': calcularDiasRestantesTexto(emp.fecha_nacimiento) === '¡Hoy!'}"><img :src="`http://localhost:3007${emp.foto}`" class="w-full h-full object-cover"/></div>
+                <div v-if="emp.foto" class="h-10 w-10 rounded-full overflow-hidden" :class="{'ring-2 ring-pink-500 ring-offset-2': calcularDiasRestantesTexto(emp.fecha_nacimiento) === '¡Hoy!'}"><img :src="`${$config.public.apiBase}${emp.foto}`" class="w-full h-full object-cover"/></div>
                 <div v-else class="h-10 w-10 rounded-full bg-slate-200 text-slate-500 font-bold flex items-center justify-center uppercase" :class="{'ring-2 ring-pink-500 ring-offset-2 bg-pink-100 text-pink-600': calcularDiasRestantesTexto(emp.fecha_nacimiento) === '¡Hoy!'}">{{ emp.nombre.charAt(0) }}</div>
                 <div v-if="calcularDiasRestantesTexto(emp.fecha_nacimiento) === '¡Hoy!'" class="absolute -bottom-1 -right-3 bg-pink-500 text-white text-[9px] font-black px-1.5 py-0.5 rounded-full shadow-sm border border-white z-10 whitespace-nowrap animate-bounce">
                   🎉 ¡HOY!
@@ -180,7 +180,7 @@
           <div v-if="dashboardLists.vencimientos && dashboardLists.vencimientos.length" class="space-y-3 overflow-y-auto pr-2 flex-1 scrollbar-thin">
             <NuxtLink v-for="emp in dashboardLists.vencimientos" :key="'venc-'+emp.id" :to="`/empleados/${emp.empleado_id}`" class="flex items-center gap-4 p-3 bg-red-50 rounded-xl border border-red-100 hover:bg-red-100 hover:shadow-sm cursor-pointer transition-all active:scale-[0.98]">
               <div class="relative shrink-0">
-                <div v-if="emp.foto" class="h-10 w-10 rounded-full overflow-hidden"><img :src="`http://localhost:3007${emp.foto}`" class="w-full h-full object-cover"/></div>
+                <div v-if="emp.foto" class="h-10 w-10 rounded-full overflow-hidden"><img :src="`${$config.public.apiBase}${emp.foto}`" class="w-full h-full object-cover"/></div>
                 <div v-else class="h-10 w-10 rounded-full bg-red-200 text-red-600 font-bold flex items-center justify-center uppercase">{{ emp.nombre.charAt(0) }}</div>
               </div>
               <div class="flex-1">
@@ -205,7 +205,7 @@
           </div>
           <div v-if="dashboardLists.activos && dashboardLists.activos.length" class="space-y-3 overflow-y-auto pr-2 flex-1 scrollbar-thin">
             <NuxtLink v-for="emp in dashboardLists.activos" :key="'act-'+emp.id" :to="`/empleados/${emp.id}`" class="flex items-center gap-4 p-3 bg-slate-50 rounded-xl hover:bg-slate-100 hover:shadow-sm cursor-pointer transition-all active:scale-[0.98]">
-              <div v-if="emp.foto" class="h-10 w-10 rounded-full overflow-hidden shrink-0"><img :src="`http://localhost:3007${emp.foto}`" class="w-full h-full object-cover"/></div>
+              <div v-if="emp.foto" class="h-10 w-10 rounded-full overflow-hidden shrink-0"><img :src="`${$config.public.apiBase}${emp.foto}`" class="w-full h-full object-cover"/></div>
               <div v-else class="h-10 w-10 rounded-full bg-emerald-100 text-emerald-600 font-bold flex items-center justify-center shrink-0 uppercase">{{ emp.nombre.charAt(0) }}</div>
               <div class="flex-1">
                 <p class="font-bold text-sm text-slate-800">{{ emp.nombre }} {{ emp.apellido }}</p>
@@ -226,7 +226,7 @@
           </div>
           <div v-if="dashboardLists.inactivos && dashboardLists.inactivos.length" class="space-y-3 overflow-y-auto pr-2 flex-1 scrollbar-thin">
             <NuxtLink v-for="emp in dashboardLists.inactivos" :key="'inact-'+emp.id" :to="`/empleados/${emp.id}`" class="flex items-center gap-4 p-3 bg-slate-50 rounded-xl opacity-75 hover:bg-slate-100 hover:opacity-100 hover:shadow-sm cursor-pointer transition-all active:scale-[0.98]">
-              <div v-if="emp.foto" class="h-10 w-10 rounded-full overflow-hidden shrink-0 grayscale"><img :src="`http://localhost:3007${emp.foto}`" class="w-full h-full object-cover"/></div>
+              <div v-if="emp.foto" class="h-10 w-10 rounded-full overflow-hidden shrink-0 grayscale"><img :src="`${$config.public.apiBase}${emp.foto}`" class="w-full h-full object-cover"/></div>
               <div v-else class="h-10 w-10 rounded-full bg-slate-200 text-slate-500 font-bold flex items-center justify-center shrink-0 uppercase">{{ emp.nombre.charAt(0) }}</div>
               <div class="flex-1">
                 <p class="font-bold text-sm text-slate-600">{{ emp.nombre }} {{ emp.apellido }}</p>
@@ -252,7 +252,7 @@
             <div class="mb-6 flex flex-col items-center">
               <div class="relative group cursor-pointer" @click="triggerFileInputPerfil">
                 <div v-if="fotoUsuario" class="h-20 w-20 rounded-full flex items-center justify-center overflow-hidden ring-4 ring-slate-100 shadow-lg mb-4">
-                  <img :src="`http://localhost:3007${fotoUsuario}`" class="w-full h-full object-cover" />
+                  <img :src="`${$config.public.apiBase}${fotoUsuario}`" class="w-full h-full object-cover" />
                 </div>
                 <div v-else class="h-20 w-20 rounded-full bg-slate-800 flex items-center justify-center text-blue-400 font-black text-3xl ring-4 ring-slate-100 uppercase mb-4 shadow-lg">
                   {{ nombreUsuario.charAt(0) }}
@@ -335,7 +335,7 @@ const uploadFotoPerfil = async (event) => {
 
   try {
     const id = localStorage.getItem('usuarioID')
-    const res = await axios.post(`http://localhost:3007/api/auth/${id}/foto`, formData, {
+    const res = await axios.post(`/api/auth/${id}/foto`, formData, {
       headers: {
         'Content-Type': 'multipart/form-data'
       }
@@ -364,7 +364,7 @@ const cambiarPassword = async () => {
   try {
     loadingPassword.value = true
     const userId = localStorage.getItem('usuarioID')
-    const res = await axios.post('http://localhost:3007/api/auth/cambiar-password', {
+    const res = await axios.post('/api/auth/cambiar-password', {
       id: userId,
       actual: formPassword.value.actual,
       nueva: formPassword.value.nueva
@@ -463,7 +463,7 @@ const calcularDiasRestantesTexto = (fechaNacimiento) => {
 
 const fetchCumpleaneros = async () => {
   try {
-    const listsRes = await axios.get(`http://localhost:3007/api/stats/dashboard-lists?mes=${mesCumpleaneros.value}`)
+    const listsRes = await axios.get(`/api/stats/dashboard-lists?mes=${mesCumpleaneros.value}`)
     // Actualizamos solo la lista de cumpleañeros
     dashboardLists.value.cumpleaneros = listsRes.data.cumpleaneros
   } catch (err) {
@@ -473,7 +473,7 @@ const fetchCumpleaneros = async () => {
 
 const fetchVencimientos = async () => {
   try {
-    const listsRes = await axios.get(`http://localhost:3007/api/stats/dashboard-lists?mesVencimiento=${mesVencimiento.value}`)
+    const listsRes = await axios.get(`/api/stats/dashboard-lists?mesVencimiento=${mesVencimiento.value}`)
     // Actualizamos solo la lista de vencimientos
     dashboardLists.value.vencimientos = listsRes.data.vencimientos
   } catch (err) {
@@ -495,10 +495,10 @@ onMounted(async () => {
   }
   
   try {
-    const m = await axios.get(`http://localhost:3007/api/menu/${rolID.value}?usuario_id=${localStorage.getItem('usuarioID')}`)
+    const m = await axios.get(`/api/menu/${rolID.value}?usuario_id=${localStorage.getItem('usuarioID')}`)
     menuUsuario.value = m.data
     
-    const p = await axios.get(`http://localhost:3007/api/dashboard-permisos/${rolID.value}?usuario_id=${localStorage.getItem('usuarioID')}`)
+    const p = await axios.get(`/api/dashboard-permisos/${rolID.value}?usuario_id=${localStorage.getItem('usuarioID')}`)
     isDashboardAdmin.value = p.data === 'ALL'
     allowedDashboard.value = p.data === 'ALL' ? [] : (p.data || [])
   } catch (err) {
@@ -509,20 +509,20 @@ onMounted(async () => {
     const uId = localStorage.getItem('usuarioID') || '';
     const uNombre = localStorage.getItem('usuarioNombre') || '';
     const uRol = localStorage.getItem('usuarioRol') || '';
-    const s = await axios.get(`http://localhost:3007/api/stats/resumen?usuario_id=${uId}&nombre=${encodeURIComponent(uNombre)}&rol_id=${uRol}`)
+    const s = await axios.get(`/api/stats/resumen?usuario_id=${uId}&nombre=${encodeURIComponent(uNombre)}&rol_id=${uRol}`)
     stats.value = s.data
   } catch (err) {
     console.error("Error cargando estadisticas resumen", err)
   }
   try {
-    const depRes = await axios.get('http://localhost:3007/api/departamentos/lista')
+    const depRes = await axios.get('/api/departamentos/lista')
     departamentos.value = depRes.data
   } catch (err) {
     console.error("Error cargando departamentos", err)
   }
 
   try {
-    const listsRes = await axios.get(`http://localhost:3007/api/stats/dashboard-lists?mes=${mesCumpleaneros.value}&mesVencimiento=${mesVencimiento.value}`)
+    const listsRes = await axios.get(`/api/stats/dashboard-lists?mes=${mesCumpleaneros.value}&mesVencimiento=${mesVencimiento.value}`)
     const dLists = listsRes.data
     
     // Asignar permisos a las listas del dashboard
@@ -540,13 +540,13 @@ onMounted(async () => {
 
   // Socket.io for realtime dashboard stats update
   const { io } = await import('socket.io-client');
-  const socket = io('http://localhost:3007');
+  const socket = io(useRuntimeConfig().public.apiBase);
   socket.on('nuevo_ticket', async () => {
     try {
       const uId = localStorage.getItem('usuarioID') || '';
       const uNombre = localStorage.getItem('usuarioNombre') || '';
       const uRol = localStorage.getItem('usuarioRol') || '';
-      const s = await axios.get(`http://localhost:3007/api/stats/resumen?usuario_id=${uId}&nombre=${encodeURIComponent(uNombre)}&rol_id=${uRol}`);
+      const s = await axios.get(`/api/stats/resumen?usuario_id=${uId}&nombre=${encodeURIComponent(uNombre)}&rol_id=${uRol}`);
       stats.value = s.data;
     } catch (err) {
       console.error("Error recargando estadisticas resumen (socket)", err);

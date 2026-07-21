@@ -49,7 +49,7 @@
             <div class="relative w-full md:w-auto flex justify-end">
               <div @click="dropdownPerfilAbierto = !dropdownPerfilAbierto" class="flex items-center gap-3 pl-6 border-l border-slate-200 cursor-pointer hover:bg-slate-50 p-2 rounded-xl transition-colors no-print">
                 <div v-if="fotoUsuario" class="h-10 w-10 rounded-full flex items-center justify-center overflow-hidden ring-2 ring-slate-100">
-                  <img :src="`http://localhost:3007${fotoUsuario}`" class="w-full h-full object-cover" />
+                  <img :src="`${$config.public.apiBase}${fotoUsuario}`" class="w-full h-full object-cover" />
                 </div>
                 <div v-else class="h-10 w-10 rounded-full bg-slate-800 flex items-center justify-center text-blue-400 font-black text-lg ring-2 ring-slate-100 uppercase">
                   {{ usuarioActual ? usuarioActual.charAt(0) : 'U' }}
@@ -64,7 +64,7 @@
               <div v-if="dropdownPerfilAbierto" class="absolute right-0 mt-14 w-64 bg-white rounded-2xl shadow-xl border border-slate-100 overflow-hidden z-50 animate-in slide-in-from-top-2 duration-200 no-print">
                 <div class="p-5 border-b border-slate-100 bg-slate-50 flex items-center gap-4">
                   <div v-if="fotoUsuario" class="h-12 w-12 rounded-full flex items-center justify-center overflow-hidden ring-2 ring-white shadow-sm shrink-0">
-                    <img :src="`http://localhost:3007${fotoUsuario}`" class="w-full h-full object-cover" />
+                    <img :src="`${$config.public.apiBase}${fotoUsuario}`" class="w-full h-full object-cover" />
                   </div>
                   <div v-else class="h-12 w-12 rounded-full bg-slate-800 flex items-center justify-center text-blue-400 font-black text-xl ring-2 ring-white shadow-sm shrink-0 uppercase">
                     {{ usuarioActual ? usuarioActual.charAt(0) : 'U' }}
@@ -127,7 +127,7 @@
               <td class="p-5">
                 <div class="flex items-center gap-3">
                   <div v-if="usuario.foto" class="h-10 w-10 shrink-0 rounded-full overflow-hidden border border-slate-200 shadow-sm">
-                    <img :src="`http://localhost:3007${usuario.foto}`" class="w-full h-full object-cover" />
+                    <img :src="`${$config.public.apiBase}${usuario.foto}`" class="w-full h-full object-cover" />
                   </div>
                   <div v-else class="h-10 w-10 shrink-0 rounded-full bg-slate-100 flex items-center justify-center text-slate-500 font-bold uppercase border border-slate-200 shadow-sm">
                     {{ usuario.nombre.charAt(0) }}
@@ -380,7 +380,7 @@
           <div class="mb-6 flex flex-col items-center">
             <div class="relative group cursor-pointer" @click="triggerFileInputPerfil">
               <div v-if="fotoUsuario" class="h-20 w-20 rounded-full flex items-center justify-center overflow-hidden ring-4 ring-slate-100 shadow-lg mb-4">
-                <img :src="`http://localhost:3007${fotoUsuario}`" class="w-full h-full object-cover" />
+                <img :src="`${useRuntimeConfig().public.apiBase}${fotoUsuario}`" class="w-full h-full object-cover" />
               </div>
               <div v-else class="h-20 w-20 rounded-full bg-slate-800 flex items-center justify-center text-blue-400 font-black text-3xl ring-4 ring-slate-100 uppercase mb-4 shadow-lg">
                 {{ usuarioActual ? usuarioActual.charAt(0) : 'U' }}
@@ -459,7 +459,7 @@ const uploadFotoPerfil = async (event) => {
 
   try {
     const id = localStorage.getItem('usuarioID')
-    const res = await axios.post(`http://localhost:3007/api/auth/${id}/foto`, formData, {
+    const res = await axios.post(`/api/auth/${id}/foto`, formData, {
       headers: {
         'Content-Type': 'multipart/form-data'
       }
@@ -488,7 +488,7 @@ const cambiarPassword = async () => {
   try {
     loadingPassword.value = true
     const userId = localStorage.getItem('usuarioID')
-    const res = await axios.put(`http://localhost:3007/api/auth/${userId}/password`, {
+    const res = await axios.put(`/api/auth/${userId}/password`, {
       actual: formPassword.value.actual,
       nueva: formPassword.value.nueva
     })
@@ -585,7 +585,7 @@ const permisosAgrupados = computed(() => {
 const cargarUsuarios = async () => {
   try {
     loadingUsuarios.value = true
-    const res = await axios.get('http://localhost:3007/api/usuarios')
+    const res = await axios.get('/api/usuarios')
     usuarios.value = res.data
   } catch (error) {
     console.error('Error cargando usuarios', error)
@@ -597,7 +597,7 @@ const cargarUsuarios = async () => {
 const cargarRoles = async () => {
   try {
     loadingRoles.value = true
-    const res = await axios.get('http://localhost:3007/api/roles')
+    const res = await axios.get('/api/roles')
     roles.value = res.data
   } catch (error) {
     console.error('Error cargando roles', error)
@@ -657,10 +657,10 @@ const guardarUsuario = async () => {
     }
 
     if (esEdicionUsuario.value) {
-      await axios.put(`http://localhost:3007/api/usuarios/${formUsuario.value.id}`, payload)
+      await axios.put(`/api/usuarios/${formUsuario.value.id}`, payload)
       alert('✅ Usuario actualizado exitosamente')
     } else {
-      await axios.post('http://localhost:3007/api/usuarios', payload)
+      await axios.post('/api/usuarios', payload)
       alert('✅ Usuario creado exitosamente')
     }
     cerrarModalUsuario()
@@ -678,7 +678,7 @@ const toggleEstado = async (usuario) => {
   if (!confirm(`¿Está seguro que desea ${accion} al usuario ${usuario.nombre}?`)) return
 
   try {
-    await axios.put(`http://localhost:3007/api/usuarios/${usuario.id}/estado`, {
+    await axios.put(`/api/usuarios/${usuario.id}/estado`, {
       estado: nuevoEstado
     })
     cargarUsuarios()
@@ -707,10 +707,10 @@ const cerrarModalRol = () => {
 const guardarRol = async () => {
   try {
     if (esEdicionRol.value) {
-      await axios.put(`http://localhost:3007/api/roles/${formRol.value.id}`, { nombre: formRol.value.nombre })
+      await axios.put(`/api/roles/${formRol.value.id}`, { nombre: formRol.value.nombre })
       alert('✅ Rol actualizado exitosamente')
     } else {
-      await axios.post('http://localhost:3007/api/roles', { nombre: formRol.value.nombre })
+      await axios.post('/api/roles', { nombre: formRol.value.nombre })
       alert('✅ Rol creado exitosamente')
     }
     cerrarModalRol()
@@ -725,7 +725,7 @@ const eliminarRol = async (rol) => {
   if (!confirm(`¿Está seguro que desea eliminar el rol "${rol.nombre}"? Esta acción puede afectar a los usuarios con este rol.`)) return
 
   try {
-    await axios.delete(`http://localhost:3007/api/roles/${rol.id}`)
+    await axios.delete(`/api/roles/${rol.id}`)
     alert('✅ Rol eliminado correctamente')
     cargarRoles()
   } catch (error) {
@@ -742,9 +742,9 @@ const abrirModalPermisos = async (rol) => {
   
   try {
     // 1. Intentamos obtener todos los módulos del sistema
-    const modulosRes = await axios.get('http://localhost:3007/api/modulos').catch(() => ({ data: [] }))
+    const modulosRes = await axios.get('/api/modulos').catch(() => ({ data: [] }))
     // 2. Obtenemos los permisos registrados para el rol
-    const res = await axios.get(`http://localhost:3007/api/roles/${rol.id}/permisos`)
+    const res = await axios.get(`/api/roles/${rol.id}/permisos`)
     
     let modulosList = modulosRes.data && modulosRes.data.length > 0 ? modulosRes.data : [];
 
@@ -833,7 +833,7 @@ const onPuedeAccionChange = (permiso) => {
 
 const guardarPermisos = async () => {
   try {
-    await axios.put(`http://localhost:3007/api/roles/${rolSeleccionado.value.id}/permisos`, {
+    await axios.put(`/api/roles/${rolSeleccionado.value.id}/permisos`, {
       permisos: permisosForm.value
     })
     alert('✅ Permisos actualizados exitosamente')
@@ -864,7 +864,7 @@ onMounted(async () => {
   }
 
   try {
-    const m = await axios.get(`http://localhost:3007/api/menu/${rolID.value}?usuario_id=${localStorage.getItem('usuarioID')}`)
+    const m = await axios.get(`/api/menu/${rolID.value}?usuario_id=${localStorage.getItem('usuarioID')}`)
     menuUsuario.value = m.data
   } catch (e) {
     console.error('Error cargando menú', e)

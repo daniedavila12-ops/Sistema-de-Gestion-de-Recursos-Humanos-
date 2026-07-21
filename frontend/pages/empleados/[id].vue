@@ -56,7 +56,7 @@
           <div class="bg-slate-800 p-10 text-white flex items-center gap-8 relative">
             <div class="relative group shrink-0">
               <div v-if="empleado.foto" class="w-36 h-36 bg-blue-500 rounded-full flex items-center justify-center overflow-hidden shadow-lg border-4 border-slate-700 group-hover:opacity-80 transition-opacity">
-                <img :src="`http://localhost:3007${empleado.foto}`" alt="Foto de perfil" class="w-full h-full object-cover" />
+                <img :src="`${$config.public.apiBase}${empleado.foto}`" alt="Foto de perfil" class="w-full h-full object-cover" />
               </div>
               <div v-else class="w-36 h-36 bg-blue-500 rounded-full flex items-center justify-center text-6xl font-black shadow-lg border-4 border-slate-700 group-hover:opacity-80 transition-opacity">
                 {{ empleado.nombre.charAt(0) }}{{ empleado.apellido.charAt(0) }}
@@ -264,7 +264,7 @@
                         <p class="text-sm text-slate-700 italic">{{ contrato.observacion }}</p>
                       </div>
                       <div v-if="contrato.archivo" class="mt-2 flex">
-                        <a :href="`http://localhost:3007${contrato.archivo}`" target="_blank" class="flex items-center gap-2 px-4 py-2 bg-slate-800 text-white text-xs font-bold rounded-xl hover:bg-slate-700 transition-colors shadow-sm">
+                        <a :href="`${$config.public.apiBase}${contrato.archivo}`" target="_blank" class="flex items-center gap-2 px-4 py-2 bg-slate-800 text-white text-xs font-bold rounded-xl hover:bg-slate-700 transition-colors shadow-sm">
                           <span>📎</span> Ver Documento Adjunto
                         </a>
                       </div>
@@ -391,7 +391,7 @@
                             <p><span class="text-slate-400">Creado por:</span> <span class="text-slate-700">{{ falta.creadoPorNombre || 'Admin' }}</span> <span class="mx-2 text-slate-300">|</span> <span class="text-slate-400">Fecha:</span> <span class="text-slate-700">{{ falta.fecha ? new Date(falta.fecha).toLocaleDateString('es-HN', { timeZone: 'UTC' }) : 'N/A' }}</span></p>
                             <p class="mt-1" v-if="(falta.fechaModificacion || falta.fecha_modificacion) && (falta.fechaModificacion || falta.fecha_modificacion) !== (falta.fechaCreacion || falta.fecha_creacion)"><span class="text-slate-400">Modificado:</span> <span class="text-slate-700">{{ falta.modificadoPorNombre || falta.creadoPorNombre || 's/d' }}</span> <span class="mx-2 text-slate-300">|</span> <span class="text-slate-400">Fecha:</span> <span class="text-slate-700">{{ falta.fechaModificacion ? new Date(falta.fechaModificacion).toLocaleDateString('es-HN') : new Date(falta.fecha_modificacion).toLocaleDateString('es-HN') }}</span></p>
                           </div>
-                          <a v-if="falta.documento" :href="`http://localhost:3007${falta.documento}`" target="_blank" class="p-2.5 bg-emerald-50 text-emerald-600 hover:bg-emerald-600 hover:text-white rounded-xl transition-all border border-emerald-100 hover:border-emerald-600 shadow-sm flex items-center gap-1" title="Ver Documento">
+                          <a v-if="falta.documento" :href="`${$config.public.apiBase}${falta.documento}`" target="_blank" class="p-2.5 bg-emerald-50 text-emerald-600 hover:bg-emerald-600 hover:text-white rounded-xl transition-all border border-emerald-100 hover:border-emerald-600 shadow-sm flex items-center gap-1" title="Ver Documento">
                             <span>📄</span>
                           </a>
                           <button @click="editarFalta(falta)" class="p-2.5 bg-blue-50 text-blue-600 hover:bg-blue-600 hover:text-white rounded-xl transition-all border border-blue-100 hover:border-blue-600 shadow-sm flex items-center gap-1" title="Editar Falta">
@@ -440,7 +440,7 @@
                             <p class="mt-1" v-if="nota.fechaModificacion && nota.fechaModificacion !== nota.fechaCreacion"><span class="text-slate-400">Modificado por:</span> <span class="text-slate-700">{{ nota.modificadoPorNombre || 'Admin' }}</span> <span class="mx-2 text-slate-300">|</span> <span class="text-slate-400">Fecha:</span> <span class="text-slate-700">{{ new Date(nota.fechaModificacion).toLocaleDateString('es-HN') }}</span></p>
                           </div>
                           <div class="flex items-center gap-2">
-                            <a v-if="nota.documento" :href="`http://localhost:3007${nota.documento}`" target="_blank" class="p-2.5 bg-emerald-50 text-emerald-600 hover:bg-emerald-600 hover:text-white rounded-xl transition-all border border-emerald-100 hover:border-emerald-600 shadow-sm flex items-center gap-1" title="Ver Documento">
+                            <a v-if="nota.documento" :href="`${$config.public.apiBase}${nota.documento}`" target="_blank" class="p-2.5 bg-emerald-50 text-emerald-600 hover:bg-emerald-600 hover:text-white rounded-xl transition-all border border-emerald-100 hover:border-emerald-600 shadow-sm flex items-center gap-1" title="Ver Documento">
                               <span>📄</span>
                             </a>
                             <button @click="editarNota(nota)" class="p-2.5 bg-blue-50 text-blue-600 hover:bg-blue-600 hover:text-white rounded-xl transition-all border border-blue-100 hover:border-blue-600 shadow-sm flex items-center gap-1" title="Editar Nota">
@@ -502,7 +502,7 @@
                       </div>
                       
                       <div class="mt-2" v-if="doc.archivo_url">
-                        <a :href="`http://localhost:3007${doc.archivo_url}`" target="_blank" class="inline-flex items-center gap-2 px-4 py-2 bg-slate-800 text-white rounded-lg font-bold text-[10px] uppercase tracking-widest hover:bg-slate-700 transition-colors shadow-sm">
+                        <a :href="`${$config.public.apiBase}${doc.archivo_url}`" target="_blank" class="inline-flex items-center gap-2 px-4 py-2 bg-slate-800 text-white rounded-lg font-bold text-[10px] uppercase tracking-widest hover:bg-slate-700 transition-colors shadow-sm">
                           <span>⬇️</span> Ver / Descargar
                         </a>
                       </div>
@@ -828,7 +828,7 @@
         <button @click="cerrarModalFoto" class="absolute -top-12 right-0 text-white hover:text-red-400 text-3xl font-bold transition-colors">
           ❌
         </button>
-        <img :src="`http://localhost:3007${empleado.foto}`" alt="Foto de perfil en grande" class="max-w-full max-h-[85vh] rounded-2xl shadow-2xl object-contain border-4 border-white/20" />
+        <img :src="`${$config.public.apiBase}${empleado.foto}`" alt="Foto de perfil en grande" class="max-w-full max-h-[85vh] rounded-2xl shadow-2xl object-contain border-4 border-white/20" />
       </div>
     </div>
   </div>
@@ -992,7 +992,7 @@ const guardarContacto = async () => {
     if (payload.fecha_nacimiento) payload.fecha_nacimiento = payload.fecha_nacimiento.split('T')[0]
     if (payload.fecha_inicio) payload.fecha_inicio = payload.fecha_inicio.split('T')[0]
 
-    await axios.put(`http://localhost:3007/api/empleados/${route.params.id}`, payload)
+    await axios.put(`/api/empleados/${route.params.id}`, payload)
     
     // Actualizar el estado local
     empleado.value = { ...empleado.value, ...formContacto.value }
@@ -1011,7 +1011,7 @@ const archivoContratoInput = ref(null)
 
 const cargarContratos = async () => {
   try {
-    const res = await axios.get(`http://localhost:3007/api/empleados/${route.params.id}/contratos`)
+    const res = await axios.get(`/api/empleados/${route.params.id}/contratos`)
     contratos.value = res.data
   } catch (err) {
     console.error("Error al cargar contratos:", err)
@@ -1020,7 +1020,7 @@ const cargarContratos = async () => {
 
 const cargarVacaciones = async () => {
   try {
-    const res = await axios.get(`http://localhost:3007/api/vacaciones/empleado/${route.params.id}`)
+    const res = await axios.get(`/api/vacaciones/empleado/${route.params.id}`)
     const records = res.data;
     
     let empFechaInicio = empleado.value?.fecha_inicio;
@@ -1077,7 +1077,7 @@ const cargarVacaciones = async () => {
 const eliminarVacacion = async (id) => {
   if (confirm('¿Está seguro de que desea eliminar este registro de vacaciones?')) {
     try {
-      await axios.delete(`http://localhost:3007/api/vacaciones/${id}`)
+      await axios.delete(`/api/vacaciones/${id}`)
       alert('✅ Registro de vacaciones eliminado correctamente')
       await cargarVacaciones()
     } catch (err) {
@@ -1140,13 +1140,13 @@ const guardarContrato = async () => {
 
     if (isEditingContrato.value) {
       formData.append('modificadoPor', localStorage.getItem('usuarioID') || 1)
-      await axios.put(`http://localhost:3007/api/empleados/${route.params.id}/contratos/${formContrato.value.id}`, formData, {
+      await axios.put(`/api/empleados/${route.params.id}/contratos/${formContrato.value.id}`, formData, {
         headers: { 'Content-Type': 'multipart/form-data' }
       })
       alert('✅ Contrato actualizado correctamente')
     } else {
       formData.append('creadoPor', localStorage.getItem('usuarioID') || 1)
-      await axios.post(`http://localhost:3007/api/empleados/${route.params.id}/contratos`, formData, {
+      await axios.post(`/api/empleados/${route.params.id}/contratos`, formData, {
         headers: { 'Content-Type': 'multipart/form-data' }
       })
       alert('✅ Contrato registrado correctamente')
@@ -1164,7 +1164,7 @@ const guardarContrato = async () => {
 
 const cargarNotas = async () => {
   try {
-    const res = await axios.get(`http://localhost:3007/api/notas/empleado/${route.params.id}`)
+    const res = await axios.get(`/api/notas/empleado/${route.params.id}`)
     notas.value = res.data
   } catch (err) {
     console.error("Error al cargar notas:", err)
@@ -1215,13 +1215,13 @@ const guardarNota = async () => {
 
     if (isEditingNota.value) {
       formData.append('modificadoPor', localStorage.getItem('usuarioID') || 1)
-      await axios.put(`http://localhost:3007/api/notas/${formNota.value.id}`, formData, {
+      await axios.put(`/api/notas/${formNota.value.id}`, formData, {
         headers: { 'Content-Type': 'multipart/form-data' }
       })
       alert('✅ Nota actualizada correctamente')
     } else {
       formData.append('creadoPor', localStorage.getItem('usuarioID') || 1)
-      await axios.post(`http://localhost:3007/api/notas/registrar`, formData, {
+      await axios.post(`/api/notas/registrar`, formData, {
         headers: { 'Content-Type': 'multipart/form-data' }
       })
       alert('✅ Nota registrada correctamente')
@@ -1240,7 +1240,7 @@ const guardarNota = async () => {
 const eliminarNota = async (id) => {
   if (confirm('¿Está seguro de que desea eliminar esta nota?')) {
     try {
-      await axios.delete(`http://localhost:3007/api/notas/${id}`)
+      await axios.delete(`/api/notas/${id}`)
       alert('✅ Nota eliminada correctamente')
       await cargarNotas()
     } catch (err) {
@@ -1252,7 +1252,7 @@ const eliminarNota = async (id) => {
 
 const cargarFaltas = async () => {
   try {
-    const res = await axios.get(`http://localhost:3007/api/faltas/empleado/${route.params.id}`)
+    const res = await axios.get(`/api/faltas/empleado/${route.params.id}`)
     faltas.value = res.data
   } catch (err) {
     console.error("Error al cargar faltas:", err)
@@ -1306,13 +1306,13 @@ const guardarFalta = async () => {
 
     if (isEditingFalta.value) {
       formData.append('modificadoPor', localStorage.getItem('usuarioID') || 1)
-      await axios.put(`http://localhost:3007/api/faltas/${formFalta.value.id}`, formData, {
+      await axios.put(`/api/faltas/${formFalta.value.id}`, formData, {
         headers: { 'Content-Type': 'multipart/form-data' }
       })
       alert('✅ Falta actualizada correctamente')
     } else {
       formData.append('creadoPor', localStorage.getItem('usuarioID') || 1)
-      await axios.post(`http://localhost:3007/api/faltas/registrar`, formData, {
+      await axios.post(`/api/faltas/registrar`, formData, {
         headers: { 'Content-Type': 'multipart/form-data' }
       })
       alert('✅ Falta registrada correctamente')
@@ -1334,7 +1334,7 @@ const toggleOpciones = () => {
 
 const cargarDocumentos = async () => {
   try {
-    const res = await axios.get(`http://localhost:3007/api/documentos/empleado/${route.params.id}`)
+    const res = await axios.get(`/api/documentos/empleado/${route.params.id}`)
     documentos.value = res.data
   } catch (err) {
     console.error("Error al cargar documentos:", err)
@@ -1384,7 +1384,7 @@ const guardarDocumento = async () => {
     formData.append('creadoPor', localStorage.getItem('usuarioID') || 1)
     formData.append('modificadoPor', localStorage.getItem('usuarioID') || 1)
 
-    await axios.post(`http://localhost:3007/api/documentos/registrar`, formData, {
+    await axios.post(`/api/documentos/registrar`, formData, {
       headers: { 'Content-Type': 'multipart/form-data' }
     })
     
@@ -1402,7 +1402,7 @@ const guardarDocumento = async () => {
 const eliminarDocumento = async (id) => {
   if (confirm('¿Está seguro de que desea eliminar este documento?')) {
     try {
-      await axios.delete(`http://localhost:3007/api/documentos/${id}`)
+      await axios.delete(`/api/documentos/${id}`)
       alert('✅ Documento eliminado correctamente')
       await cargarDocumentos()
     } catch (err) {
@@ -1429,7 +1429,7 @@ const toggleEstadoEmpleado = async () => {
 
   if (confirm(mensajeConfirmacion)) {
     try {
-      await axios.put(`http://localhost:3007/api/empleados/${route.params.id}/estado`, {
+      await axios.put(`/api/empleados/${route.params.id}/estado`, {
         estado: isActivo ? 0 : 1
       })
       alert(`✅ Empleado ${isActivo ? 'desactivado' : 'activado'} correctamente`)
@@ -1459,7 +1459,7 @@ const generarPDFHistorialContratos = async () => {
     // Cargar Logo
     const imgLogo = new Image();
     imgLogo.crossOrigin = "Anonymous";
-    imgLogo.src = 'http://localhost:3007/uploads/Logo/Logo.png';
+    imgLogo.src = `${useRuntimeConfig().public.apiBase}/uploads/Logo/Logo.png`;
     await new Promise((resolve) => {
       imgLogo.onload = resolve;
       imgLogo.onerror = resolve; // Continuar aunque falle
@@ -1493,7 +1493,7 @@ const generarPDFHistorialContratos = async () => {
     if (empleado.value.foto) {
       const imgEmp = new Image();
       imgEmp.crossOrigin = 'Anonymous';
-      imgEmp.src = `http://localhost:3007${empleado.value.foto}`;
+      imgEmp.src = `${useRuntimeConfig().public.apiBase}${empleado.value.foto}`;
       await new Promise((resolve) => { imgEmp.onload = resolve; imgEmp.onerror = resolve; });
       try {
         const imgWidth = 30;
@@ -1564,7 +1564,7 @@ const generarPDFHistorialVacaciones = async () => {
     // Cargar Logo
     const imgLogo = new Image();
     imgLogo.crossOrigin = "Anonymous";
-    imgLogo.src = 'http://localhost:3007/uploads/Logo/Logo.png';
+    imgLogo.src = `${useRuntimeConfig().public.apiBase}/uploads/Logo/Logo.png`;
     await new Promise((resolve) => {
       imgLogo.onload = resolve;
       imgLogo.onerror = resolve; // Continuar aunque falle
@@ -1598,7 +1598,7 @@ const generarPDFHistorialVacaciones = async () => {
     if (empleado.value.foto) {
       const imgEmp = new Image();
       imgEmp.crossOrigin = 'Anonymous';
-      imgEmp.src = `http://localhost:3007${empleado.value.foto}`;
+      imgEmp.src = `${useRuntimeConfig().public.apiBase}${empleado.value.foto}`;
       await new Promise((resolve) => { imgEmp.onload = resolve; imgEmp.onerror = resolve; });
       try {
         const imgWidth = 30;
@@ -1676,7 +1676,7 @@ const generarPDFHistorialVacacionesDetallado = async () => {
     // Cargar Logo
     const imgLogo = new Image();
     imgLogo.crossOrigin = "Anonymous";
-    imgLogo.src = 'http://localhost:3007/uploads/Logo/Logo.png';
+    imgLogo.src = `${useRuntimeConfig().public.apiBase}/uploads/Logo/Logo.png`;
     await new Promise((resolve) => {
       imgLogo.onload = resolve;
       imgLogo.onerror = resolve; // Continuar aunque falle
@@ -1710,7 +1710,7 @@ const generarPDFHistorialVacacionesDetallado = async () => {
     if (empleado.value.foto) {
       const imgEmp = new Image();
       imgEmp.crossOrigin = 'Anonymous';
-      imgEmp.src = `http://localhost:3007${empleado.value.foto}`;
+      imgEmp.src = `${useRuntimeConfig().public.apiBase}${empleado.value.foto}`;
       await new Promise((resolve) => { imgEmp.onload = resolve; imgEmp.onerror = resolve; });
       try {
         const imgWidth = 30;
@@ -1789,7 +1789,7 @@ const generarPDFPerfilEmpleado = async () => {
     // Cargar Logo
     const imgLogo = new Image();
     imgLogo.crossOrigin = "Anonymous";
-    imgLogo.src = 'http://localhost:3007/uploads/Logo/Logo.png';
+    imgLogo.src = `${useRuntimeConfig().public.apiBase}/uploads/Logo/Logo.png`;
     await new Promise((resolve) => {
       imgLogo.onload = resolve;
       imgLogo.onerror = resolve; // Continuar aunque falle
@@ -1821,7 +1821,7 @@ const generarPDFPerfilEmpleado = async () => {
     if (empleado.value.foto) {
       const imgEmp = new Image();
       imgEmp.crossOrigin = 'Anonymous';
-      imgEmp.src = `http://localhost:3007${empleado.value.foto}`;
+      imgEmp.src = `${useRuntimeConfig().public.apiBase}${empleado.value.foto}`;
       await new Promise((resolve) => { imgEmp.onload = resolve; imgEmp.onerror = resolve; });
       try {
         const imgWidth = 30;
@@ -1940,7 +1940,7 @@ const uploadFoto = async (event) => {
 
   try {
     const id = route.params.id
-    const res = await axios.post(`http://localhost:3007/api/empleados/${id}/foto`, formData, {
+    const res = await axios.post(`/api/empleados/${id}/foto`, formData, {
       headers: {
         'Content-Type': 'multipart/form-data'
       }
@@ -1962,7 +1962,7 @@ const guardandoTipoDoc = ref(false)
 
 const cargarTiposDocumentos = async () => {
   try {
-    const res = await axios.get('http://localhost:3007/api/documentos/tipos/lista')
+    const res = await axios.get('/api/documentos/tipos/lista')
     tiposDocumentos.value = res.data
   } catch (err) {
     console.error('Error al cargar tipos de documentos:', err)
@@ -1973,7 +1973,7 @@ const agregarTipoDocumento = async () => {
   if (!nuevoTipoDoc.value.trim()) return
   try {
     guardandoTipoDoc.value = true
-    await axios.post('http://localhost:3007/api/documentos/tipos', { nombre: nuevoTipoDoc.value.trim() })
+    await axios.post('/api/documentos/tipos', { nombre: nuevoTipoDoc.value.trim() })
     nuevoTipoDoc.value = ''
     await cargarTiposDocumentos()
   } catch (err) {
@@ -1986,7 +1986,7 @@ const agregarTipoDocumento = async () => {
 const eliminarTipoDocumento = async (id) => {
   if (confirm('¿Está seguro de que desea eliminar este tipo de documento?')) {
     try {
-      await axios.delete(`http://localhost:3007/api/documentos/tipos/${id}`)
+      await axios.delete(`/api/documentos/tipos/${id}`)
       await cargarTiposDocumentos()
     } catch (err) {
       alert('❌ ' + (err.response?.data?.error || 'Error al eliminar tipo de documento'))
@@ -2004,7 +2004,7 @@ const generarPDFHistorialNotas = async () => {
 
     const imgLogo = new Image();
     imgLogo.crossOrigin = "Anonymous";
-    imgLogo.src = 'http://localhost:3007/uploads/Logo/Logo.png';
+    imgLogo.src = `${useRuntimeConfig().public.apiBase}/uploads/Logo/Logo.png`;
     await new Promise((resolve) => { imgLogo.onload = resolve; imgLogo.onerror = resolve; });
 
     doc.setFontSize(22);
@@ -2028,7 +2028,7 @@ const generarPDFHistorialNotas = async () => {
     if (empleado.value.foto) {
       const imgEmp = new Image();
       imgEmp.crossOrigin = 'Anonymous';
-      imgEmp.src = `http://localhost:3007${empleado.value.foto}`;
+      imgEmp.src = `${useRuntimeConfig().public.apiBase}${empleado.value.foto}`;
       await new Promise((resolve) => { imgEmp.onload = resolve; imgEmp.onerror = resolve; });
       try {
         const imgWidth = 30, imgHeight = 30, imgX = 14, imgY = 47;
@@ -2094,7 +2094,7 @@ const generarPDFHistorialDocumentos = async () => {
 
     const imgLogo = new Image();
     imgLogo.crossOrigin = "Anonymous";
-    imgLogo.src = 'http://localhost:3007/uploads/Logo/Logo.png';
+    imgLogo.src = `${useRuntimeConfig().public.apiBase}/uploads/Logo/Logo.png`;
     await new Promise((resolve) => { imgLogo.onload = resolve; imgLogo.onerror = resolve; });
 
     doc.setFontSize(22);
@@ -2118,7 +2118,7 @@ const generarPDFHistorialDocumentos = async () => {
     if (empleado.value.foto) {
       const imgEmp = new Image();
       imgEmp.crossOrigin = 'Anonymous';
-      imgEmp.src = `http://localhost:3007${empleado.value.foto}`;
+      imgEmp.src = `${useRuntimeConfig().public.apiBase}${empleado.value.foto}`;
       await new Promise((resolve) => { imgEmp.onload = resolve; imgEmp.onerror = resolve; });
       try {
         const imgWidth = 30, imgHeight = 30, imgX = 14, imgY = 47;
@@ -2186,7 +2186,7 @@ const generarPDFHistorialFaltas = async () => {
     // Cargar Logo
     const imgLogo = new Image();
     imgLogo.crossOrigin = "Anonymous";
-    imgLogo.src = 'http://localhost:3007/uploads/Logo/Logo.png';
+    imgLogo.src = `${useRuntimeConfig().public.apiBase}/uploads/Logo/Logo.png`;
     await new Promise((resolve) => { imgLogo.onload = resolve; imgLogo.onerror = resolve; });
 
     // Encabezado
@@ -2214,7 +2214,7 @@ const generarPDFHistorialFaltas = async () => {
     if (empleado.value.foto) {
       const imgEmp = new Image();
       imgEmp.crossOrigin = 'Anonymous';
-      imgEmp.src = `http://localhost:3007${empleado.value.foto}`;
+      imgEmp.src = `${useRuntimeConfig().public.apiBase}${empleado.value.foto}`;
       await new Promise((resolve) => { imgEmp.onload = resolve; imgEmp.onerror = resolve; });
       try {
         const imgWidth = 30, imgHeight = 30, imgX = 14, imgY = 47;
@@ -2283,7 +2283,7 @@ onMounted(async () => {
   }
 
   try {
-    const m = await axios.get(`http://localhost:3007/api/menu/${rolID.value}?usuario_id=${localStorage.getItem('usuarioID')}`)
+    const m = await axios.get(`/api/menu/${rolID.value}?usuario_id=${localStorage.getItem('usuarioID')}`)
     menuUsuario.value = m.data
   } catch (e) {
     console.error('Error cargando menú', e)
@@ -2295,7 +2295,7 @@ onMounted(async () => {
 
   try {
     const id = route.params.id
-    const res = await axios.get(`http://localhost:3007/api/empleados/${id}`)
+    const res = await axios.get(`/api/empleados/${id}`)
     empleado.value = res.data
     
     // Cargar información relacionada
@@ -2313,10 +2313,10 @@ onMounted(async () => {
   }
 
   // Socket.io for real-time updates
-  socketInstance = io('http://localhost:3007')
+  socketInstance = io(useRuntimeConfig().public.apiBase)
   socketInstance.on('refresh_empleado_detalle', (updatedId) => {
     if (updatedId == route.params.id) {
-      axios.get(`http://localhost:3007/api/empleados/${route.params.id}`).then(res => empleado.value = res.data)
+      axios.get(`/api/empleados/${route.params.id}`).then(res => empleado.value = res.data)
       cargarContratos()
       cargarVacaciones()
       cargarFaltas()

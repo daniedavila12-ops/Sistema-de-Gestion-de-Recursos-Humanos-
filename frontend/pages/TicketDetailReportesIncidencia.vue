@@ -49,7 +49,7 @@
           <h2 class="text-2xl font-black text-gray-800 uppercase tracking-tight">Reporte de Incidencia</h2>
           <p class="text-sm text-gray-500 font-medium mt-1">Documento de control interno</p>
         </div>
-        <img src="http://localhost:3007/uploads/Logo/Logo.png" alt="Logo de la Empresa" class="h-12 object-contain" />
+        <img :src="`${$config.public.apiBase}/uploads/Logo/Logo.png`" alt="Logo de la Empresa" class="h-12 object-contain" />
       </div>
 
       <!-- Modal Scrollable Content -->
@@ -90,15 +90,15 @@
                   <div v-if="reporte.archivo" class="mt-6 ml-16 no-print">
                     <div v-if="isImage(reporte.archivo)" class="mt-2">
                       <div class="text-center rounded-xl overflow-hidden border border-slate-200 mb-3">
-                        <img :src="`http://localhost:3007${reporte.archivo}`" class="max-w-full max-h-[400px] object-contain mx-auto" alt="Evidencia" />
+                        <img :src="`${$config.public.apiBase}${reporte.archivo}`" class="max-w-full max-h-[400px] object-contain mx-auto" alt="Evidencia" />
                       </div>
-                      <a :href="`http://localhost:3007${reporte.archivo}`" target="_blank" download class="inline-flex items-center gap-2 px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-xs hover:border-purple-300 transition-colors text-purple-600 font-bold">
+                      <a :href="`${$config.public.apiBase}${reporte.archivo}`" target="_blank" download class="inline-flex items-center gap-2 px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-xs hover:border-purple-300 transition-colors text-purple-600 font-bold">
                         <span>⬇️</span> Descargar Imagen
                       </a>
                     </div>
                     <div v-else class="inline-flex items-center gap-3 px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl hover:border-purple-300 transition-colors">
                       <span class="text-purple-500">📎</span>
-                      <a :href="`http://localhost:3007${reporte.archivo}`" target="_blank" class="text-xs font-bold text-slate-700 hover:text-purple-600 transition-colors">
+                      <a :href="`${$config.public.apiBase}${reporte.archivo}`" target="_blank" class="text-xs font-bold text-slate-700 hover:text-purple-600 transition-colors">
                         Archivo Adjunto
                       </a>
                     </div>
@@ -112,7 +112,7 @@
                 <div v-for="res in respuestas" :key="res.id" class="bg-slate-50/50 rounded-2xl border border-slate-100 p-6 shadow-sm">
                   <div class="flex items-start gap-4 mb-4">
                     <div v-if="res.usuario_foto || res.empleado_foto" class="w-10 h-10 rounded-full overflow-hidden border border-slate-200 shrink-0 shadow-sm">
-                      <img :src="`http://localhost:3007${res.usuario_foto || res.empleado_foto}`" class="w-full h-full object-cover" />
+                      <img :src="`${$config.public.apiBase}${res.usuario_foto || res.empleado_foto}`" class="w-full h-full object-cover" />
                     </div>
                     <div v-else class="w-10 h-10 rounded-full bg-indigo-50 text-indigo-600 font-black flex items-center justify-center shrink-0 uppercase border border-indigo-100 shadow-sm">
                       {{ (res.usuario_nombre || res.empleado_nombre || 'U').charAt(0) }}
@@ -130,15 +130,15 @@
                   <div v-if="res.archivo" class="mt-4 ml-14 no-print">
                     <div v-if="isImage(res.archivo)" class="mt-2">
                       <div class="text-center rounded-xl overflow-hidden border border-slate-200 mb-2 bg-white">
-                        <img :src="`http://localhost:3007${res.archivo}`" class="max-w-full max-h-[300px] object-contain mx-auto" alt="Evidencia de Respuesta" />
+                        <img :src="`${$config.public.apiBase}${res.archivo}`" class="max-w-full max-h-[300px] object-contain mx-auto" alt="Evidencia de Respuesta" />
                       </div>
-                      <a :href="`http://localhost:3007${res.archivo}`" target="_blank" download class="inline-flex items-center gap-2 px-3 py-1.5 bg-white border border-slate-200 rounded-lg text-xs hover:border-indigo-300 transition-colors text-indigo-600 font-bold">
+                      <a :href="`${$config.public.apiBase}${res.archivo}`" target="_blank" download class="inline-flex items-center gap-2 px-3 py-1.5 bg-white border border-slate-200 rounded-lg text-xs hover:border-indigo-300 transition-colors text-indigo-600 font-bold">
                         <span>⬇️</span> Descargar Imagen
                       </a>
                     </div>
                     <div v-else class="inline-flex items-center gap-2 px-3 py-1.5 bg-white border border-slate-200 rounded-lg text-xs hover:border-indigo-300 transition-colors">
                       <span>📎</span>
-                      <a :href="`http://localhost:3007${res.archivo}`" target="_blank" class="text-indigo-600 font-bold truncate max-w-[200px] hover:underline">Archivo Adjunto</a>
+                      <a :href="`${$config.public.apiBase}${res.archivo}`" target="_blank" class="text-indigo-600 font-bold truncate max-w-[200px] hover:underline">Archivo Adjunto</a>
                     </div>
                   </div>
                 </div>
@@ -199,7 +199,7 @@
                 <div v-if="empleadosReportados.length > 0" class="space-y-4">
                   <div v-for="emp in empleadosReportados" :key="emp.identidad" class="flex items-center gap-3 border-b border-gray-50 pb-3 last:border-0 last:pb-0">
                     <div class="w-10 h-10 rounded-full overflow-hidden border border-gray-200 shrink-0 bg-slate-100 flex items-center justify-center font-bold text-slate-500">
-                      <img v-if="emp.foto" :src="`http://localhost:3007${emp.foto}`" alt="Avatar Empleado" class="w-full h-full object-cover" />
+                      <img v-if="emp.foto" :src="`${$config.public.apiBase}${emp.foto}`" alt="Avatar Empleado" class="w-full h-full object-cover" />
                       <span v-else>{{ emp.nombre ? emp.nombre.charAt(0) : '?' }}</span>
                     </div>
                     <div>
@@ -212,7 +212,7 @@
                 <div v-else>
                   <div class="flex items-center gap-3 mb-4">
                     <div class="w-10 h-10 rounded-full overflow-hidden border border-gray-200 shrink-0 bg-slate-100 flex items-center justify-center font-bold text-slate-500">
-                      <img v-if="reporte.empleado_foto" :src="`http://localhost:3007${reporte.empleado_foto}`" alt="Avatar Empleado" class="w-full h-full object-cover" />
+                      <img v-if="reporte.empleado_foto" :src="`${$config.public.apiBase}${reporte.empleado_foto}`" alt="Avatar Empleado" class="w-full h-full object-cover" />
                       <span v-else>{{ reporte.empleado_nombre ? reporte.empleado_nombre.charAt(0) : '?' }}</span>
                     </div>
                     <div>
@@ -237,7 +237,7 @@
                 
                 <div v-if="reporte.asignado_usuario_id" class="flex items-center gap-3 mb-4">
                   <div class="w-10 h-10 rounded-full overflow-hidden border border-blue-200 shrink-0 bg-blue-100 flex items-center justify-center font-bold text-blue-500">
-                    <img v-if="reporte.asignado_usuario_foto" :src="`http://localhost:3007${reporte.asignado_usuario_foto}`" alt="Avatar Solicitante" class="w-full h-full object-cover" />
+                    <img v-if="reporte.asignado_usuario_foto" :src="`${$config.public.apiBase}${reporte.asignado_usuario_foto}`" alt="Avatar Solicitante" class="w-full h-full object-cover" />
                     <span v-else>{{ reporte.asignado_usuario_nombre ? reporte.asignado_usuario_nombre.charAt(0) : '?' }}</span>
                   </div>
                   <div>
@@ -379,7 +379,7 @@ const generarPDF = async () => {
         if (currentX + imgWidth > 196) break;
         const imgEmp = new Image();
         imgEmp.crossOrigin = 'Anonymous';
-        imgEmp.src = `http://localhost:3007${empleadosConFoto[i].foto}`;
+        imgEmp.src = `${useRuntimeConfig().public.apiBase}${empleadosConFoto[i].foto}`;
         await new Promise((resolve) => { imgEmp.onload = resolve; imgEmp.onerror = resolve; });
         try {
           doc.setFillColor(241, 245, 249);
@@ -429,7 +429,7 @@ const generarPDF = async () => {
     // Cargar la imagen del logo antes de generar el documento
     const img = new Image();
     img.crossOrigin = "Anonymous";
-    img.src = 'http://localhost:3007/uploads/Logo/Logo.png';
+    img.src = `${useRuntimeConfig().public.apiBase}/uploads/Logo/Logo.png`;
     await new Promise((resolve) => {
       img.onload = resolve;
       img.onerror = resolve; // Continuar aunque falle la carga del logo
@@ -468,7 +468,7 @@ const generarPDF = async () => {
         try {
           const imgEvi = new Image();
           imgEvi.crossOrigin = "Anonymous";
-          imgEvi.src = `http://localhost:3007${reporte.value.archivo}`;
+          imgEvi.src = `${useRuntimeConfig().public.apiBase}${reporte.value.archivo}`;
           await new Promise((resolve) => {
             imgEvi.onload = resolve;
             imgEvi.onerror = resolve;
@@ -561,7 +561,7 @@ const generarPDFResoluciones = async () => {
     // Cargar Logo Superior Derecho
     const imgLogo = new Image();
     imgLogo.crossOrigin = "Anonymous";
-    imgLogo.src = 'http://localhost:3007/uploads/Logo/Logo.png';
+    imgLogo.src = `${useRuntimeConfig().public.apiBase}/uploads/Logo/Logo.png`;
     await new Promise((resolve) => {
       imgLogo.onload = resolve;
       imgLogo.onerror = resolve;
@@ -607,7 +607,7 @@ const generarPDFResoluciones = async () => {
         if (currentX + imgWidth > 196) break;
         const imgEmp = new Image();
         imgEmp.crossOrigin = 'Anonymous';
-        imgEmp.src = `http://localhost:3007${empleadosConFotoRes[i].foto}`;
+        imgEmp.src = `${useRuntimeConfig().public.apiBase}${empleadosConFotoRes[i].foto}`;
         await new Promise((resolve) => { imgEmp.onload = resolve; imgEmp.onerror = resolve; });
         try {
           doc.setFillColor(241, 245, 249);
@@ -679,7 +679,7 @@ const generarPDFResoluciones = async () => {
         try {
           const imgEvi = new Image();
           imgEvi.crossOrigin = "Anonymous";
-          imgEvi.src = `http://localhost:3007${reporte.value.archivo}`;
+          imgEvi.src = `${useRuntimeConfig().public.apiBase}${reporte.value.archivo}`;
           await new Promise((resolve) => {
             imgEvi.onload = resolve;
             imgEvi.onerror = resolve;
@@ -747,7 +747,7 @@ const generarPDFResoluciones = async () => {
         if (res && res.archivo && isImage(res.archivo)) {
           const img = new Image();
           img.crossOrigin = "Anonymous";
-          img.src = `http://localhost:3007${res.archivo}`;
+          img.src = `${useRuntimeConfig().public.apiBase}${res.archivo}`;
           await new Promise(resolve => {
             img.onload = () => { res._imgObj = img; resolve(); };
             img.onerror = resolve;
@@ -867,13 +867,13 @@ const cargarDetalles = async () => {
   if (!reporteId) return
   loading.value = true
   try {
-    const res = await axios.get(`http://localhost:3007/api/reportes-incidencia/${reporteId}`)
+    const res = await axios.get(`/api/reportes-incidencia/${reporteId}`)
     reporte.value = res.data
     estadoActual.value = res.data.estado
     await cargarRespuestas()
 
     try {
-      const empRes = await axios.get('http://localhost:3007/api/empleados/lista')
+      const empRes = await axios.get('/api/empleados/lista')
       if (res.data.identidad) {
         const identidadesArr = res.data.identidad.split(',').map(i => i.trim())
         empleadosReportados.value = empRes.data.filter(e => identidadesArr.includes(e.identidad))
@@ -911,7 +911,7 @@ const cargarDetalles = async () => {
 
 const cargarRespuestas = async () => {
   try {
-    const res = await axios.get(`http://localhost:3007/api/reportes-incidencia/${reporteId}/respuestas`)
+    const res = await axios.get(`/api/reportes-incidencia/${reporteId}/respuestas`)
     respuestas.value = res.data
   } catch (error) {
     console.error("Error cargando respuestas:", error)
@@ -921,7 +921,7 @@ const cargarRespuestas = async () => {
 const cargarUsuariosRRHH = async () => {
   try {
     // Podríamos filtrar solo los de RRHH, pero cargamos todos los usuarios activos por ahora
-    const res = await axios.get('http://localhost:3007/api/usuarios')
+    const res = await axios.get('/api/usuarios')
     usuariosRRHH.value = res.data.filter(u => u.estado === 1)
   } catch (error) {
     console.error("Error cargando usuarios:", error)
@@ -944,7 +944,7 @@ const enviarRespuesta = async () => {
       formData.append('archivo', archivoSeleccionado.value)
     }
 
-    await axios.post(`http://localhost:3007/api/reportes-incidencia/${reporteId}/respuestas`, formData, {
+    await axios.post(`/api/reportes-incidencia/${reporteId}/respuestas`, formData, {
       headers: { 'Content-Type': 'multipart/form-data' }
     })
 
@@ -954,7 +954,7 @@ const enviarRespuesta = async () => {
     
     // Si estaba Pendiente, cambiar a En Proceso
     if (reporte.value.estado === 'Pendiente') {
-      await axios.put(`http://localhost:3007/api/reportes-incidencia/${reporteId}/estado`, { estado: 'En Proceso' })
+      await axios.put(`/api/reportes-incidencia/${reporteId}/estado`, { estado: 'En Proceso' })
       reporte.value.estado = 'En Proceso'
       estadoActual.value = 'En Proceso'
     }
@@ -969,7 +969,7 @@ const enviarRespuesta = async () => {
 
 const actualizarEstado = async () => {
   try {
-    await axios.put(`http://localhost:3007/api/reportes-incidencia/${reporteId}/estado`, { estado: estadoActual.value })
+    await axios.put(`/api/reportes-incidencia/${reporteId}/estado`, { estado: estadoActual.value })
     reporte.value.estado = estadoActual.value
     Swal.fire({ icon: 'success', title: 'Estado actualizado', timer: 1500, showConfirmButton: false })
   } catch (error) {
@@ -982,7 +982,7 @@ const asignarUsuario = async () => {
   if (!usuarioAsignarId.value) return
   
   try {
-    await axios.put(`http://localhost:3007/api/reportes-incidencia/${reporteId}/asignar`, { usuario_id: usuarioAsignarId.value })
+    await axios.put(`/api/reportes-incidencia/${reporteId}/asignar`, { usuario_id: usuarioAsignarId.value })
     Swal.fire({ icon: 'success', title: 'Asignado con éxito', timer: 1500, showConfirmButton: false })
     await cargarDetalles() // Recargar para mostrar el usuario asignado
   } catch (error) {

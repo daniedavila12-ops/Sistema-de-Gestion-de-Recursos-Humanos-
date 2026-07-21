@@ -150,7 +150,7 @@ const getCategoryCount = (nombre) => {
 
 const fetchCategorias = async () => {
   try {
-    const res = await axios.get('http://localhost:3007/api/tickets/categorias/lista')
+    const res = await axios.get('/api/tickets/categorias/lista')
     categoriasLista.value = res.data
     emit('categorias-actualizadas', res.data)
   } catch (error) { console.error('Error cargando categorías:', error) }
@@ -160,7 +160,7 @@ const agregarCategoria = async () => {
   const nombre = prompt('Ingresa el nombre de la nueva categoría:')
   if (!nombre || !nombre.trim()) return
   try {
-    await axios.post('http://localhost:3007/api/tickets/categorias', { nombre: nombre.trim() })
+    await axios.post('/api/tickets/categorias', { nombre: nombre.trim() })
     fetchCategorias()
   } catch (error) {
     alert(error.response?.data?.error || 'Hubo un error al agregar la categoría.')
@@ -171,14 +171,14 @@ const editarCategoria = async (cat) => {
   const nuevoNombre = prompt('Editar nombre de la categoría:', cat.nombre)
   if (!nuevoNombre || !nuevoNombre.trim() || nuevoNombre === cat.nombre) return
   try {
-    await axios.put(`http://localhost:3007/api/tickets/categorias/${cat.id}`, { nombre: nuevoNombre.trim(), activa: cat.activa })
+    await axios.put(`/api/tickets/categorias/${cat.id}`, { nombre: nuevoNombre.trim(), activa: cat.activa })
     fetchCategorias()
   } catch (error) { alert(error.response?.data?.error || 'Error al editar la categoría') }
 }
 
 const toggleCategoria = async (cat) => {
   try {
-    await axios.put(`http://localhost:3007/api/tickets/categorias/${cat.id}`, { nombre: cat.nombre, activa: !cat.activa })
+    await axios.put(`/api/tickets/categorias/${cat.id}`, { nombre: cat.nombre, activa: !cat.activa })
     fetchCategorias()
   } catch (error) { alert('Error al cambiar el estado') }
 }

@@ -44,7 +44,7 @@
             <div class="relative">
               <div @click="dropdownPerfilAbierto = !dropdownPerfilAbierto" class="flex items-center gap-3 pl-6 border-l border-slate-200 cursor-pointer hover:bg-slate-50 p-2 rounded-xl transition-colors">
                 <div v-if="fotoUsuario" class="h-10 w-10 rounded-full flex items-center justify-center overflow-hidden ring-2 ring-slate-100">
-                <img :src="`http://localhost:3007${fotoUsuario}`" class="w-full h-full object-cover" />
+                <img :src="`${$config.public.apiBase}${fotoUsuario}`" class="w-full h-full object-cover" />
               </div>
               <div v-else class="h-10 w-10 rounded-full bg-slate-800 flex items-center justify-center text-blue-400 font-black text-lg ring-2 ring-slate-100 uppercase">
                 {{ nombreUsuario ? nombreUsuario.charAt(0) : 'U' }}
@@ -59,7 +59,7 @@
             <div v-if="dropdownPerfilAbierto" class="absolute right-0 mt-2 w-64 bg-white rounded-2xl shadow-xl border border-slate-100 overflow-hidden z-50 animate-in slide-in-from-top-2 duration-200">
               <div class="p-5 border-b border-slate-100 bg-slate-50 flex items-center gap-4">
                 <div v-if="fotoUsuario" class="h-12 w-12 rounded-full flex items-center justify-center overflow-hidden ring-2 ring-white shadow-sm shrink-0">
-                  <img :src="`http://localhost:3007${fotoUsuario}`" class="w-full h-full object-cover" />
+                  <img :src="`${$config.public.apiBase}${fotoUsuario}`" class="w-full h-full object-cover" />
                 </div>
                 <div v-else class="h-12 w-12 rounded-full bg-slate-800 flex items-center justify-center text-blue-400 font-black text-xl ring-2 ring-white shadow-sm shrink-0 uppercase">
                   {{ nombreUsuario ? nombreUsuario.charAt(0) : 'U' }}
@@ -95,7 +95,7 @@
               <div class="flex flex-col items-center gap-3">
                 <div v-if="empleadoSeleccionado.foto" @click="modalVerFoto = true" class="relative group cursor-pointer mb-1">
                   <div class="h-24 w-24 rounded-full flex items-center justify-center overflow-hidden ring-4 ring-slate-100 shadow-lg bg-white shrink-0">
-                    <img :src="`http://localhost:3007${empleadoSeleccionado.foto}`" class="w-full h-full object-cover" />
+                    <img :src="`${$config.public.apiBase}${empleadoSeleccionado.foto}`" class="w-full h-full object-cover" />
                   </div>
                   <div class="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity rounded-full bg-black/50">
                     <span class="text-white text-[10px] font-bold px-2 py-1 text-center">Ver<br>Foto</span>
@@ -137,7 +137,7 @@
                   >
                     <div class="flex items-center gap-4">
                       <div class="h-10 w-10 rounded-full overflow-hidden border border-slate-200 shrink-0 bg-slate-100 flex items-center justify-center">
-                        <img v-if="emp.foto" :src="`http://localhost:3007${emp.foto}`" alt="Foto" class="w-full h-full object-cover" />
+                        <img v-if="emp.foto" :src="`${$config.public.apiBase}${emp.foto}`" alt="Foto" class="w-full h-full object-cover" />
                         <span v-else class="text-slate-400 font-bold text-sm">{{ emp.nombre.charAt(0) }}</span>
                       </div>
                       <div>
@@ -338,7 +338,7 @@
                       <button v-if="hasPermission('Vacaciones', 'puedeCrear') && esUltimoRegistroPeriodo(v) && Number(v.diasPendientes) > 0" @click="continuarVacaciones(v)" class="p-2.5 bg-indigo-50 text-indigo-600 hover:bg-indigo-600 hover:text-white rounded-xl transition-all border border-indigo-100 hover:border-indigo-600 shadow-sm flex items-center gap-1" title="Continuar tomando vacaciones de este periodo">
                         <span>➕</span> Continuar
                       </button>
-                      <a v-if="v.documento" :href="`http://localhost:3007${v.documento}`" target="_blank" class="p-2.5 bg-emerald-50 text-emerald-600 hover:bg-emerald-600 hover:text-white rounded-xl transition-all border border-emerald-100 hover:border-emerald-600 shadow-sm flex items-center gap-1" title="Ver Documento">
+                      <a v-if="v.documento" :href="`${useRuntimeConfig().public.apiBase}${v.documento}`" target="_blank" class="p-2.5 bg-emerald-50 text-emerald-600 hover:bg-emerald-600 hover:text-white rounded-xl transition-all border border-emerald-100 hover:border-emerald-600 shadow-sm flex items-center gap-1" title="Ver Documento">
                         <span>📄</span>
                       </a>
                       <button v-if="hasPermission('Vacaciones', 'puedeEditar')" @click="editarVacacion(v)" class="p-2.5 bg-blue-50 text-blue-600 hover:bg-blue-600 hover:text-white rounded-xl transition-all border border-blue-100 hover:border-blue-600 shadow-sm flex items-center gap-1" title="Editar Vacaciones">
@@ -426,7 +426,7 @@
           <div class="mb-6 flex flex-col items-center">
             <div class="relative group cursor-pointer" @click="triggerFileInputPerfil">
               <div v-if="fotoUsuario" class="h-20 w-20 rounded-full flex items-center justify-center overflow-hidden ring-4 ring-slate-100 shadow-lg mb-4">
-                <img :src="`http://localhost:3007${fotoUsuario}`" class="w-full h-full object-cover" />
+                <img :src="`${useRuntimeConfig().public.apiBase}${fotoUsuario}`" class="w-full h-full object-cover" />
               </div>
               <div v-else class="h-20 w-20 rounded-full bg-slate-800 flex items-center justify-center text-blue-400 font-black text-3xl ring-4 ring-slate-100 uppercase mb-4 shadow-lg">
                 {{ nombreUsuario ? nombreUsuario.charAt(0) : 'U' }}
@@ -476,7 +476,7 @@
           <button @click="modalVerFoto = false" class="text-slate-400 hover:text-red-500 transition text-3xl leading-none">&times;</button>
         </div>
         <div class="p-4 flex justify-center bg-slate-100">
-          <img :src="`http://localhost:3007${empleadoSeleccionado.foto}`" alt="Foto Empleado" class="max-h-[70vh] rounded-xl object-contain shadow-sm" />
+          <img :src="`${useRuntimeConfig().public.apiBase}${empleadoSeleccionado.foto}`" alt="Foto Empleado" class="max-h-[70vh] rounded-xl object-contain shadow-sm" />
         </div>
       </div>
     </div>
@@ -561,7 +561,7 @@ const uploadFotoPerfil = async (event) => {
 
   try {
     const id = localStorage.getItem('usuarioID')
-    const res = await axios.post(`http://localhost:3007/api/auth/${id}/foto`, formData, {
+    const res = await axios.post(`/api/auth/${id}/foto`, formData, {
       headers: {
         'Content-Type': 'multipart/form-data'
       }
@@ -590,7 +590,7 @@ const cambiarPassword = async () => {
   try {
     loadingPassword.value = true
     const userId = localStorage.getItem('usuarioID')
-    const res = await axios.put(`http://localhost:3007/api/auth/${userId}/password`, {
+    const res = await axios.put(`/api/auth/${userId}/password`, {
       actual: formPassword.value.actual,
       nueva: formPassword.value.nueva
     })
@@ -883,7 +883,7 @@ const loadingTipos = ref(false);
 
 const cargarTiposPermiso = async () => {
   try {
-    const res = await axios.get('http://localhost:3007/api/vacaciones/tipos-permiso');
+    const res = await axios.get('/api/vacaciones/tipos-permiso');
     tiposPermisoDisponibles.value = res.data;
   } catch (error) {
     console.error('Error cargando tipos de permiso:', error);
@@ -894,7 +894,7 @@ const agregarTipoPermiso = async () => {
   if (!nuevoTipoNombre.value.trim() || loadingTipos.value) return;
   try {
     loadingTipos.value = true;
-    await axios.post('http://localhost:3007/api/vacaciones/tipos-permiso', { nombre: nuevoTipoNombre.value.trim() });
+    await axios.post('/api/vacaciones/tipos-permiso', { nombre: nuevoTipoNombre.value.trim() });
     nuevoTipoNombre.value = '';
     await cargarTiposPermiso();
   } catch (error) {
@@ -912,7 +912,7 @@ const guardarEdicionTipo = async (id) => {
   if (!tipoEditando.value.nombre.trim()) return;
   try {
     loadingTipos.value = true;
-    await axios.put(`http://localhost:3007/api/vacaciones/tipos-permiso/${id}`, { nombre: tipoEditando.value.nombre.trim() });
+    await axios.put(`/api/vacaciones/tipos-permiso/${id}`, { nombre: tipoEditando.value.nombre.trim() });
     
     // Si estaba seleccionado este tipo en el form, lo actualizamos al nuevo nombre
     const tipoAnterior = tiposPermisoDisponibles.value.find(t => t.id === id);
@@ -935,7 +935,7 @@ const eliminarTipoPermiso = async (id) => {
     loadingTipos.value = true;
     const tipoAEliminar = tiposPermisoDisponibles.value.find(t => t.id === id);
     
-    await axios.delete(`http://localhost:3007/api/vacaciones/tipos-permiso/${id}`);
+    await axios.delete(`/api/vacaciones/tipos-permiso/${id}`);
     
     // Si estaba seleccionado en el form, lo limpiamos
     if (tipoAEliminar && formVacaciones.value.tipoPermiso === tipoAEliminar.nombre) {
@@ -1087,7 +1087,7 @@ watch(() => formVacaciones.value.periodo, () => {
 
 const cargarVacaciones = async (id) => {
   try {
-    const res = await axios.get(`http://localhost:3007/api/vacaciones/empleado/${id}`)
+    const res = await axios.get(`/api/vacaciones/empleado/${id}`)
     const records = res.data;
     
     let empFechaInicio = empleadoSeleccionado.value?.fecha_inicio;
@@ -1138,7 +1138,7 @@ const cargarVacaciones = async (id) => {
 watch(empleadoSeleccionado, async (nuevoEmpleado) => {
   if (nuevoEmpleado) {
     try {
-      const resContratos = await axios.get(`http://localhost:3007/api/empleados/${nuevoEmpleado.id}/contratos`);
+      const resContratos = await axios.get(`/api/empleados/${nuevoEmpleado.id}/contratos`);
       const contratos = resContratos.data;
       if (contratos && contratos.length > 0) {
         // Find the oldest contract by sorting ascending
@@ -1308,12 +1308,12 @@ const guardarVacaciones = async () => {
     }
 
     if (isEditing.value) {
-      await axios.put(`http://localhost:3007/api/vacaciones/${vacacionEditId.value}`, formData, {
+      await axios.put(`/api/vacaciones/${vacacionEditId.value}`, formData, {
         headers: { 'Content-Type': 'multipart/form-data' }
       })
       alert('✅ Vacaciones actualizadas correctamente')
     } else {
-      await axios.post('http://localhost:3007/api/vacaciones/registrar', formData, {
+      await axios.post('/api/vacaciones/registrar', formData, {
         headers: { 'Content-Type': 'multipart/form-data' }
       })
       if (formVacaciones.value.tipoSolicitud === 'Permiso Especial') {
@@ -1336,7 +1336,7 @@ const guardarVacaciones = async () => {
 const eliminarVacacion = async (id) => {
   if (confirm('¿Estás seguro de que deseas eliminar este registro de vacaciones?')) {
     try {
-      await axios.delete(`http://localhost:3007/api/vacaciones/${id}`);
+      await axios.delete(`/api/vacaciones/${id}`);
       alert('✅ Registro de vacaciones eliminado correctamente');
       if (empleadoSeleccionado.value) {
         await cargarVacaciones(empleadoSeleccionado.value.id);
@@ -1363,7 +1363,7 @@ const generarPDFHistorial = async () => {
     if (empleadoSeleccionado.value.foto) {
       const imgFoto = new Image();
       imgFoto.crossOrigin = "Anonymous";
-      imgFoto.src = `http://localhost:3007${empleadoSeleccionado.value.foto}`;
+      imgFoto.src = `${useRuntimeConfig().public.apiBase}${empleadoSeleccionado.value.foto}`;
       
       await new Promise((resolve) => {
         imgFoto.onload = resolve;
@@ -1401,7 +1401,7 @@ const generarPDFHistorial = async () => {
     // Cargar Logo Superior Derecho
     const imgLogo = new Image();
     imgLogo.crossOrigin = "Anonymous";
-    imgLogo.src = 'http://localhost:3007/uploads/Logo/Logo.png';
+    imgLogo.src = `${useRuntimeConfig().public.apiBase}/uploads/Logo/Logo.png`;
     await new Promise((resolve) => {
       imgLogo.onload = resolve;
       imgLogo.onerror = resolve;
@@ -1462,7 +1462,7 @@ const generarPDFVacacionesGlobal = async () => {
     // Cargar Logo Superior Derecho
     const imgLogo = new Image();
     imgLogo.crossOrigin = "Anonymous";
-    imgLogo.src = 'http://localhost:3007/uploads/Logo/Logo.png';
+    imgLogo.src = `${useRuntimeConfig().public.apiBase}/uploads/Logo/Logo.png`;
     await new Promise((resolve) => {
       imgLogo.onload = resolve;
       imgLogo.onerror = resolve;
@@ -1524,7 +1524,7 @@ const generarPDFVacacionesGlobal = async () => {
 onMounted(async () => {
 
   // Socket.io
-  socketInstance = io('http://localhost:3007')
+  socketInstance = io(useRuntimeConfig().public.apiBase)
   socketInstance.on('refresh_empleado_detalle', (updatedId) => {
     if (empleadoSeleccionado.value && empleadoSeleccionado.value.id == updatedId) {
       cargarVacacionesEmpleado(updatedId)
@@ -1545,7 +1545,7 @@ onMounted(async () => {
   await cargarTiposPermiso();
 
   try {
-    const m = await axios.get(`http://localhost:3007/api/menu/${rolID.value}?usuario_id=${localStorage.getItem('usuarioID')}`)
+    const m = await axios.get(`/api/menu/${rolID.value}?usuario_id=${localStorage.getItem('usuarioID')}`)
     menuUsuario.value = m.data
   } catch (e) {
     console.error('Error cargando menú', e)
@@ -1555,7 +1555,7 @@ onMounted(async () => {
   await getPermisos(rolID.value, usuarioID);
 
   try {
-    const res = await axios.get('http://localhost:3007/api/empleados/lista', {
+    const res = await axios.get('/api/empleados/lista', {
       headers: {
         'Cache-Control': 'no-cache',
         'Pragma': 'no-cache',

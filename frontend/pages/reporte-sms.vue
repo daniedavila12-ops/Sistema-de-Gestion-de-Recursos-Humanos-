@@ -1,7 +1,7 @@
 <template>
   <div 
     class="min-h-screen bg-cover bg-center bg-no-repeat bg-fixed font-sans relative" 
-    style="background-image: url('http://localhost:3007/uploads/Fondo/Fondo%20Seguimiento.jpeg');"
+    style="background-image: url(`${$config.public.apiBase}/uploads/Fondo/Fondo%20Seguimiento.jpeg`);"
   >
     <!-- Overlay para legibilidad -->
     <div class="absolute inset-0 bg-slate-900/60 backdrop-blur-[4px] z-0"></div>
@@ -203,7 +203,7 @@ const enviarRespuesta = async () => {
   }
   
   try {
-    await axios.post(`http://localhost:3007/api/tickets/${ticket.value.rawId || ticket.value.id}/respuestas`, formData, {
+    await axios.post(`/api/tickets/${ticket.value.rawId || ticket.value.id}/respuestas`, formData, {
       headers: { 'Content-Type': 'multipart/form-data' }
     });
     
@@ -223,7 +223,7 @@ const enviarRespuesta = async () => {
 
 const buscarTicketPorId = async (numericId) => {
   try {
-    const res = await axios.get(`http://localhost:3007/api/tickets/${numericId}`)
+    const res = await axios.get(`/api/tickets/${numericId}`)
     const data = res.data
 
     let asignado = 'Sin asignar'
@@ -244,17 +244,17 @@ const buscarTicketPorId = async (numericId) => {
       })
     }
 
-    const resR = await axios.get(`http://localhost:3007/api/tickets/${numericId}/respuestas`)
+    const resR = await axios.get(`/api/tickets/${numericId}/respuestas`)
     respuestas.value = resR.data.map(r => ({
       id: r.id,
       mensaje: r.mensaje,
       fecha: new Date(r.fecha_creacion).toLocaleDateString('es-HN', {
         day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit'
       }),
-      archivo: r.archivo ? `http://localhost:3007${r.archivo}` : null,
+      archivo: r.archivo ? `${useRuntimeConfig().public.apiBase}${r.archivo}` : null,
       archivo_nombre: r.archivo ? r.archivo.split('/').pop() : null,
       nombre: r.empleado_nombre ? `${r.empleado_nombre} ${r.empleado_apellido || ''}` : r.usuario_nombre || 'Usuario',
-      avatar: r.empleado_foto ? `http://localhost:3007${r.empleado_foto}` : (r.usuario_foto ? `http://localhost:3007${r.usuario_foto}` : null)
+      avatar: r.empleado_foto ? `${useRuntimeConfig().public.apiBase}${r.empleado_foto}` : (r.usuario_foto ? `${useRuntimeConfig().public.apiBase}${r.usuario_foto}` : null)
     }))
   } catch (err) {
     throw err;

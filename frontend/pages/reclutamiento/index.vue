@@ -2,7 +2,7 @@
   <div class="min-h-screen bg-slate-50 flex items-center justify-center p-4">
     <div class="bg-white rounded-2xl shadow-xl p-8 max-w-lg w-full">
       <div class="text-center mb-8 flex flex-col items-center">
-        <img src="http://localhost:3007/uploads/Logo/Logo.png" alt="Logo Innova" class="h-16 mb-4 object-contain" />
+        <img :src="`${$config.public.apiBase}/uploads/Logo/Logo.png`" alt="Logo Innova" class="h-16 mb-4 object-contain" />
         <h1 class="text-3xl font-bold text-slate-800 tracking-tight uppercase">Trabaja en INNOVA</h1>
         <p class="text-slate-500 mt-2 font-medium">Únete a nuestro equipo de trabajo. Completa el formulario y adjunta tu CV.</p>
       </div>
@@ -122,7 +122,7 @@ const submitForm = async () => {
 
   try {
     const config = useRuntimeConfig();
-    const apiUrl = 'http://localhost:3007/api/candidatos/upload'; // Fallback a localhost
+    const apiUrl = '/api/candidatos/upload'; // Fallback a localhost
 
     const response = await fetch(apiUrl, {
       method: 'POST',

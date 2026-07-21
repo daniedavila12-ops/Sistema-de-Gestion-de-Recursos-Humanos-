@@ -50,7 +50,7 @@
             <div class="relative">
               <div @click="dropdownPerfilAbierto = !dropdownPerfilAbierto" class="flex items-center gap-3 pl-6 border-l border-slate-200 cursor-pointer hover:bg-slate-50 p-2 rounded-xl transition-colors">
                 <div v-if="fotoUsuario" class="h-10 w-10 rounded-full flex items-center justify-center overflow-hidden ring-2 ring-slate-100">
-                  <img :src="`http://localhost:3007${fotoUsuario}`" class="w-full h-full object-cover" />
+                  <img :src="`${$config.public.apiBase}${fotoUsuario}`" class="w-full h-full object-cover" />
                 </div>
                 <div v-else class="h-10 w-10 rounded-full bg-slate-800 flex items-center justify-center text-blue-400 font-black text-lg ring-2 ring-slate-100 uppercase">
                   {{ nombreUsuario ? nombreUsuario.charAt(0) : 'U' }}
@@ -65,7 +65,7 @@
               <div v-if="dropdownPerfilAbierto" class="absolute right-0 mt-2 w-64 bg-white rounded-2xl shadow-xl border border-slate-100 overflow-hidden z-50 animate-in slide-in-from-top-2 duration-200">
                 <div class="p-5 border-b border-slate-100 bg-slate-50 flex items-center gap-4">
                   <div v-if="fotoUsuario" class="h-12 w-12 rounded-full flex items-center justify-center overflow-hidden ring-2 ring-white shadow-sm shrink-0">
-                    <img :src="`http://localhost:3007${fotoUsuario}`" class="w-full h-full object-cover" />
+                    <img :src="`${$config.public.apiBase}${fotoUsuario}`" class="w-full h-full object-cover" />
                   </div>
                   <div v-else class="h-12 w-12 rounded-full bg-slate-800 flex items-center justify-center text-blue-400 font-black text-xl ring-2 ring-white shadow-sm shrink-0 uppercase">
                     {{ nombreUsuario ? nombreUsuario.charAt(0) : 'U' }}
@@ -147,7 +147,7 @@
             <tr v-else v-for="emp in filteredEmpleados" :key="emp.id" class="border-b border-slate-50 hover:bg-slate-50 transition-colors">
               <td class="p-5 flex items-center gap-3">
                 <div class="h-10 w-10 rounded-full overflow-hidden border border-slate-200 shrink-0 bg-slate-100 flex items-center justify-center">
-                  <img v-if="emp.foto" :src="`http://localhost:3007${emp.foto}`" alt="Foto" class="w-full h-full object-cover" />
+                  <img v-if="emp.foto" :src="`${$config.public.apiBase}${emp.foto}`" alt="Foto" class="w-full h-full object-cover" />
                   <span v-else class="text-slate-400 font-bold text-sm">{{ emp.nombre.charAt(0) }}</span>
                 </div>
                 <div class="font-bold text-slate-800 text-sm">
@@ -326,7 +326,7 @@
           <div class="mb-6 flex flex-col items-center">
             <div class="relative group cursor-pointer" @click="triggerFileInputPerfil">
               <div v-if="fotoUsuario" class="h-20 w-20 rounded-full flex items-center justify-center overflow-hidden ring-4 ring-slate-100 shadow-lg mb-4">
-                <img :src="`http://localhost:3007${fotoUsuario}`" class="w-full h-full object-cover" />
+                <img :src="`${$config.public.apiBase}${fotoUsuario}`" class="w-full h-full object-cover" />
               </div>
               <div v-else class="h-20 w-20 rounded-full bg-slate-800 flex items-center justify-center text-blue-400 font-black text-3xl ring-4 ring-slate-100 uppercase mb-4 shadow-lg">
                 {{ nombreUsuario ? nombreUsuario.charAt(0) : 'U' }}
@@ -402,7 +402,7 @@ const uploadFotoPerfil = async (event) => {
 
   try {
     const id = localStorage.getItem('usuarioID')
-    const res = await axios.post(`http://localhost:3007/api/auth/${id}/foto`, formData, {
+    const res = await axios.post(`/api/auth/${id}/foto`, formData, {
       headers: {
         'Content-Type': 'multipart/form-data'
       }
@@ -431,7 +431,7 @@ const cambiarPassword = async () => {
   try {
     loadingPassword.value = true
     const userId = localStorage.getItem('usuarioID')
-    const res = await axios.put(`http://localhost:3007/api/auth/${userId}/password`, {
+    const res = await axios.put(`/api/auth/${userId}/password`, {
       actual: formPassword.value.actual,
       nueva: formPassword.value.nueva
     })
@@ -515,7 +515,7 @@ watch(() => form.value.codigo_empleado, (newVal) => {
   
   timeoutCodigo = setTimeout(async () => {
     try {
-      const { data } = await axios.get(`http://localhost:3007/api/empleados/validar-codigo/${newVal.trim()}`)
+      const { data } = await axios.get(`/api/empleados/validar-codigo/${newVal.trim()}`)
       if (data.existe) errorCodigo.value = 'Este código ya está en uso'
     } catch (e) {
       console.error(e)
@@ -530,7 +530,7 @@ watch(() => form.value.identidad, (newVal) => {
   
   timeoutIdentidad = setTimeout(async () => {
     try {
-      const { data } = await axios.get(`http://localhost:3007/api/empleados/validar-identidad/${newVal.trim()}`)
+      const { data } = await axios.get(`/api/empleados/validar-identidad/${newVal.trim()}`)
       if (data.existe) errorIdentidad.value = 'Este número de identidad ya está registrado'
     } catch (e) {
       console.error(e)
@@ -564,7 +564,7 @@ const filteredEmpleados = computed(() => {
 
 const cargarEmpleados = async () => {
   try {
-    const res = await axios.get('http://localhost:3007/api/empleados/lista', {
+    const res = await axios.get('/api/empleados/lista', {
       headers: {
         'Cache-Control': 'no-cache',
         'Pragma': 'no-cache',
@@ -600,7 +600,7 @@ const guardarEmpleado = async () => {
   }
   try {
     loadingGuardar.value = true
-    const res = await axios.post('http://localhost:3007/api/empleados/crear', form.value)
+    const res = await axios.post('/api/empleados/crear', form.value)
     
     alert('✅ ' + res.data.mensaje)
     
@@ -617,7 +617,7 @@ const guardarEmpleado = async () => {
 const eliminarEmpleado = async (id) => {
   if (confirm('¿Estás seguro que deseas eliminar este empleado? Esta acción no se puede deshacer.')) {
     try {
-      const res = await axios.delete(`http://localhost:3007/api/empleados/${id}`)
+      const res = await axios.delete(`/api/empleados/${id}`)
       alert('✅ Empleado eliminado correctamente')
       await cargarEmpleados()
     } catch (error) {
@@ -645,7 +645,7 @@ onMounted(async () => {
   }
   
   try {
-    const m = await axios.get(`http://localhost:3007/api/menu/${rolID.value}?usuario_id=${localStorage.getItem('usuarioID')}`)
+    const m = await axios.get(`/api/menu/${rolID.value}?usuario_id=${localStorage.getItem('usuarioID')}`)
     menuUsuario.value = m.data
   } catch (err) {
     console.error("Error cargando menu", err)
@@ -669,14 +669,14 @@ onMounted(async () => {
 
   await cargarEmpleados()
   try {
-    const res = await axios.get('http://localhost:3007/api/departamentos/lista')
+    const res = await axios.get('/api/departamentos/lista')
     departamentos.value = res.data.sort((a, b) => a.nombre.localeCompare(b.nombre))
   } catch (error) {
     console.error("Error cargando departamentos:", error)
   }
 
   // Socket.io for real-time updates
-  socketInstance = io('http://localhost:3007')
+  socketInstance = io(useRuntimeConfig().public.apiBase)
   socketInstance.on('nueva_notificacion', () => {
     cargarEmpleados()
   })

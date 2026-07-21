@@ -19,7 +19,7 @@ export default defineNuxtRouteMiddleware(async (to, from) => {
     if (usuarioID && !isPublic && to.path !== '/') {
         try {
             // Obtenemos los módulos permitidos para este usuario
-            const apiBase = 'http://localhost:3007';
+            const apiBase = useRuntimeConfig().public.apiBase;
             const menu = await $fetch(`${apiBase}/api/menu/${rolID}?usuario_id=${usuarioID}`);
             
             // Extraer las rutas permitidas del menú

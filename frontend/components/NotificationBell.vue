@@ -123,7 +123,7 @@ const vClickOutside = {
 
 const cargarEmpleados = async () => {
   try {
-    const res = await axios.get('http://localhost:3007/api/empleados/lista');
+    const res = await axios.get('/api/empleados/lista');
     empleados.value = res.data;
   } catch (err) {
     console.error('Error cargando empleados:', err);
@@ -135,7 +135,7 @@ const cargarNotificaciones = async () => {
   if (!usuarioId) return;
 
   try {
-    const res = await axios.get(`http://localhost:3007/api/notificaciones/${usuarioId}`);
+    const res = await axios.get(`/api/notificaciones/${usuarioId}`);
     notificaciones.value = res.data;
   } catch (err) {
     console.error('Error cargando notificaciones:', err);
@@ -146,7 +146,7 @@ const cargarNotificaciones = async () => {
 
 const marcarComoLeida = async (id) => {
   try {
-    await axios.put(`http://localhost:3007/api/notificaciones/${id}/leer`);
+    await axios.put(`/api/notificaciones/${id}/leer`);
     const notif = notificaciones.value.find(n => n.id === id);
     if (notif) notif.leido = 1;
   } catch (err) {
@@ -159,7 +159,7 @@ const marcarTodasComoLeidas = async () => {
   if (!usuarioId) return;
 
   try {
-    await axios.put(`http://localhost:3007/api/notificaciones/leer-todas/${usuarioId}`);
+    await axios.put(`/api/notificaciones/leer-todas/${usuarioId}`);
     notificaciones.value.forEach(n => n.leido = 1);
   } catch (err) {
     console.error('Error marcando todas como leídas:', err);
@@ -260,7 +260,7 @@ const notificacionesEnriquecidas = computed(() => {
       });
 
       if (empleado && empleado.foto) {
-        fotoUrl = `http://localhost:3007${empleado.foto}`;
+        fotoUrl = `${useRuntimeConfig().public.apiBase}${empleado.foto}`;
       }
     }
 
@@ -281,7 +281,7 @@ onMounted(() => {
   cargarNotificaciones();
   
   // Conectar a socket.io
-  socket = io('http://localhost:3007');
+  socket = io(useRuntimeConfig().public.apiBase);
   
   socket.on('nuevo_ticket', (data) => {
     // Cuando hay un nuevo ticket, recargamos notificaciones

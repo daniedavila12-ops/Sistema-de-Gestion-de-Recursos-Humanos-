@@ -20,8 +20,8 @@ export const usePermisos = () => {
     loadingPermisos.value = true;
     try {
       const url = usuarioId 
-        ? `http://localhost:3007/api/permisos-granulares/${rolId}?usuario_id=${usuarioId}`
-        : `http://localhost:3007/api/permisos-granulares/${rolId}`;
+        ? `/api/permisos-granulares/${rolId}?usuario_id=${usuarioId}`
+        : `/api/permisos-granulares/${rolId}`;
       const { data } = await axios.get(url);
       permisosCache.value = data;
       currentRolCache.value = rolId;

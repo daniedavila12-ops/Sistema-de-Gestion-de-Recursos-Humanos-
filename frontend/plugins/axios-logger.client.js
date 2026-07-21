@@ -33,7 +33,7 @@ export default defineNuxtPlugin((nuxtApp) => {
 
         if (usuario_id) {
             // Generar log
-            axios.post('http://localhost:3007/api/logs/registrar', {
+            axios.post('/api/logs/registrar', {
                 usuario_id: usuario_id,
                 accion: accion,
                 modulo: modulo,
@@ -66,7 +66,7 @@ export default defineNuxtPlugin((nuxtApp) => {
         // pero lo dejamos con el ID de la sesión actual o null
 
         if (usuario_id || url.includes('login')) {
-            axios.post('http://localhost:3007/api/logs/registrar', {
+            axios.post('/api/logs/registrar', {
                 usuario_id: usuario_id || null,
                 accion: accion,
                 modulo: modulo,

@@ -117,7 +117,7 @@
               <tbody>
                 <tr v-for="(emp, idx) in dashboard.top_empleados" :key="idx" class="border-b border-slate-50 hover:bg-slate-50 transition-colors">
                   <td class="p-4 flex items-center gap-3">
-                    <img :src="emp.foto ? 'http://localhost:3007/uploads/perfiles/'+emp.foto : 'https://ui-avatars.com/api/?name='+emp.nombre" 
+                    <img :src="emp.foto ? `${$config.public.apiBase}/uploads/perfiles/`+emp.foto : 'https://ui-avatars.com/api/?name='+emp.nombre" 
                          class="rounded-full w-8 h-8 object-cover shadow-sm">
                     <span class="font-bold text-slate-700 text-sm">{{ emp.nombre }} {{ emp.apellido }}</span>
                   </td>
@@ -223,7 +223,7 @@ const cargarMenu = async () => {
 
   try {
     const userId = localStorage.getItem('usuarioID');
-    const m = await axios.get(`http://localhost:3007/api/menu/${rolID.value}?usuario_id=${userId}`);
+    const m = await axios.get(`/api/menu/${rolID.value}?usuario_id=${userId}`);
     menuUsuario.value = m.data;
   } catch (e) {
     console.error('Error cargando menú', e);
@@ -237,7 +237,7 @@ const logout = () => {
 
 const cargarDashboard = async () => {
   try {
-    const res = await axios.get('http://localhost:3007/api/evaluaciones/dashboard');
+    const res = await axios.get('/api/evaluaciones/dashboard');
     dashboard.value = res.data;
     renderCharts();
   } catch (error) {
@@ -248,7 +248,7 @@ const cargarDashboard = async () => {
 const cargarInforme = async () => {
   loadingInforme.value = true;
   try {
-    const res = await axios.get('http://localhost:3007/api/evaluaciones/informe');
+    const res = await axios.get('/api/evaluaciones/informe');
     informe.value = res.data;
   } catch (error) {
     console.error("Error cargando informe:", error);

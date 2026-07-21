@@ -53,7 +53,7 @@
             <div class="relative w-full md:w-auto flex justify-end">
               <div @click="dropdownPerfilAbierto = !dropdownPerfilAbierto" class="flex items-center gap-3 pl-6 border-l border-slate-200 cursor-pointer hover:bg-slate-50 p-2 rounded-xl transition-colors no-print">
                 <div v-if="fotoUsuario" class="h-10 w-10 rounded-full flex items-center justify-center overflow-hidden ring-2 ring-slate-100">
-                  <img :src="`http://localhost:3007${fotoUsuario}`" class="w-full h-full object-cover" />
+                  <img :src="`${$config.public.apiBase}${fotoUsuario}`" class="w-full h-full object-cover" />
                 </div>
                 <div v-else class="h-10 w-10 rounded-full bg-slate-800 flex items-center justify-center text-blue-400 font-black text-lg ring-2 ring-slate-100 uppercase">
                   {{ usuarioActual ? usuarioActual.charAt(0) : 'U' }}
@@ -68,7 +68,7 @@
               <div v-if="dropdownPerfilAbierto" class="absolute right-0 mt-14 w-64 bg-white rounded-2xl shadow-xl border border-slate-100 overflow-hidden z-50 animate-in slide-in-from-top-2 duration-200 no-print">
                 <div class="p-5 border-b border-slate-100 bg-slate-50 flex items-center gap-4">
                   <div v-if="fotoUsuario" class="h-12 w-12 rounded-full flex items-center justify-center overflow-hidden ring-2 ring-white shadow-sm shrink-0">
-                    <img :src="`http://localhost:3007${fotoUsuario}`" class="w-full h-full object-cover" />
+                    <img :src="`${$config.public.apiBase}${fotoUsuario}`" class="w-full h-full object-cover" />
                   </div>
                   <div v-else class="h-12 w-12 rounded-full bg-slate-800 flex items-center justify-center text-blue-400 font-black text-xl ring-2 ring-white shadow-sm shrink-0 uppercase">
                     {{ usuarioActual ? usuarioActual.charAt(0) : 'U' }}
@@ -150,7 +150,7 @@
                   {{ formatFecha(candidato.created_at) }}
                 </td>
                 <td class="px-6 py-4">
-                  <a :href="`http://localhost:3007${candidato.cv_url}`" target="_blank" class="inline-flex items-center gap-2 bg-blue-50 text-blue-600 px-3 py-1.5 rounded-lg font-bold hover:bg-blue-100 transition-colors">
+                  <a :href="`${$config.public.apiBase}${candidato.cv_url}`" target="_blank" class="inline-flex items-center gap-2 bg-blue-50 text-blue-600 px-3 py-1.5 rounded-lg font-bold hover:bg-blue-100 transition-colors">
                     📄 Ver PDF
                   </a>
                 </td>
@@ -232,7 +232,7 @@ const generarPDF = async () => {
   
   try {
     // Intentar cargar el logo desde el backend
-    const logoUrl = 'http://localhost:3007/uploads/Logo/Logo.png';
+    const logoUrl = `${useRuntimeConfig().public.apiBase}/uploads/Logo/Logo.png`;
     const imgElement = new Image();
     imgElement.crossOrigin = 'Anonymous';
     imgElement.src = logoUrl;
@@ -440,7 +440,7 @@ const generarPDFQR = async () => {
 const cargarCandidatos = async () => {
   try {
     loadingCandidatos.value = true;
-    const response = await fetch('http://localhost:3007/api/candidatos', {
+    const response = await fetch('/api/candidatos', {
       headers: {
         // 'Authorization': `Bearer ${localStorage.getItem('token')}` // si es necesario
       }
@@ -459,7 +459,7 @@ const cargarCandidatos = async () => {
 
 const actualizarEstado = async (candidato) => {
   try {
-    const response = await fetch(`http://localhost:3007/api/candidatos/${candidato.id}/estado`, {
+    const response = await fetch(`/api/candidatos/${candidato.id}/estado`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ estado: candidato.estado })
@@ -492,8 +492,8 @@ onMounted(async () => {
   try {
     const usuarioID = localStorage.getItem('usuarioID');
     const urlMenu = usuarioID 
-      ? `http://localhost:3007/api/menu/${rolID.value}?usuario_id=${usuarioID}`
-      : `http://localhost:3007/api/menu/${rolID.value}`;
+      ? `/api/menu/${rolID.value}?usuario_id=${usuarioID}`
+      : `/api/menu/${rolID.value}`;
     
     const response = await fetch(urlMenu);
     if (response.ok) {

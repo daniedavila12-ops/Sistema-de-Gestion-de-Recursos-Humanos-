@@ -377,17 +377,17 @@ const isImage = (url) => {
 
 const fetchRespuestas = async (ticketId) => {
   try {
-    const { data } = await axios.get(`http://localhost:3007/api/tickets/${ticketId}/respuestas`);
+    const { data } = await axios.get(`/api/tickets/${ticketId}/respuestas`);
     respuestas.value = data.map(r => ({
       id: r.id,
       mensaje: r.mensaje,
       fecha: new Date(r.fecha_creacion).toLocaleDateString('es-HN', {
         day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit'
       }),
-      archivo: r.archivo ? `http://localhost:3007${r.archivo}` : null,
+      archivo: r.archivo ? `${useRuntimeConfig().public.apiBase}${r.archivo}` : null,
       archivo_nombre: r.archivo ? r.archivo.split('/').pop() : null,
       nombre: r.empleado_nombre ? `${r.empleado_nombre} ${r.empleado_apellido || ''}` : r.usuario_nombre || 'Usuario Desconocido',
-      avatar: r.empleado_foto ? `http://localhost:3007${r.empleado_foto}` : (r.usuario_foto ? `http://localhost:3007${r.usuario_foto}` : null)
+      avatar: r.empleado_foto ? `${useRuntimeConfig().public.apiBase}${r.empleado_foto}` : (r.usuario_foto ? `${useRuntimeConfig().public.apiBase}${r.usuario_foto}` : null)
     }));
   } catch (error) {
     console.error("Error al cargar respuestas:", error);
@@ -418,7 +418,7 @@ const enviarRespuesta = async () => {
   }
   
   try {
-    await axios.post(`http://localhost:3007/api/tickets/${ticket.value.rawId}/respuestas`, formData, {
+    await axios.post(`/api/tickets/${ticket.value.rawId}/respuestas`, formData, {
       headers: { 'Content-Type': 'multipart/form-data' }
     });
     
@@ -444,14 +444,14 @@ const fetchTicket = async () => {
     return;
   }
   try {
-    const { data } = await axios.get(`http://localhost:3007/api/tickets/${id}`);
+    const { data } = await axios.get(`/api/tickets/${id}`);
     
     // Fetch respuestas
     await fetchRespuestas(id);
     
     if (employeesList.value.length === 0) {
       try {
-        const resE = await axios.get('http://localhost:3007/api/empleados/lista');
+        const resE = await axios.get('/api/empleados/lista');
         employeesList.value = resE.data;
       } catch(e) { console.error(e) }
     }
@@ -465,10 +465,10 @@ const fetchTicket = async () => {
     let assignedAvatar = null;
     if (data.asignado_empleado_nombre) {
       assignedName = `${data.asignado_empleado_nombre} ${data.asignado_empleado_apellido || ''}`;
-      assignedAvatar = data.asignado_empleado_foto ? `http://localhost:3007${data.asignado_empleado_foto}` : null;
+      assignedAvatar = data.asignado_empleado_foto ? `${useRuntimeConfig().public.apiBase}${data.asignado_empleado_foto}` : null;
     } else if (data.asignado_usuario_nombre) {
       assignedName = data.asignado_usuario_nombre;
-      assignedAvatar = data.asignado_usuario_foto ? `http://localhost:3007${data.asignado_usuario_foto}` : null;
+      assignedAvatar = data.asignado_usuario_foto ? `${useRuntimeConfig().public.apiBase}${data.asignado_usuario_foto}` : null;
     }
     
     const fechaUpdated = data.updated_at ? new Date(data.updated_at) : fecha;
@@ -511,7 +511,7 @@ const fetchTicket = async () => {
       const identidadesArr = data.identidad.split(',').map(i => i.trim());
       requesters = employeesList.value.filter(e => identidadesArr.includes(e.identidad)).map(e => ({
         name: `${e.nombre} ${e.apellido}`,
-        avatar: e.foto ? `http://localhost:3007${e.foto}` : null,
+        avatar: e.foto ? `${useRuntimeConfig().public.apiBase}${e.foto}` : null,
         phone: e.telefono || 'N/D',
         totalTickets: data.tickets_totales || 0, // Fallback, no es 100% preciso por empleado individual
         resolvedTickets: data.tickets_resueltos || 0
@@ -521,7 +521,7 @@ const fetchTicket = async () => {
     if (requesters.length === 0) {
       requesters = [{
         name: data.empleado_nombre ? `${data.empleado_nombre} ${data.empleado_apellido || ''}` : 'Externo',
-        avatar: data.empleado_foto ? `http://localhost:3007${data.empleado_foto}` : null,
+        avatar: data.empleado_foto ? `${useRuntimeConfig().public.apiBase}${data.empleado_foto}` : null,
         phone: data.empleado_telefono || 'N/D',
         totalTickets: data.tickets_totales || 0,
         resolvedTickets: data.tickets_resueltos || 0
@@ -542,7 +542,7 @@ const fetchTicket = async () => {
       description: data.descripcion,
       attachment: data.archivo ? {
         name: data.archivo.split('/').pop(),
-        url: `http://localhost:3007${data.archivo}`
+        url: `${useRuntimeConfig().public.apiBase}${data.archivo}`
       } : null,
       requesters: requesters,
       assignedTo: {
@@ -566,13 +566,13 @@ const openAssignModal = async () => {
   
   if (usersList.value.length === 0) {
     try {
-      const resU = await axios.get('http://localhost:3007/api/usuarios');
+      const resU = await axios.get('/api/usuarios');
       usersList.value = resU.data;
     } catch(e) { console.error(e) }
   }
   if (employeesList.value.length === 0) {
     try {
-      const resE = await axios.get('http://localhost:3007/api/empleados/lista');
+      const resE = await axios.get('/api/empleados/lista');
       employeesList.value = resE.data;
     } catch(e) { console.error(e) }
   }
@@ -593,7 +593,7 @@ const saveAssignment = async () => {
   }
   
   try {
-    await axios.put(`http://localhost:3007/api/tickets/${ticket.value.rawId}/asignar`, payload);
+    await axios.put(`/api/tickets/${ticket.value.rawId}/asignar`, payload);
     alert("Asignación actualizada con éxito");
     showAssignModal.value = false;
     await fetchTicket();
@@ -606,7 +606,7 @@ const saveAssignment = async () => {
 const updateStatus = async () => {
   if (!ticket.value) return;
   try {
-    await axios.put(`http://localhost:3007/api/tickets/${ticket.value.rawId}/estado`, {
+    await axios.put(`/api/tickets/${ticket.value.rawId}/estado`, {
       estado: ticket.value.status
     });
     alert("Estado actualizado con éxito");
@@ -619,7 +619,7 @@ const updateStatus = async () => {
 const updatePriority = async () => {
   if (!ticket.value) return;
   try {
-    await axios.put(`http://localhost:3007/api/tickets/${ticket.value.rawId}/prioridad`, {
+    await axios.put(`/api/tickets/${ticket.value.rawId}/prioridad`, {
       prioridad: ticket.value.priority
     });
     alert("Prioridad actualizada con éxito");
@@ -658,7 +658,7 @@ const generarPDFTicket = async () => {
 
     // Intentar cargar logo
     try {
-      const logoUrl = 'http://localhost:3007/uploads/Logo/Logo.png';
+      const logoUrl = `${useRuntimeConfig().public.apiBase}/uploads/Logo/Logo.png`;
       const img = new Image();
       img.crossOrigin = "Anonymous";
       img.src = logoUrl;

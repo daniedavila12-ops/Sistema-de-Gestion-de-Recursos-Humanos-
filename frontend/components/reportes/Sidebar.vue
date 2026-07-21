@@ -173,7 +173,7 @@ const getCategoryCount = (nombre) => {
 
 const fetchCategorias = async () => {
   try {
-    const res = await axios.get('http://localhost:3007/api/reportes-incidencia/categorias/lista')
+    const res = await axios.get('/api/reportes-incidencia/categorias/lista')
     categoriasLista.value = res.data
     emit('categorias-actualizadas', res.data)
   } catch (error) {
@@ -186,7 +186,7 @@ const agregarCategoria = async () => {
   if (!nombre || !nombre.trim()) return
 
   try {
-    const res = await axios.post('http://localhost:3007/api/reportes-incidencia/categorias', { nombre: nombre.trim() })
+    const res = await axios.post('/api/reportes-incidencia/categorias', { nombre: nombre.trim() })
     fetchCategorias()
   } catch (error) {
     console.error('Error al agregar categoría:', error)
@@ -203,7 +203,7 @@ const editarCategoria = async (cat) => {
   if (!nuevoNombre || !nuevoNombre.trim() || nuevoNombre === cat.nombre) return
 
   try {
-    await axios.put(`http://localhost:3007/api/reportes-incidencia/categorias/${cat.id}`, {
+    await axios.put(`/api/reportes-incidencia/categorias/${cat.id}`, {
       nombre: nuevoNombre.trim(),
       activa: cat.activa
     })
@@ -217,7 +217,7 @@ const editarCategoria = async (cat) => {
 const toggleCategoria = async (cat) => {
   const nuevoEstado = !cat.activa
   try {
-    await axios.put(`http://localhost:3007/api/reportes-incidencia/categorias/${cat.id}`, {
+    await axios.put(`/api/reportes-incidencia/categorias/${cat.id}`, {
       nombre: cat.nombre,
       activa: nuevoEstado
     })

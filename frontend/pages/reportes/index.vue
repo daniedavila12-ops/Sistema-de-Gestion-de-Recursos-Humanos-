@@ -79,7 +79,7 @@
           <div class="relative w-full md:w-auto flex justify-end">
             <div @click="dropdownPerfilAbierto = !dropdownPerfilAbierto" class="flex items-center gap-3 pl-6 border-l border-slate-200 cursor-pointer hover:bg-slate-50 p-2 rounded-xl transition-colors no-print">
               <div v-if="fotoUsuario" class="h-10 w-10 rounded-full flex items-center justify-center overflow-hidden ring-2 ring-slate-100">
-                <img :src="`http://localhost:3007${fotoUsuario}`" class="w-full h-full object-cover" />
+                <img :src="`${$config.public.apiBase}${fotoUsuario}`" class="w-full h-full object-cover" />
               </div>
               <div v-else class="h-10 w-10 rounded-full bg-slate-800 flex items-center justify-center text-blue-400 font-black text-lg ring-2 ring-slate-100 uppercase">
                 {{ usuarioActual ? usuarioActual.charAt(0) : 'U' }}
@@ -94,7 +94,7 @@
             <div v-if="dropdownPerfilAbierto" class="absolute right-0 mt-14 w-64 bg-white rounded-2xl shadow-xl border border-slate-100 overflow-hidden z-50 animate-in slide-in-from-top-2 duration-200 no-print">
               <div class="p-5 border-b border-slate-100 bg-slate-50 flex items-center gap-4">
                 <div v-if="fotoUsuario" class="h-12 w-12 rounded-full flex items-center justify-center overflow-hidden ring-2 ring-white shadow-sm shrink-0">
-                  <img :src="`http://localhost:3007${fotoUsuario}`" class="w-full h-full object-cover" />
+                  <img :src="`${$config.public.apiBase}${fotoUsuario}`" class="w-full h-full object-cover" />
                 </div>
                 <div v-else class="h-12 w-12 rounded-full bg-slate-800 flex items-center justify-center text-blue-400 font-black text-xl ring-2 ring-white shadow-sm shrink-0 uppercase">
                   {{ usuarioActual ? usuarioActual.charAt(0) : 'U' }}
@@ -942,7 +942,7 @@
           <div class="mb-6 flex flex-col items-center">
             <div class="relative group cursor-pointer" @click="triggerFileInputPerfil">
               <div v-if="fotoUsuario" class="h-20 w-20 rounded-full flex items-center justify-center overflow-hidden ring-4 ring-slate-100 shadow-lg mb-4">
-                <img :src="`http://localhost:3007${fotoUsuario}`" class="w-full h-full object-cover" />
+                <img :src="`${$config.public.apiBase}${fotoUsuario}`" class="w-full h-full object-cover" />
               </div>
               <div v-else class="h-20 w-20 rounded-full bg-slate-800 flex items-center justify-center text-blue-400 font-black text-3xl ring-4 ring-slate-100 uppercase mb-4 shadow-lg">
                 {{ usuarioActual ? usuarioActual.charAt(0) : 'U' }}
@@ -1076,7 +1076,7 @@ const uploadFotoPerfil = async (event) => {
   formData.append('foto', file)
   try {
     const id = localStorage.getItem('usuarioID')
-    const res = await axios.post(`http://localhost:3007/api/auth/${id}/foto`, formData, { headers: { 'Content-Type': 'multipart/form-data' } })
+    const res = await axios.post(`/api/auth/${id}/foto`, formData, { headers: { 'Content-Type': 'multipart/form-data' } })
     fotoUsuario.value = res.data.fotoUrl
     localStorage.setItem('usuarioFoto', res.data.fotoUrl)
     alert('✅ ' + res.data.mensaje)
@@ -1099,7 +1099,7 @@ const cambiarPassword = async () => {
   try {
     loadingPassword.value = true
     const userId = localStorage.getItem('usuarioID')
-    const res = await axios.put(`http://localhost:3007/api/auth/${userId}/password`, { actual: formPassword.value.actual, nueva: formPassword.value.nueva })
+    const res = await axios.put(`/api/auth/${userId}/password`, { actual: formPassword.value.actual, nueva: formPassword.value.nueva })
     alert('✅ ' + res.data.mensaje)
     cerrarModalPerfil()
   } catch (err) {
@@ -1113,7 +1113,7 @@ const cambiarPassword = async () => {
 const departamentos = ref([])
 const cargarDepartamentos = async () => {
   try {
-    const res = await axios.get('http://localhost:3007/api/departamentos/lista')
+    const res = await axios.get('/api/departamentos/lista')
     departamentos.value = res.data
   } catch (error) {
     console.error('Error cargando departamentos:', error)
@@ -1400,7 +1400,7 @@ const chartTendenciaTicketsData = computed(() => {
 const cargarStats = async (isPolling = false) => {
   try {
     if (!isPolling) loadingStats.value = true
-    const res = await axios.get('http://localhost:3007/api/stats/resumen')
+    const res = await axios.get('/api/stats/resumen')
     stats.value = res.data
   } catch (error) { console.error('Error cargando estadísticas', error) } 
   finally { loadingStats.value = false }
@@ -1409,7 +1409,7 @@ const cargarStats = async (isPolling = false) => {
 const cargarDepartamentosStats = async (isPolling = false) => {
   try {
     if (!isPolling) loadingDepts.value = true
-    const res = await axios.get('http://localhost:3007/api/stats/empleados-por-departamento')
+    const res = await axios.get('/api/stats/empleados-por-departamento')
     deptStats.value = res.data
   } catch (error) { console.error('Error cargando stats de departamentos', error) } 
   finally { loadingDepts.value = false }
@@ -1417,7 +1417,7 @@ const cargarDepartamentosStats = async (isPolling = false) => {
 
 const cargarEstadoContratos = async (isPolling = false) => {
   try {
-    const res = await axios.get('http://localhost:3007/api/stats/contratos-estado')
+    const res = await axios.get('/api/stats/contratos-estado')
     estadoContratos.value = res.data
   } catch (e) {
     console.error('Error cargando estado de contratos:', e)
@@ -1426,7 +1426,7 @@ const cargarEstadoContratos = async (isPolling = false) => {
 
 const cargarTiposFaltas = async (isPolling = false) => {
   try {
-    const res = await axios.get('http://localhost:3007/api/stats/tipos-faltas')
+    const res = await axios.get('/api/stats/tipos-faltas')
     tiposFaltas.value = res.data
   } catch (e) {
     console.error('Error cargando tipos de faltas:', e)
@@ -1435,7 +1435,7 @@ const cargarTiposFaltas = async (isPolling = false) => {
 
 const cargarTendenciaAusentismo = async (isPolling = false) => {
   try {
-    const res = await axios.get('http://localhost:3007/api/stats/tendencia-ausentismo')
+    const res = await axios.get('/api/stats/tendencia-ausentismo')
     tendenciaAusentismo.value = res.data
   } catch (e) {
     console.error('Error cargando tendencia ausentismo:', e)
@@ -1444,7 +1444,7 @@ const cargarTendenciaAusentismo = async (isPolling = false) => {
 
 const cargarTendenciaTickets = async (isPolling = false) => {
   try {
-    const res = await axios.get('http://localhost:3007/api/stats/tendencia-tickets')
+    const res = await axios.get('/api/stats/tendencia-tickets')
     tendenciaTickets.value = res.data
   } catch (e) {
     console.error('Error cargando tendencia tickets:', e)
@@ -1461,7 +1461,7 @@ const empleadosVista = ref('general')
 const cargarEmpleados = async (isPolling = false) => {
   try {
     if (!isPolling) loadingEmpleados.value = true
-    const res = await axios.get('http://localhost:3007/api/stats/empleados-detalles')
+    const res = await axios.get('/api/stats/empleados-detalles')
     empleados.value = res.data
   } catch (e) {
     console.error('Error cargando empleados:', e)
@@ -1505,7 +1505,7 @@ const ticketsFiltroPrioridad = ref('todos')
 const cargarTickets = async (isPolling = false) => {
   try {
     if (!isPolling) loadingTickets.value = true
-    const res = await axios.get('http://localhost:3007/api/tickets/lista')
+    const res = await axios.get('/api/tickets/lista')
     tickets.value = res.data
   } catch (e) {
     console.error('Error cargando tickets:', e)
@@ -1577,7 +1577,7 @@ const loadingProyecciones = ref(false)
 const cargarProyecciones = async (isPolling = false) => {
   try {
     if (!isPolling) loadingProyecciones.value = true
-    const res = await axios.get('http://localhost:3007/api/vacaciones/proximas')
+    const res = await axios.get('/api/vacaciones/proximas')
     proyeccionesVacaciones.value = res.data
   } catch (e) {
     console.error('Error cargando proyecciones:', e)
@@ -1596,7 +1596,7 @@ const saldosFiltro = ref('')
 const cargarAusentismo = async (isPolling = false) => {
   try {
     if (!isPolling) loadingAusentismo.value = true
-    const res = await axios.get('http://localhost:3007/api/stats/ausentismo')
+    const res = await axios.get('/api/stats/ausentismo')
     ausentismoDatos.value = res.data
   } catch (e) {
     console.error('Error cargando ausentismo:', e)
@@ -1608,7 +1608,7 @@ const cargarAusentismo = async (isPolling = false) => {
 const cargarSaldos = async (isPolling = false) => {
   try {
     if (!isPolling) loadingSaldos.value = true
-    const res = await axios.get('http://localhost:3007/api/stats/saldos-vacaciones')
+    const res = await axios.get('/api/stats/saldos-vacaciones')
     saldosDatos.value = res.data
   } catch (e) {
     console.error('Error cargando saldos de vacaciones:', e)
@@ -1647,7 +1647,7 @@ const loadingIncidencias = ref(false)
 const cargarIncidencias = async (isPolling = false) => {
   try {
     if (!isPolling) loadingIncidencias.value = true
-    const res = await axios.get('http://localhost:3007/api/reportes-incidencia/lista')
+    const res = await axios.get('/api/reportes-incidencia/lista')
     incidenciasDatos.value = res.data
   } catch (e) {
     console.error('Error cargando incidencias:', e)
@@ -1703,7 +1703,7 @@ const legalesFiltroEstado = ref('todos')
 const cargarLegales = async (isPolling = false) => {
   try {
     if (!isPolling) loadingLegales.value = true
-    const res = await axios.get('http://localhost:3007/api/documentos-legales')
+    const res = await axios.get('/api/documentos-legales')
     legalesDatos.value = res.data
   } catch (e) {
     console.error('Error cargando documentos legales:', e)
@@ -1813,7 +1813,7 @@ const generarPDFDirectorio = async () => {
     // Cargar Logo Superior Derecho
     const imgLogo = new Image();
     imgLogo.crossOrigin = "Anonymous";
-    imgLogo.src = 'http://localhost:3007/uploads/Logo/Logo.png';
+    imgLogo.src = `${useRuntimeConfig().public.apiBase}/uploads/Logo/Logo.png`;
     await new Promise((resolve) => {
       imgLogo.onload = resolve;
       imgLogo.onerror = resolve;
@@ -1892,7 +1892,7 @@ const generarPDFIncidencias = async () => {
     // Cargar Logo Superior Derecho
     const imgLogo = new Image();
     imgLogo.crossOrigin = "Anonymous";
-    imgLogo.src = 'http://localhost:3007/uploads/Logo/Logo.png';
+    imgLogo.src = `${useRuntimeConfig().public.apiBase}/uploads/Logo/Logo.png`;
     await new Promise((resolve) => {
       imgLogo.onload = resolve;
       imgLogo.onerror = resolve;
@@ -1956,7 +1956,7 @@ const generarPDFLegales = async () => {
     // Cargar Logo
     const imgLogo = new Image();
     imgLogo.crossOrigin = "Anonymous";
-    imgLogo.src = 'http://localhost:3007/uploads/Logo/Logo.png';
+    imgLogo.src = `${useRuntimeConfig().public.apiBase}/uploads/Logo/Logo.png`;
     await new Promise((resolve) => {
       imgLogo.onload = resolve;
       imgLogo.onerror = resolve;
@@ -2036,7 +2036,7 @@ const generarPDFTickets = async () => {
     // Cargar Logo
     const imgLogo = new Image();
     imgLogo.crossOrigin = "Anonymous";
-    imgLogo.src = 'http://localhost:3007/uploads/Logo/Logo.png';
+    imgLogo.src = `${useRuntimeConfig().public.apiBase}/uploads/Logo/Logo.png`;
     await new Promise((resolve) => {
       imgLogo.onload = resolve;
       imgLogo.onerror = resolve;
@@ -2102,7 +2102,7 @@ const generarPDFDashboard = async () => {
       return new Promise((resolve) => {
         const img = new Image();
         img.crossOrigin = "Anonymous";
-        img.src = 'http://localhost:3007/uploads/Logo/Logo.png';
+        img.src = `${useRuntimeConfig().public.apiBase}/uploads/Logo/Logo.png`;
         img.onload = () => resolve(img);
         img.onerror = () => resolve(null);
       });
@@ -2253,7 +2253,7 @@ const generarPDFControlTiempos = async () => {
     // Cargar Logo
     const imgLogo = new Image();
     imgLogo.crossOrigin = "Anonymous";
-    imgLogo.src = 'http://localhost:3007/uploads/Logo/Logo.png';
+    imgLogo.src = `${useRuntimeConfig().public.apiBase}/uploads/Logo/Logo.png`;
     await new Promise((resolve) => {
       imgLogo.onload = resolve;
       imgLogo.onerror = resolve;
@@ -2430,8 +2430,8 @@ onMounted(async () => {
   try {
     const usuarioID = localStorage.getItem('usuarioID')
     const urlMenu = usuarioID 
-      ? `http://localhost:3007/api/menu/${rolID.value}?usuario_id=${usuarioID}`
-      : `http://localhost:3007/api/menu/${rolID.value}`
+      ? `/api/menu/${rolID.value}?usuario_id=${usuarioID}`
+      : `/api/menu/${rolID.value}`
     const m = await axios.get(urlMenu)
     menuUsuario.value = m.data
   } catch (e) {
@@ -2497,11 +2497,11 @@ const generarPDFGeneralEmpleado = async () => {
     }
 
     const [resContratos, resVacaciones, resFaltas, resNotas, resDocs] = await Promise.all([
-      axios.get(`http://localhost:3007/api/empleados/${empId}/contratos`).catch(() => ({ data: [] })),
-      axios.get(`http://localhost:3007/api/vacaciones/empleado/${empId}`).catch(() => ({ data: [] })),
-      axios.get(`http://localhost:3007/api/faltas/empleado/${empId}`).catch(() => ({ data: [] })),
-      axios.get(`http://localhost:3007/api/notas/empleado/${empId}`).catch(() => ({ data: [] })),
-      axios.get(`http://localhost:3007/api/documentos/empleado/${empId}`).catch(() => ({ data: [] }))
+      axios.get(`/api/empleados/${empId}/contratos`).catch(() => ({ data: [] })),
+      axios.get(`/api/vacaciones/empleado/${empId}`).catch(() => ({ data: [] })),
+      axios.get(`/api/faltas/empleado/${empId}`).catch(() => ({ data: [] })),
+      axios.get(`/api/notas/empleado/${empId}`).catch(() => ({ data: [] })),
+      axios.get(`/api/documentos/empleado/${empId}`).catch(() => ({ data: [] }))
     ]);
 
     const contratosData = Array.isArray(resContratos.data) ? resContratos.data : [];
@@ -2530,7 +2530,7 @@ const generarPDFGeneralEmpleado = async () => {
     if (empleadoInfo.foto) {
       const imgFoto = new Image();
       imgFoto.crossOrigin = 'Anonymous';
-      imgFoto.src = `http://localhost:3007${empleadoInfo.foto}`;
+      imgFoto.src = `${useRuntimeConfig().public.apiBase}${empleadoInfo.foto}`;
       
       await new Promise((resolve) => {
         imgFoto.onload = resolve;
@@ -2556,7 +2556,7 @@ const generarPDFGeneralEmpleado = async () => {
     try {
       const imgLogo = new Image();
       imgLogo.crossOrigin = 'anonymous';
-      imgLogo.src = 'http://localhost:3007/uploads/Logo/Logo.png';
+      imgLogo.src = `${useRuntimeConfig().public.apiBase}/uploads/Logo/Logo.png`;
       await new Promise((resolve, reject) => {
         imgLogo.onload = resolve;
         imgLogo.onerror = reject;
@@ -2812,7 +2812,7 @@ const generarPDFGeneralEmpleado = async () => {
              try {
                const imgEvi = new Image();
                imgEvi.crossOrigin = 'anonymous';
-               imgEvi.src = `http://localhost:3007${inc.archivo}`;
+               imgEvi.src = `${useRuntimeConfig().public.apiBase}${inc.archivo}`;
                await new Promise((resolve, reject) => {
                  imgEvi.onload = resolve;
                  imgEvi.onerror = reject;
@@ -2839,7 +2839,7 @@ const generarPDFGeneralEmpleado = async () => {
         
         // Conversaciones y Resoluciones
         try {
-          const resRespuestas = await axios.get(`http://localhost:3007/api/reportes-incidencia/${inc.id}/respuestas`);
+          const resRespuestas = await axios.get(`/api/reportes-incidencia/${inc.id}/respuestas`);
           const respuestas = resRespuestas.data || [];
           
           if (respuestas.length > 0) {

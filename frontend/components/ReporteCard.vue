@@ -75,7 +75,7 @@ const asignadoNombre = computed(() => {
 })
 
 const asignadoAvatar = computed(() => {
-  if (props.reporte.asignado_usuario_foto) return `http://localhost:3007${props.reporte.asignado_usuario_foto}`
+  if (props.reporte.asignado_usuario_foto) return `${useRuntimeConfig().public.apiBase}${props.reporte.asignado_usuario_foto}`
   return null
 })
 

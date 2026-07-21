@@ -46,7 +46,7 @@
             <div class="relative w-full md:w-auto flex justify-end">
               <div @click="dropdownPerfilAbierto = !dropdownPerfilAbierto" class="flex items-center gap-3 pl-6 border-l border-slate-200 cursor-pointer hover:bg-slate-50 p-2 rounded-xl transition-colors no-print">
                 <div v-if="fotoUsuario" class="h-10 w-10 rounded-full flex items-center justify-center overflow-hidden ring-2 ring-slate-100">
-                  <img :src="`http://localhost:3007${fotoUsuario}`" class="w-full h-full object-cover" />
+                  <img :src="`${$config.public.apiBase}${fotoUsuario}`" class="w-full h-full object-cover" />
                 </div>
                 <div v-else class="h-10 w-10 rounded-full bg-slate-800 flex items-center justify-center text-blue-400 font-black text-lg ring-2 ring-slate-100 uppercase">
                   {{ usuarioActual ? usuarioActual.charAt(0) : 'U' }}
@@ -61,7 +61,7 @@
               <div v-if="dropdownPerfilAbierto" class="absolute right-0 mt-14 w-64 bg-white rounded-2xl shadow-xl border border-slate-100 overflow-hidden z-50 animate-in slide-in-from-top-2 duration-200 no-print">
                 <div class="p-5 border-b border-slate-100 bg-slate-50 flex items-center gap-4">
                   <div v-if="fotoUsuario" class="h-12 w-12 rounded-full flex items-center justify-center overflow-hidden ring-2 ring-white shadow-sm shrink-0">
-                    <img :src="`http://localhost:3007${fotoUsuario}`" class="w-full h-full object-cover" />
+                    <img :src="`${$config.public.apiBase}${fotoUsuario}`" class="w-full h-full object-cover" />
                   </div>
                   <div v-else class="h-12 w-12 rounded-full bg-slate-800 flex items-center justify-center text-blue-400 font-black text-xl ring-2 ring-white shadow-sm shrink-0 uppercase">
                     {{ usuarioActual ? usuarioActual.charAt(0) : 'U' }}
@@ -159,7 +159,7 @@
           <div class="mb-6 flex flex-col items-center">
             <div class="relative group cursor-pointer" @click="triggerFileInputPerfil">
               <div v-if="fotoUsuario" class="h-20 w-20 rounded-full flex items-center justify-center overflow-hidden ring-4 ring-slate-100 shadow-lg mb-4">
-                <img :src="`http://localhost:3007${fotoUsuario}`" class="w-full h-full object-cover" />
+                <img :src="`${$config.public.apiBase}${fotoUsuario}`" class="w-full h-full object-cover" />
               </div>
               <div v-else class="h-20 w-20 rounded-full bg-slate-800 flex items-center justify-center text-blue-400 font-black text-3xl ring-4 ring-slate-100 uppercase mb-4 shadow-lg">
                 {{ usuarioActual ? usuarioActual.charAt(0) : 'U' }}
@@ -297,7 +297,7 @@ const uploadFotoPerfil = async (event) => {
 
   try {
     const id = localStorage.getItem('usuarioID')
-    const res = await axios.post(`http://localhost:3007/api/auth/${id}/foto`, formData, {
+    const res = await axios.post(`/api/auth/${id}/foto`, formData, {
       headers: {
         'Content-Type': 'multipart/form-data'
       }
@@ -326,7 +326,7 @@ const cambiarPassword = async () => {
   try {
     loadingPassword.value = true
     const userId = localStorage.getItem('usuarioID')
-    const res = await axios.put(`http://localhost:3007/api/auth/${userId}/password`, {
+    const res = await axios.put(`/api/auth/${userId}/password`, {
       actual: formPassword.value.actual,
       nueva: formPassword.value.nueva
     })
@@ -379,7 +379,7 @@ onMounted(async () => {
 
   try {
     const userId = localStorage.getItem('usuarioID');
-    const m = await axios.get(`http://localhost:3007/api/menu/${rolID.value}?usuario_id=${userId}`)
+    const m = await axios.get(`/api/menu/${rolID.value}?usuario_id=${userId}`)
     menuUsuario.value = m.data
   } catch (e) {
     console.error('Error cargando menú', e)

@@ -3,7 +3,7 @@
     
     <div class="bg-white p-10 rounded-3xl shadow-2xl w-full max-w-md border border-white/10">
       <div class="text-center mb-8 flex flex-col items-center">
-        <img src="http://localhost:3007/uploads/Logo/Logo.png" alt="Logo Innova" class="h-20 mb-4 object-contain" />
+        <img :src="`${$config.public.apiBase}/uploads/Logo/Logo.png`" alt="Logo Innova" class="h-20 mb-4 object-contain" />
         <h2 class="text-2xl font-black text-slate-800 tracking-tighter uppercase">RRHH Innova</h2>
         <p class="text-slate-400 font-bold text-xs mt-1 tracking-widest uppercase opacity-70">Gestión de Talento Humano</p>
       </div>
@@ -87,7 +87,7 @@ const handleLogin = async () => {
     loading.value = true
     errorMsg.value = ''
     
-    const res = await axios.post('http://localhost:3007/api/auth/login', {
+    const res = await axios.post('/api/auth/login', {
       email: email.value,
       password: password.value
     })

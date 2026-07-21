@@ -48,7 +48,7 @@
             <div class="relative">
               <div @click="dropdownPerfilAbierto = !dropdownPerfilAbierto" class="flex items-center gap-3 pl-6 border-l border-slate-200 cursor-pointer hover:bg-slate-50 p-2 rounded-xl transition-colors">
                 <div v-if="fotoUsuario" class="h-10 w-10 rounded-full flex items-center justify-center overflow-hidden ring-2 ring-slate-100">
-                  <img :src="`http://localhost:3007${fotoUsuario}`" class="w-full h-full object-cover" />
+                  <img :src="`${$config.public.apiBase}${fotoUsuario}`" class="w-full h-full object-cover" />
                 </div>
                 <div v-else class="h-10 w-10 rounded-full bg-slate-800 flex items-center justify-center text-blue-400 font-black text-lg ring-2 ring-slate-100 uppercase">
                   {{ nombreUsuario.charAt(0) }}
@@ -63,7 +63,7 @@
               <div v-if="dropdownPerfilAbierto" class="absolute right-0 mt-2 w-64 bg-white rounded-2xl shadow-xl border border-slate-100 overflow-hidden z-50 animate-in slide-in-from-top-2 duration-200">
                 <div class="p-5 border-b border-slate-100 bg-slate-50 flex items-center gap-4">
                   <div v-if="fotoUsuario" class="h-12 w-12 rounded-full flex items-center justify-center overflow-hidden ring-2 ring-white shadow-sm shrink-0">
-                    <img :src="`http://localhost:3007${fotoUsuario}`" class="w-full h-full object-cover" />
+                    <img :src="`${$config.public.apiBase}${fotoUsuario}`" class="w-full h-full object-cover" />
                   </div>
                   <div v-else class="h-12 w-12 rounded-full bg-slate-800 flex items-center justify-center text-blue-400 font-black text-xl ring-2 ring-white shadow-sm shrink-0 uppercase">
                     {{ nombreUsuario.charAt(0) }}
@@ -284,7 +284,7 @@
           <div class="mb-6 flex flex-col items-center">
             <div class="relative group cursor-pointer" @click="triggerFileInputPerfil">
               <div v-if="fotoUsuario" class="h-20 w-20 rounded-full flex items-center justify-center overflow-hidden ring-4 ring-slate-100 shadow-lg mb-4">
-                <img :src="`http://localhost:3007${fotoUsuario}`" class="w-full h-full object-cover" />
+                <img :src="`${useRuntimeConfig().public.apiBase}${fotoUsuario}`" class="w-full h-full object-cover" />
               </div>
               <div v-else class="h-20 w-20 rounded-full bg-slate-800 flex items-center justify-center text-blue-400 font-black text-3xl ring-4 ring-slate-100 uppercase mb-4 shadow-lg">
                 {{ nombreUsuario ? nombreUsuario.charAt(0) : 'U' }}
@@ -456,7 +456,7 @@ const uploadFotoPerfil = async (event) => {
 
   try {
     const id = localStorage.getItem('usuarioID')
-    const res = await axios.post(`http://localhost:3007/api/auth/${id}/foto`, formData, {
+    const res = await axios.post(`/api/auth/${id}/foto`, formData, {
       headers: {
         'Content-Type': 'multipart/form-data'
       }
@@ -485,7 +485,7 @@ const cambiarPassword = async () => {
   try {
     loadingPassword.value = true
     const id = localStorage.getItem('usuarioID')
-    const response = await axios.put(`http://localhost:3007/api/auth/${id}/password`, {
+    const response = await axios.put(`/api/auth/${id}/password`, {
       password_actual: formPassword.value.actual,
       password_nueva: formPassword.value.nueva
     })
@@ -711,7 +711,7 @@ const eliminarTicket = async (id) => {
 
   if (result.isConfirmed) {
     try {
-      await axios.delete(`http://localhost:3007/api/tickets/${id}`);
+      await axios.delete(`/api/tickets/${id}`);
       
       Swal.fire({
         title: 'Eliminado',
@@ -743,7 +743,7 @@ const eliminarTicket = async (id) => {
 
 const fetchTickets = async () => {
   try {
-    const response = await axios.get('http://localhost:3007/api/tickets/lista')
+    const response = await axios.get('/api/tickets/lista')
     const data = response.data
     todosLosTickets.value = data
 
@@ -795,7 +795,7 @@ const crearTicket = async () => {
       formData.append('archivo', archivoTicket.value)
     }
 
-    await axios.post('http://localhost:3007/api/tickets/crear', formData, {
+    await axios.post('/api/tickets/crear', formData, {
       headers: { 'Content-Type': 'multipart/form-data' }
     })
     
@@ -859,7 +859,7 @@ onMounted(async () => {
   
   try {
     // Cargar menú dinámico
-    const m = await axios.get(`http://localhost:3007/api/menu/${rolID.value}?usuario_id=${localStorage.getItem('usuarioID')}`)
+    const m = await axios.get(`/api/menu/${rolID.value}?usuario_id=${localStorage.getItem('usuarioID')}`)
     menuUsuario.value = m.data
   } catch(e) {
     console.error("Error al cargar menú", e)

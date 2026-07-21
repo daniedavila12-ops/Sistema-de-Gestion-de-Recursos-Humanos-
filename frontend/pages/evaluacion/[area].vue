@@ -166,7 +166,7 @@ const cargarCriterios = () => {
 const cargarEmpleados = async () => {
   loading.value = true;
   try {
-    const res = await axios.get(`http://localhost:3007/api/evaluaciones/area/${areaUrl}`);
+    const res = await axios.get(`/api/evaluaciones/area/${areaUrl}`);
     empleados.value = res.data;
   } catch (error) {
     console.error(error);
@@ -188,7 +188,7 @@ const seleccionarEmpleado = (emp) => {
 };
 
 const getFotoUrl = (foto) => {
-  if (foto) return `http://localhost:3007/uploads/perfiles/${foto}`;
+  if (foto) return `${useRuntimeConfig().public.apiBase}/uploads/perfiles/${foto}`;
   return 'https://ui-avatars.com/api/?name=Empleado&background=0D8ABC&color=fff';
 };
 
@@ -242,7 +242,7 @@ const guardarEvaluacion = async () => {
       respuestas: criterios.value.map(c => ({ criterio: c.nombre, calificacion: c.valor }))
     };
 
-    const res = await axios.post('http://localhost:3007/api/evaluaciones', payload);
+    const res = await axios.post('/api/evaluaciones', payload);
     
     Swal.fire({
       title: '¡Evaluación Guardada!',

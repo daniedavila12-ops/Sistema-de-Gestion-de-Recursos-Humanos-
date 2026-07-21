@@ -56,7 +56,7 @@
           <div class="relative w-full md:w-auto flex justify-end">
             <div @click="dropdownPerfilAbierto = !dropdownPerfilAbierto" class="flex items-center gap-3 pl-4 border-l border-slate-200 cursor-pointer hover:bg-slate-50 p-2 rounded-xl transition-colors no-print">
               <div v-if="fotoUsuario" class="h-9 w-9 rounded-full flex items-center justify-center overflow-hidden ring-2 ring-slate-100">
-                <img :src="`http://localhost:3007${fotoUsuario}`" class="w-full h-full object-cover" />
+                <img :src="`${$config.public.apiBase}${fotoUsuario}`" class="w-full h-full object-cover" />
               </div>
               <div v-else class="h-9 w-9 rounded-full bg-slate-800 flex items-center justify-center text-blue-400 font-black text-sm ring-2 ring-slate-100 uppercase">
                 {{ nombreUsuario ? nombreUsuario.charAt(0) : 'U' }}
@@ -72,7 +72,7 @@
             <div v-if="dropdownPerfilAbierto" class="absolute right-0 mt-14 w-64 bg-white rounded-2xl shadow-xl border border-slate-100 overflow-hidden z-50 animate-in slide-in-from-top-2 duration-200 no-print">
               <div class="p-5 border-b border-slate-100 bg-slate-50 flex items-center gap-4">
                 <div v-if="fotoUsuario" class="h-12 w-12 rounded-full flex items-center justify-center overflow-hidden ring-2 ring-white shadow-sm shrink-0">
-                  <img :src="`http://localhost:3007${fotoUsuario}`" class="w-full h-full object-cover" />
+                  <img :src="`${$config.public.apiBase}${fotoUsuario}`" class="w-full h-full object-cover" />
                 </div>
                 <div v-else class="h-12 w-12 rounded-full bg-slate-800 flex items-center justify-center text-blue-400 font-black text-xl ring-2 ring-white shadow-sm shrink-0 uppercase">
                   {{ nombreUsuario ? nombreUsuario.charAt(0) : 'U' }}
@@ -298,7 +298,7 @@
                   <!-- Avatar Asignado -->
                   <div class="shrink-0 mt-0.5">
                     <div class="h-9 w-9 rounded-xl overflow-hidden border border-slate-200 shadow-sm" :title="`Asignado: ${reporte.asignado_usuario_nombre || 'Sin asignar'}`">
-                      <img v-if="reporte.asignado_usuario_foto" :src="`http://localhost:3007${reporte.asignado_usuario_foto}`" class="w-full h-full object-cover" />
+                      <img v-if="reporte.asignado_usuario_foto" :src="`${$config.public.apiBase}${reporte.asignado_usuario_foto}`" class="w-full h-full object-cover" />
                       <div v-else class="w-full h-full bg-gradient-to-br from-slate-100 to-slate-200 flex items-center justify-center text-slate-400 font-bold text-[10px] uppercase">
                         {{ (reporte.asignado_usuario_nombre || '?').charAt(0) }}
                       </div>
@@ -325,7 +325,7 @@
                         <div v-for="emp in (reporte.empleados_detalles || [{nombre: reporte.empleado_nombre, foto: reporte.empleado_foto}])" :key="emp.identidad || Math.random()" 
                              class="w-6 h-6 rounded-full overflow-hidden border-2 border-white bg-slate-100 flex items-center justify-center font-bold text-slate-500 text-[9px] shadow-sm relative z-10" 
                              :title="emp.nombre">
-                          <img v-if="emp.foto" :src="`http://localhost:3007${emp.foto}`" class="w-full h-full object-cover" />
+                          <img v-if="emp.foto" :src="`${$config.public.apiBase}${emp.foto}`" class="w-full h-full object-cover" />
                           <span v-else>{{ emp.nombre ? emp.nombre.charAt(0) : '?' }}</span>
                         </div>
                       </div>
@@ -403,7 +403,7 @@
             <div class="mb-6 flex flex-col items-center">
               <div class="relative group cursor-pointer" @click="triggerFileInputPerfil">
                 <div v-if="fotoUsuario" class="h-20 w-20 rounded-full flex items-center justify-center overflow-hidden ring-4 ring-slate-100 shadow-lg mb-4">
-                  <img :src="`http://localhost:3007${fotoUsuario}`" class="w-full h-full object-cover" />
+                  <img :src="`${$config.public.apiBase}${fotoUsuario}`" class="w-full h-full object-cover" />
                 </div>
                 <div v-else class="h-20 w-20 rounded-full bg-slate-800 flex items-center justify-center text-blue-400 font-black text-3xl ring-4 ring-slate-100 uppercase mb-4 shadow-lg">
                   {{ nombreUsuario ? nombreUsuario.charAt(0) : 'U' }}
@@ -581,7 +581,7 @@ const uploadFotoPerfil = async (event) => {
   const formData = new FormData()
   formData.append('foto', file)
   try {
-    const res = await axios.post(`http://localhost:3007/api/auth/${usuarioActualId.value}/foto`, formData, {
+    const res = await axios.post(`/api/auth/${usuarioActualId.value}/foto`, formData, {
       headers: { 'Content-Type': 'multipart/form-data' }
     })
     fotoUsuario.value = res.data.fotoUrl
@@ -603,7 +603,7 @@ const cambiarPassword = async () => {
   }
   try {
     loadingPassword.value = true
-    const res = await axios.put(`http://localhost:3007/api/auth/${usuarioActualId.value}/password`, {
+    const res = await axios.put(`/api/auth/${usuarioActualId.value}/password`, {
       actual: formPassword.value.actual,
       nueva: formPassword.value.nueva
     })
@@ -828,11 +828,11 @@ const verDetalle = (id) => {
 const fetchReportes = async () => {
   try {
     loadingFetch.value = true
-    const response = await axios.get('http://localhost:3007/api/reportes-incidencia/lista')
+    const response = await axios.get('/api/reportes-incidencia/lista')
     let data = response.data
 
     try {
-      const empRes = await axios.get('http://localhost:3007/api/empleados/lista')
+      const empRes = await axios.get('/api/empleados/lista')
       const empleados = empRes.data
       data = data.map(r => {
         if (!r.empleado_nombre && r.identidad) {
@@ -900,7 +900,7 @@ const crearReporte = async () => {
       formData.append('archivo', archivoReporte.value)
     }
 
-    await axios.post('http://localhost:3007/api/reportes-incidencia/crear', formData, {
+    await axios.post('/api/reportes-incidencia/crear', formData, {
       headers: { 'Content-Type': 'multipart/form-data' }
     })
     
@@ -936,7 +936,7 @@ const eliminarReporte = async (id) => {
 
   if (result.isConfirmed) {
     try {
-      await axios.delete(`http://localhost:3007/api/reportes-incidencia/${id}`);
+      await axios.delete(`/api/reportes-incidencia/${id}`);
       await fetchReportes();
       Swal.fire({
         title: 'Eliminado',
@@ -1011,7 +1011,7 @@ const generarPDF = async () => {
   // Cargar logo
   const imgLogo = new Image();
   imgLogo.crossOrigin = 'Anonymous';
-  imgLogo.src = 'http://localhost:3007/uploads/Logo/Logo.png';
+  imgLogo.src = `${useRuntimeConfig().public.apiBase}/uploads/Logo/Logo.png`;
   await new Promise((resolve) => { imgLogo.onload = resolve; imgLogo.onerror = resolve; });
 
   doc.setFontSize(20)
@@ -1111,7 +1111,7 @@ onMounted(async () => {
   }
   
   try {
-    const resPermisos = await axios.get(`http://localhost:3007/api/roles/${rolID.value}/permisos`)
+    const resPermisos = await axios.get(`/api/roles/${rolID.value}/permisos`)
     const moduloActual = resPermisos.data.find(p => p.modulo_nombre.toLowerCase().includes('reporte') || p.modulo_nombre.toLowerCase().includes('incidencia'))
     if (moduloActual) {
       permisosModulo.value = moduloActual
@@ -1121,7 +1121,7 @@ onMounted(async () => {
   }
 
   try {
-    const m = await axios.get(`http://localhost:3007/api/menu/${rolID.value}?usuario_id=${localStorage.getItem('usuarioID')}`)
+    const m = await axios.get(`/api/menu/${rolID.value}?usuario_id=${localStorage.getItem('usuarioID')}`)
     menuUsuario.value = m.data
   } catch(e) {
     console.error("Error al cargar menú", e)
@@ -1130,7 +1130,7 @@ onMounted(async () => {
   await fetchReportes()
 
   // Socket.io for real-time updates
-  socketInstance = io('http://localhost:3007')
+  socketInstance = io(useRuntimeConfig().public.apiBase)
   socketInstance.on('reportes_actualizados', () => {
     fetchReportes()
   })

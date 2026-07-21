@@ -167,10 +167,10 @@ const formatDate = (dateStr) => {
 onMounted(async () => {
   const id = route.params.id
   try {
-    const resDep = await axios.get('http://localhost:3007/api/departamentos/lista')
+    const resDep = await axios.get('/api/departamentos/lista')
     departamentos.value = resDep.data
 
-    const res = await axios.get(`http://localhost:3007/api/empleados/${id}`)
+    const res = await axios.get(`/api/empleados/${id}`)
     const data = res.data
     form.value = {
       codigo_empleado: data.codigo_empleado || '',
@@ -211,7 +211,7 @@ const guardarEmpleado = async () => {
   try {
     loading.value = true
     const id = route.params.id
-    const res = await axios.put(`http://localhost:3007/api/empleados/${id}`, form.value)
+    const res = await axios.put(`/api/empleados/${id}`, form.value)
     
     alert('✅ ' + res.data.mensaje)
     

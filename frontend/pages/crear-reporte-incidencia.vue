@@ -110,7 +110,7 @@ const categorias = ref([])
 
 onMounted(async () => {
   try {
-    const res = await axios.get('http://localhost:3007/api/reportes-incidencia/categorias/lista')
+    const res = await axios.get('/api/reportes-incidencia/categorias/lista')
     categorias.value = res.data.filter(c => c.activa)
     if (categorias.value.length > 0) {
       categoria.value = categorias.value[0].nombre
@@ -144,7 +144,7 @@ const crearReporte = async () => {
       formData.append('archivo', archivoReporte.value);
     }
 
-    const res = await axios.post('http://localhost:3007/api/reportes-incidencia/crear', formData, {
+    const res = await axios.post('/api/reportes-incidencia/crear', formData, {
       headers: { 'Content-Type': 'multipart/form-data' }
     });
 

@@ -85,8 +85,8 @@ const asignadoNombre = computed(() => {
 })
 
 const asignadoAvatar = computed(() => {
-  if (props.ticket.asignado_empleado_foto) return `http://localhost:3007${props.ticket.asignado_empleado_foto}`
-  if (props.ticket.asignado_usuario_foto) return `http://localhost:3007${props.ticket.asignado_usuario_foto}`
+  if (props.ticket.asignado_empleado_foto) return `${useRuntimeConfig().public.apiBase}${props.ticket.asignado_empleado_foto}`
+  if (props.ticket.asignado_usuario_foto) return `${useRuntimeConfig().public.apiBase}${props.ticket.asignado_usuario_foto}`
   return null
 })
 
