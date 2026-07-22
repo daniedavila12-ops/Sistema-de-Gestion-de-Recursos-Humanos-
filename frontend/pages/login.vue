@@ -1,5 +1,5 @@
 <template>
-  <div class="min-h-screen flex flex-col items-center justify-center bg-slate-900 p-4 font-sans">
+  <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; background-color: #0f172a; padding: 1rem; font-family: sans-serif; width: 100%;">
     
     <div class="bg-white p-10 rounded-3xl shadow-2xl w-full max-w-md border border-white/10">
       <div class="text-center mb-8 flex flex-col items-center">
