@@ -1,40 +1,15 @@
 <template>
   <div class="min-h-screen bg-gray-100 flex font-sans">
     <!-- SIDEBAR -->
-    <aside class="w-64 bg-slate-800 text-white flex flex-col shadow-xl fixed h-full z-10">
-      <div class="p-6 text-2xl font-bold border-b border-slate-700 tracking-tight text-blue-400 uppercase">
-        RRHH Innova
-      </div>
-      
-      <nav class="flex-1 p-4 space-y-1 overflow-y-auto">
-        <div v-for="(item, index) in menuUsuario" :key="item.ruta || index">
-          <div v-if="item.esCabecera" class="text-[10px] font-black text-slate-500 uppercase tracking-widest mt-6 mb-2 px-3">
-            {{ item.nombre }}
-          </div>
-          <NuxtLink v-else :to="item.ruta" 
-            class="flex items-center gap-3 p-3 rounded-xl hover:bg-slate-700 transition-all duration-200 group"
-            active-class="bg-blue-600 shadow-lg">
-            <span class="text-xl group-hover:scale-110 transition-transform">{{ item.icono }}</span>
-            <span class="text-sm font-medium">{{ item.nombre }}</span>
-          </NuxtLink>
-        </div>
-      </nav>
-
-      <div class="p-4 border-t border-slate-700 bg-slate-900/50">
-        <div class="mb-4 px-2 flex flex-col">
-          <span class="text-[9px] font-black text-slate-500 uppercase tracking-widest">Nivel de Acceso</span>
-          <span class="text-xs font-bold text-blue-400">{{ rolNombre }}</span>
-        </div>
-        <button @click="logout" class="w-full flex items-center gap-3 p-3 rounded-xl hover:bg-red-500/10 hover:text-red-400 transition-all font-bold text-xs uppercase tracking-widest">
-          <span>🚪</span> Cerrar Sesión
-        </button>
-      </div>
-    </aside>
+    <AppSidebar />
 
     <!-- CONTENIDO PRINCIPAL -->
-    <main class="flex-1 ml-64 p-8">
+    <main class="w-full overflow-x-hidden transition-all duration-300 flex-1 md:ml-64 p-8">
       <header class="mb-6 flex flex-col gap-5 bg-white p-5 rounded-3xl shadow-sm border border-slate-100">
         <div class="flex justify-between items-center w-full">
+          <button @click="toggleMobileMenu" class="md:hidden p-2 text-slate-500 hover:text-slate-800 hover:bg-slate-100 rounded-lg transition-colors mr-3 shrink-0">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
+          </button>
           <div>
             <h1 class="text-3xl font-black text-slate-800 tracking-tight uppercase">Candidatos Reclutamiento</h1>
             <p class="text-slate-500 mt-1 font-medium italic">Gestión de aspirantes y revisión de Currículums.</p>
@@ -178,14 +153,17 @@
 </template>
 
 <script setup>
+import { useSidebar } from '@/composables/useSidebar'
+const { toggleMobileMenu } = useSidebar()
 import { ref, onMounted, computed } from 'vue';
+import axios from 'axios';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 
 // Variables de estado global y Sidebar
 const rolID = ref(null);
 const rolNombre = ref('Cargando...');
-const menuUsuario = ref([]);
+;
 const usuarioActual = ref('');
 const fotoUsuario = ref(null);
 const dropdownPerfilAbierto = ref(false);
@@ -270,7 +248,7 @@ const generarPDF = async () => {
 
     // --- QR Code ---
     try {
-      const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent('http://localhost:3001/reclutamiento')}`;
+      const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent('https://sistema-de-gestion-de-recursos-humanos-production-4a18.up.railway.app/reclutamiento')}`;
       const qrImg = new Image();
       qrImg.crossOrigin = 'Anonymous';
       qrImg.src = qrUrl;
@@ -382,7 +360,7 @@ const generarPDFQR = async () => {
   const doc = new jsPDF();
   
   try {
-    const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=500x500&data=${encodeURIComponent('http://localhost:3001/reclutamiento')}`;
+    const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=500x500&data=${encodeURIComponent('https://sistema-de-gestion-de-recursos-humanos-production-4a18.up.railway.app/reclutamiento')}`;
     const qrImg = new Image();
     qrImg.crossOrigin = 'Anonymous';
     qrImg.src = qrUrl;
@@ -428,7 +406,7 @@ const generarPDFQR = async () => {
     doc.line(qrX - 10, 115 + qrSize + 20, qrX + qrSize + 10, 115 + qrSize + 20);
     
     doc.setFontSize(10);
-    doc.text('http://localhost:3001/reclutamiento', doc.internal.pageSize.getWidth() / 2, 115 + qrSize + 35, { align: 'center' });
+    doc.text('https://sistema-de-gestion-de-recursos-humanos-production-4a18.up.railway.app/reclutamiento', doc.internal.pageSize.getWidth() / 2, 115 + qrSize + 35, { align: 'center' });
 
     doc.save('poster_qr_reclutamiento.pdf');
   } catch (error) {
@@ -440,16 +418,8 @@ const generarPDFQR = async () => {
 const cargarCandidatos = async () => {
   try {
     loadingCandidatos.value = true;
-    const response = await fetch('/api/candidatos', {
-      headers: {
-        // 'Authorization': `Bearer ${localStorage.getItem('token')}` // si es necesario
-      }
-    });
-    if (response.ok) {
-      candidatos.value = await response.json();
-    } else {
-      console.error('Error al cargar candidatos');
-    }
+    const response = await axios.get('/api/candidatos');
+    candidatos.value = response.data;
   } catch (error) {
     console.error('Error de conexión:', error);
   } finally {
@@ -459,16 +429,9 @@ const cargarCandidatos = async () => {
 
 const actualizarEstado = async (candidato) => {
   try {
-    const response = await fetch(`/api/candidatos/${candidato.id}/estado`, {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ estado: candidato.estado })
+    await axios.put(`/api/candidatos/${candidato.id}/estado`, {
+      estado: candidato.estado
     });
-    
-    if (!response.ok) {
-      alert('Error al actualizar estado');
-      cargarCandidatos(); // reverts state
-    }
   } catch (error) {
     alert('Error de conexión al actualizar estado');
     cargarCandidatos();
@@ -495,10 +458,8 @@ onMounted(async () => {
       ? `/api/menu/${rolID.value}?usuario_id=${usuarioID}`
       : `/api/menu/${rolID.value}`;
     
-    const response = await fetch(urlMenu);
-    if (response.ok) {
-      menuUsuario.value = await response.json();
-    }
+    const response = await axios.get(urlMenu);
+    menuUsuario.value = response.data;
   } catch (e) {
     console.error('Error cargando menú', e);
   }

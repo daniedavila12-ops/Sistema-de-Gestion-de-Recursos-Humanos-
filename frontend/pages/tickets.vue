@@ -1,36 +1,17 @@
 <template>
   <div class="min-h-screen flex font-sans" style="background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 50%, #e2e8f0 100%)">
     <!-- SIDEBAR DINÁMICO -->
-    <aside class="w-64 bg-slate-800 text-white flex flex-col shadow-xl fixed h-full z-10">
-      <div class="p-6 text-2xl font-bold border-b border-slate-700 tracking-tight text-blue-400 uppercase">
-        RRHH Innova
-      </div>
-      <nav class="flex-1 p-4 space-y-1 overflow-y-auto">
-        <div v-for="(item, index) in menuUsuario" :key="item.ruta || index">
-          <div v-if="item.esCabecera" class="text-[10px] font-black text-slate-500 uppercase tracking-widest mt-6 mb-2 px-3">{{ item.nombre }}</div>
-          <NuxtLink v-else :to="item.ruta" class="flex items-center gap-3 p-3 rounded-xl hover:bg-slate-700 transition-all duration-200 group" active-class="bg-blue-600 shadow-lg">
-            <span class="text-xl group-hover:scale-110 transition-transform">{{ item.icono }}</span>
-            <span class="text-sm font-medium">{{ item.nombre }}</span>
-          </NuxtLink>
-        </div>
-      </nav>
-      <div class="p-4 border-t border-slate-700 bg-slate-900/50">
-        <div class="mb-4 px-2 flex flex-col">
-          <span class="text-[9px] font-black text-slate-500 uppercase tracking-widest">Nivel de Acceso</span>
-          <span class="text-xs font-bold text-blue-400">{{ rolNombre }}</span>
-        </div>
-        <button @click="logout" class="w-full flex items-center gap-3 p-3 rounded-xl hover:bg-red-500/10 hover:text-red-400 transition-all font-bold text-xs uppercase tracking-widest">
-          <span>🚪</span> Cerrar Sesión
-        </button>
-      </div>
-    </aside>
+    <AppSidebar />
 
     <!-- CONTENIDO PRINCIPAL -->
-    <main class="flex-1 ml-64 p-8 overflow-y-auto">
+    <main class="w-full overflow-x-hidden transition-all duration-300 flex-1 md:ml-64 p-8 overflow-y-auto">
 
       <!-- Header -->
       <header class="mb-6 bg-white rounded-2xl border border-slate-200/80 shadow-sm">
         <div class="px-6 py-4 flex justify-between items-center">
+          <button @click="toggleMobileMenu" class="md:hidden p-2 text-slate-500 hover:text-slate-800 hover:bg-slate-100 rounded-lg transition-colors mr-3 shrink-0">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
+          </button>
           <div class="flex items-center gap-4">
             <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center shadow-lg shadow-violet-500/20">
               <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 00-2 2v3a2 2 0 110 4v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0 110-4V7a2 2 0 00-2-2H5z"/></svg>
@@ -412,6 +393,8 @@
 </template>
 
 <script setup>
+import { useSidebar } from '@/composables/useSidebar'
+const { toggleMobileMenu } = useSidebar()
 import { ref, computed, watch, onMounted } from 'vue'
 import axios from 'axios'
 import { useRouter, useRoute } from 'vue-router'
@@ -434,8 +417,6 @@ const nombreUsuario = ref('')
 const rolID = ref(null)
 const rolNombre = ref('Cargando...')
 const fotoUsuario = ref(null)
-const menuUsuario = ref([])
-
 // Lógica Modal Perfil
 const dropdownPerfilAbierto = ref(false)
 const modalAbiertoPerfil = ref(false)

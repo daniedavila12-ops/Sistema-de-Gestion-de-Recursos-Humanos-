@@ -1,40 +1,15 @@
 <template>
   <div class="min-h-screen bg-gray-100 flex font-sans">
     <!-- SIDEBAR -->
-    <aside class="w-64 bg-slate-800 text-white flex flex-col shadow-xl fixed left-0 top-0 h-full z-10">
-      <div class="p-6 text-2xl font-bold border-b border-slate-700 tracking-tight text-blue-400 uppercase">
-        RRHH Innova
-      </div>
-      
-      <nav class="flex-1 p-4 space-y-1 overflow-y-auto">
-        <div v-for="(item, index) in menuUsuario" :key="item.ruta || index">
-          <div v-if="item.esCabecera" class="text-[10px] font-black text-slate-500 uppercase tracking-widest mt-6 mb-2 px-3">
-            {{ item.nombre }}
-          </div>
-          <NuxtLink v-else :to="item.ruta" 
-            class="flex items-center gap-3 p-3 rounded-xl hover:bg-slate-700 transition-all duration-200 group"
-            active-class="bg-blue-600 shadow-lg">
-            <span class="text-xl group-hover:scale-110 transition-transform">{{ item.icono }}</span>
-            <span class="text-sm font-medium">{{ item.nombre }}</span>
-          </NuxtLink>
-        </div>
-      </nav>
-
-      <div class="p-4 border-t border-slate-700 bg-slate-900/50">
-        <div class="mb-4 px-2 flex flex-col">
-          <span class="text-[9px] font-black text-slate-500 uppercase tracking-widest">Nivel de Acceso</span>
-          <span class="text-xs font-bold text-blue-400">{{ rolNombre }}</span>
-        </div>
-        <button @click="logout" class="w-full flex items-center gap-3 p-3 rounded-xl hover:bg-red-500/10 hover:text-red-400 transition-all font-bold text-xs uppercase tracking-widest">
-          <span>🚪</span> Cerrar Sesión
-        </button>
-      </div>
-    </aside>
+    <AppSidebar />
 
     <!-- MAIN CONTENT -->
-    <main class="flex-1 ml-64 p-8">
+    <main class="w-full overflow-x-hidden transition-all duration-300 flex-1 md:ml-64 p-8">
       <header class="mb-8 flex justify-between items-center bg-white p-5 rounded-3xl shadow-sm border border-slate-100">
         <div>
+          <button @click="toggleMobileMenu" class="md:hidden p-2 text-slate-500 hover:text-slate-800 hover:bg-slate-100 rounded-lg transition-colors mr-3 shrink-0">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
+          </button>
           <h1 class="text-3xl font-black text-slate-800 tracking-tight uppercase">Dashboard de Evaluaciones</h1>
           <p class="text-slate-500 mt-1 font-medium italic">Resumen Organizacional y Desempeño</p>
         </div>
@@ -193,6 +168,8 @@
 </template>
 
 <script setup>
+import { useSidebar } from '@/composables/useSidebar'
+const { toggleMobileMenu } = useSidebar()
 import { ref, onMounted } from 'vue';
 import axios from 'axios';
 import Chart from 'chart.js/auto';
@@ -206,7 +183,7 @@ const router = useRouter();
 // Variables de Layout
 const rolID = ref(null);
 const rolNombre = ref('Cargando...');
-const menuUsuario = ref([]);
+;
 const usuarioActual = ref('');
 
 const dashboard = ref({});

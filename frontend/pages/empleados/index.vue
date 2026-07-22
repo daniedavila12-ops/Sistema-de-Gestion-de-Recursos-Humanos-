@@ -1,44 +1,13 @@
 <template>
   <div class="min-h-screen bg-gray-100 flex font-sans">
-    <aside class="w-64 bg-slate-800 text-white flex flex-col shadow-xl fixed h-full z-10">
-      <div class="p-6 text-2xl font-bold border-b border-slate-700 tracking-tight text-blue-400 uppercase">
-        RRHH Innova
-      </div>
-      
-      <nav class="flex-1 p-4 space-y-1 overflow-y-auto">
-        <div v-for="(item, index) in menuUsuario" :key="item.ruta || index">
-          <div v-if="item.esCabecera" class="text-[10px] font-black text-slate-500 uppercase tracking-widest mt-6 mb-2 px-3">
-            {{ item.nombre }}
-          </div>
-          <button v-else-if="item.ruta === '/empleados/nuevo'" @click="abrirModalNuevo"
-             class="w-full flex items-center gap-3 p-3 rounded-xl hover:bg-slate-700 transition-all duration-200 group">
-            <span class="text-xl group-hover:scale-110 transition-transform">{{ item.icono }}</span>
-            <span class="text-sm font-medium">{{ item.nombre }}</span>
-          </button>
+    <AppSidebar />
 
-          <NuxtLink v-else :to="item.ruta" 
-            class="flex items-center gap-3 p-3 rounded-xl hover:bg-slate-700 transition-all duration-200 group"
-            active-class="bg-blue-600 shadow-lg">
-            <span class="text-xl group-hover:scale-110 transition-transform">{{ item.icono }}</span>
-            <span class="text-sm font-medium">{{ item.nombre }}</span>
-          </NuxtLink>
-        </div>
-      </nav>
-
-      <div class="p-4 border-t border-slate-700 bg-slate-900/50">
-        <div class="mb-4 px-2 flex flex-col">
-          <span class="text-[9px] font-black text-slate-500 uppercase tracking-widest">Nivel de Acceso</span>
-          <span class="text-xs font-bold text-blue-400">{{ rolNombre }}</span>
-        </div>
-        <button @click="logout" class="w-full flex items-center gap-3 p-3 rounded-xl hover:bg-red-500/10 hover:text-red-400 transition-all font-bold text-xs uppercase tracking-widest">
-          <span>🚪</span> Cerrar Sesión
-        </button>
-      </div>
-    </aside>
-
-    <main class="flex-1 ml-64 p-8">
+    <main class="w-full overflow-x-hidden transition-all duration-300 flex-1 md:ml-64 p-8">
       <header class="mb-10 flex flex-col gap-5 bg-white p-5 rounded-3xl shadow-sm border border-slate-100">
         <div class="flex justify-between items-center w-full">
+          <button @click="toggleMobileMenu" class="md:hidden p-2 text-slate-500 hover:text-slate-800 hover:bg-slate-100 rounded-lg transition-colors mr-3 shrink-0">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
+          </button>
           <div>
             <h1 class="text-3xl font-black text-slate-800 tracking-tight uppercase">Lista de Empleados</h1>
             <p class="text-slate-500 mt-1 font-medium italic">Personal registrado en la plataforma.</p>
@@ -126,10 +95,12 @@
               <th class="p-5 text-[10px] font-black text-slate-400 uppercase tracking-widest">Nombre Completo</th>
               <th class="p-5 text-[10px] font-black text-slate-400 uppercase tracking-widest">Identidad</th>
               <th class="p-5 text-[10px] font-black text-slate-400 uppercase tracking-widest">Correo</th>
-              <th class="p-5 text-[10px] font-black text-slate-400 uppercase tracking-widest">Contrato</th>
-              <th class="p-5 text-[10px] font-black text-slate-400 uppercase tracking-widest">Departamento</th>
-              <th class="p-5 text-[10px] font-black text-slate-400 uppercase tracking-widest">Ubicación / Piso</th>
-              <th class="p-5 text-[10px] font-black text-slate-400 uppercase tracking-widest">Fecha Ingreso</th>
+              <th class="p-5 text-[10px] font-black text-slate-400 uppercase tracking-widest">Teléfono</th>
+              <th v-if="isRestrictedRole" class="p-5 text-[10px] font-black text-slate-400 uppercase tracking-widest">Cumpleaños</th>
+              <th v-if="!isRestrictedRole" class="p-5 text-[10px] font-black text-slate-400 uppercase tracking-widest">Contrato</th>
+              <th v-if="!isRestrictedRole" class="p-5 text-[10px] font-black text-slate-400 uppercase tracking-widest">Departamento</th>
+              <th v-if="!isRestrictedRole" class="p-5 text-[10px] font-black text-slate-400 uppercase tracking-widest">Ubicación / Piso</th>
+              <th v-if="!isRestrictedRole" class="p-5 text-[10px] font-black text-slate-400 uppercase tracking-widest">Fecha Ingreso</th>
               <th class="p-5 text-[10px] font-black text-slate-400 uppercase tracking-widest text-center">Acciones</th>
             </tr>
           </thead>
@@ -144,7 +115,7 @@
                 No se encontraron resultados para la búsqueda.
               </td>
             </tr>
-            <tr v-else v-for="emp in filteredEmpleados" :key="emp.id" class="border-b border-slate-50 hover:bg-slate-50 transition-colors">
+            <tr v-else v-for="emp in paginatedEmpleados" :key="emp.id" class="border-b border-slate-50 hover:bg-slate-50 transition-colors">
               <td class="p-5 flex items-center gap-3">
                 <div class="h-10 w-10 rounded-full overflow-hidden border border-slate-200 shrink-0 bg-slate-100 flex items-center justify-center">
                   <img v-if="emp.foto" :src="`${$config.public.apiBase}${emp.foto}`" alt="Foto" class="w-full h-full object-cover" />
@@ -155,10 +126,9 @@
                 </div>
               </td>
               <td class="p-5 font-bold text-slate-800">
-                <NuxtLink v-if="hasPermission('Perfil del Empleado', 'puedeVer') || hasPermission('Perfil del Empleado', 'puedeVer') === undefined" :to="`/empleados/${emp.id}`" class="hover:text-blue-600 hover:underline transition-colors cursor-pointer">
+                <NuxtLink :to="`/empleados/${emp.id}`" class="hover:text-blue-600 hover:underline transition-colors cursor-pointer">
                   {{ emp.nombre }} {{ emp.apellido }}
                 </NuxtLink>
-                <span v-else>{{ emp.nombre }} {{ emp.apellido }}</span>
               </td>
               <td class="p-5 text-sm text-slate-600">
                 {{ emp.identidad }}
@@ -166,28 +136,75 @@
               <td class="p-5 text-sm text-slate-600">
                 {{ emp.correo || 'N/A' }}
               </td>
-              <td class="p-5">
+              <td class="p-5 text-sm text-slate-600">
+                {{ emp.telefono || 'N/A' }}
+              </td>
+              <td v-if="isRestrictedRole" class="p-5 text-sm text-slate-600 font-medium">
+                {{ emp.fecha_nacimiento ? new Date(emp.fecha_nacimiento).toLocaleDateString('es-HN') : 'N/A' }}
+              </td>
+              <td v-if="!isRestrictedRole" class="p-5">
                 <span class="px-3 py-1 bg-blue-50 text-blue-600 text-[10px] font-black uppercase rounded-full">
                   {{ emp.tipo_contrato || 'Permanente' }}
                 </span>
               </td>
-              <td class="p-5 text-sm text-slate-600">
+              <td v-if="!isRestrictedRole" class="p-5 text-sm text-slate-600">
                 {{ obtenerNombreDepartamento(emp.departamento_id) }}
               </td>
-              <td class="p-5 text-sm text-slate-600">
+              <td v-if="!isRestrictedRole" class="p-5 text-sm text-slate-600">
                 {{ emp.ubicacion || 'N/A' }}
               </td>
-              <td class="p-5 text-sm text-slate-500">
+              <td v-if="!isRestrictedRole" class="p-5 text-sm text-slate-500">
                 {{ emp.fecha_inicio ? new Date(emp.fecha_inicio).toLocaleDateString('es-HN') : 'N/A' }}
               </td>
               <td class="p-5 text-center flex justify-center gap-2">
-                <NuxtLink v-if="hasPermission('Perfil del Empleado', 'puedeVer') || hasPermission('Perfil del Empleado', 'puedeVer') === undefined" :to="`/empleados/${emp.id}`" class="inline-block bg-blue-100 text-blue-600 hover:bg-blue-600 hover:text-white px-4 py-2 rounded-lg text-xs font-bold transition-colors">
+                <NuxtLink :to="`/empleados/${emp.id}`" class="inline-block bg-blue-100 text-blue-600 hover:bg-blue-600 hover:text-white px-4 py-2 rounded-lg text-xs font-bold transition-colors">
                   Ver Detalle
                 </NuxtLink>
               </td>
             </tr>
           </tbody>
         </table>
+      </div>
+
+      <!-- Paginación -->
+      <div v-if="totalPages > 1" class="mt-6 flex justify-between items-center bg-white p-4 rounded-2xl shadow-sm border border-slate-100">
+        <span class="text-sm font-medium text-slate-500">
+          Mostrando {{ (currentPage - 1) * itemsPerPage + 1 }} - 
+          {{ Math.min(currentPage * itemsPerPage, filteredEmpleados.length) }} de {{ filteredEmpleados.length }} empleados
+        </span>
+        <div class="flex items-center gap-2">
+          <button 
+            @click="prevPage" 
+            :disabled="currentPage === 1"
+            class="px-4 py-2 border border-slate-200 rounded-lg text-sm font-bold text-slate-600 hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+          >
+            Anterior
+          </button>
+          
+          <div class="flex gap-1 overflow-x-auto max-w-[200px] sm:max-w-none">
+            <button 
+              v-for="page in totalPages" 
+              :key="page"
+              @click="currentPage = page"
+              :class="[
+                'w-10 h-10 shrink-0 rounded-lg text-sm font-bold transition-colors',
+                currentPage === page 
+                  ? 'bg-blue-600 text-white shadow-md shadow-blue-200' 
+                  : 'text-slate-600 hover:bg-slate-100'
+              ]"
+            >
+              {{ page }}
+            </button>
+          </div>
+
+          <button 
+            @click="nextPage" 
+            :disabled="currentPage === totalPages"
+            class="px-4 py-2 border border-slate-200 rounded-lg text-sm font-bold text-slate-600 hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+          >
+            Siguiente
+          </button>
+        </div>
       </div>
     </main>
 
@@ -371,6 +388,8 @@
 </template>
 
 <script setup>
+import { useSidebar } from '@/composables/useSidebar'
+const { toggleMobileMenu } = useSidebar()
 import { ref, onMounted, computed, onUnmounted, watch } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import axios from 'axios'
@@ -457,7 +476,9 @@ const puedeCrearNuevoEmpleado = ref(false)
 
 const rolID = ref(null)
 const rolNombre = ref('Cargando...')
-const menuUsuario = ref([])
+const isRestrictedRole = computed(() => {
+  return rolID.value == 6 || rolID.value == 8;
+})
 
 const logout = () => { localStorage.clear(); navigateTo('/login') }
 
@@ -560,6 +581,31 @@ const filteredEmpleados = computed(() => {
     const code = emp.codigo_empleado?.toLowerCase() || '';
     return fullName.includes(lowerCaseQuery) || identity.includes(lowerCaseQuery) || code.includes(lowerCaseQuery);
   });
+})
+
+const currentPage = ref(1)
+const itemsPerPage = ref(10)
+
+const paginatedEmpleados = computed(() => {
+  const start = (currentPage.value - 1) * itemsPerPage.value
+  const end = start + itemsPerPage.value
+  return filteredEmpleados.value.slice(start, end)
+})
+
+const totalPages = computed(() => {
+  return Math.ceil(filteredEmpleados.value.length / itemsPerPage.value)
+})
+
+const nextPage = () => {
+  if (currentPage.value < totalPages.value) currentPage.value++
+}
+
+const prevPage = () => {
+  if (currentPage.value > 1) currentPage.value--
+}
+
+watch([searchQuery, departmentFilter, statusFilter], () => {
+  currentPage.value = 1
 })
 
 const cargarEmpleados = async () => {

@@ -1,39 +1,14 @@
 <template>
   <div class="min-h-screen bg-gray-100 flex font-sans">
-    <aside class="w-64 bg-slate-800 text-white flex flex-col shadow-xl fixed h-full z-10">
-      <div class="p-6 text-2xl font-bold border-b border-slate-700 tracking-tight text-blue-400 uppercase">
-        RRHH Innova
-      </div>
-      
-      <nav class="flex-1 p-4 space-y-1 overflow-y-auto">
-        <div v-for="(item, index) in menuUsuario" :key="item.ruta || index">
-          <div v-if="item.esCabecera" class="text-[10px] font-black text-slate-500 uppercase tracking-widest mt-6 mb-2 px-3">
-            {{ item.nombre }}
-          </div>
-          <NuxtLink v-else :to="item.ruta" 
-            class="flex items-center gap-3 p-3 rounded-xl hover:bg-slate-700 transition-all duration-200 group"
-            active-class="bg-blue-600 shadow-lg">
-            <span class="text-xl group-hover:scale-110 transition-transform">{{ item.icono }}</span>
-            <span class="text-sm font-medium">{{ item.nombre }}</span>
-          </NuxtLink>
-        </div>
-      </nav>
+    <AppSidebar />
 
-      <div class="p-4 border-t border-slate-700 bg-slate-900/50">
-        <div class="mb-4 px-2 flex flex-col">
-          <span class="text-[9px] font-black text-slate-500 uppercase tracking-widest">Nivel de Acceso</span>
-          <span class="text-xs font-bold text-blue-400">{{ rolNombre }}</span>
-        </div>
-        <button @click="logout" class="w-full flex items-center gap-3 p-3 rounded-xl hover:bg-red-500/10 hover:text-red-400 transition-all font-bold text-xs uppercase tracking-widest">
-          <span>🚪</span> Cerrar Sesión
-        </button>
-      </div>
-    </aside>
-
-    <main class="flex-1 ml-64 p-8 flex justify-center">
+    <main class="w-full overflow-x-hidden transition-all duration-300 flex-1 md:ml-64 p-8 flex justify-center">
       <div class="w-full max-w-4xl">
         <header class="mb-8 flex justify-between items-center bg-white p-5 rounded-3xl shadow-sm border border-slate-100">
-          <div class="flex items-center gap-4">
+        <div class="flex items-center gap-4">
+          <button @click="toggleMobileMenu" class="md:hidden p-2 text-slate-500 hover:text-slate-800 hover:bg-slate-100 rounded-lg transition-colors mr-3 shrink-0">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
+          </button>
             <button @click="volver" class="text-slate-400 hover:text-blue-500 font-bold p-3 bg-slate-50 rounded-xl hover:bg-blue-50 transition-colors">
               <span>←</span> Volver
             </button>
@@ -131,7 +106,7 @@
                   <p class="text-[10px] font-black text-slate-400 uppercase mb-1">Teléfono</p>
                   <p class="font-bold text-slate-800">{{ empleado.telefono || 'N/A' }}</p>
                 </div>
-                <div class="md:col-span-2">
+                <div v-if="!isRestrictedRole" class="md:col-span-2">
                   <p class="text-[10px] font-black text-slate-400 uppercase mb-1">Dirección</p>
                   <p class="font-bold text-slate-800">{{ empleado.direccion || 'N/A' }}</p>
                 </div>
@@ -139,7 +114,7 @@
             </div>
 
             <!-- Información Laboral -->
-            <div>
+            <div v-if="!isRestrictedRole">
               <h3 class="text-[12px] font-black text-blue-500 uppercase tracking-[0.2em] mb-6 border-b pb-2">Información Laboral</h3>
               <div class="grid grid-cols-1 md:grid-cols-3 gap-y-6 gap-x-10">
                 <div>
@@ -158,7 +133,7 @@
             </div>
 
             <!-- Contactos de Emergencia -->
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div v-if="!isRestrictedRole" class="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div v-if="empleado.emergencia_nombre">
                 <h3 class="text-[12px] font-black text-orange-500 uppercase tracking-[0.2em] mb-6 border-b pb-2">Contacto de Emergencia 1</h3>
                 <div class="grid grid-cols-1 gap-y-4 gap-x-6 bg-orange-50 p-6 rounded-2xl border border-orange-100">
@@ -197,7 +172,7 @@
             </div>
             
             <!-- Pestañas de Detalles -->
-            <div class="mt-12 pt-8 border-t border-slate-100">
+            <div v-if="!isRestrictedRole" class="mt-12 pt-8 border-t border-slate-100">
               <div v-if="tabsPermitidas.length > 0" class="flex flex-wrap gap-2 mb-6 border-b border-slate-200 pb-2">
                 <button 
                   v-for="tab in tabsPermitidas" 
@@ -835,6 +810,8 @@
 </template>
 
 <script setup>
+import { useSidebar } from '@/composables/useSidebar'
+const { toggleMobileMenu } = useSidebar()
 import { ref, onMounted, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import axios from 'axios'
@@ -884,7 +861,9 @@ const cerrarModalFoto = () => {
 
 const rolID = ref(null)
 const rolNombre = ref('Cargando...')
-const menuUsuario = ref([])
+const isRestrictedRole = computed(() => {
+  return rolID.value == 6 || rolID.value == 8;
+})
 
 const mostrarOpciones = ref(false)
 
