@@ -1,6 +1,6 @@
 // CREADO POR: DANIEL INNOVA
 class ApiConstants {
-  // Cambia esta URL cuando pases a producción o pruebes en dispositivo físico
-  static const String baseUrl = 'http://10.0.2.2:3007';
+  // URL de Producción
+  static const String baseUrl = 'https://sistema-de-gestion-de-recursos-humanos-production-4a18.up.railway.app';
   static const String apiUrl = '$baseUrl/api';
 }
