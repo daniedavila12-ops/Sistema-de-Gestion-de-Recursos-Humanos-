@@ -370,7 +370,7 @@ onMounted(async () => {
 
 const logout = () => {
   localStorage.clear()
-  navigateTo('/login')
+  navigateTo('/dashboard')
 }
 
 const abrirModal = () => {

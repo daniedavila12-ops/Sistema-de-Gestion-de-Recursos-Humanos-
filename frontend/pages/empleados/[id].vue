@@ -1423,7 +1423,7 @@ const toggleEstadoEmpleado = async () => {
 
 const logout = () => {
   localStorage.clear()
-  navigateTo('/login')
+  navigateTo('/dashboard')
 }
 
 const generarPDFHistorialContratos = async () => {

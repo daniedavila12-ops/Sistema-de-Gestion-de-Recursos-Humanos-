@@ -1152,7 +1152,7 @@ watch(empleadoSeleccionado, async (nuevoEmpleado) => {
 
 const logout = () => {
   localStorage.clear()
-  navigateTo('/login')
+  navigateTo('/dashboard')
 }
 
 const editarVacacion = (v) => {

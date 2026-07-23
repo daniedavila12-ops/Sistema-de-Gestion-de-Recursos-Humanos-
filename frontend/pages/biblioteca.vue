@@ -2,7 +2,7 @@
   <div class="min-h-screen bg-slate-900 p-8 font-sans">
     <div class="max-w-6xl mx-auto flex flex-col md:flex-row justify-between items-start md:items-center mb-12 gap-6">
       <div>
-        <NuxtLink to="/login" class="text-blue-400 text-xs font-bold uppercase tracking-widest hover:underline flex items-center gap-2 mb-6">
+        <NuxtLink to="/dashboard" class="text-blue-400 text-xs font-bold uppercase tracking-widest hover:underline flex items-center gap-2 mb-6">
           ⬅️ Volver al Login
         </NuxtLink>
         <h1 class="text-5xl font-black text-white tracking-tighter uppercase">Biblioteca <span class="text-blue-500">Digital</span></h1>

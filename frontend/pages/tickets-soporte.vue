@@ -67,7 +67,7 @@
       </form>
 
       <div class="mt-8 text-center">
-        <NuxtLink to="/login" class="text-blue-500 hover:text-blue-700 text-xs font-bold uppercase tracking-widest transition-colors">
+        <NuxtLink to="/dashboard" class="text-blue-500 hover:text-blue-700 text-xs font-bold uppercase tracking-widest transition-colors">
           ← Volver al Login
         </NuxtLink>
       </div>
@@ -164,7 +164,7 @@ const crearTicket = async () => {
     archivoTicket.value = null
     if (fileInputRef.value) fileInputRef.value.value = ''
     
-    await navigateTo('/login')
+    await navigateTo('/dashboard')
 
   } catch (error) {
     console.error("Error al enviar el ticket:", error)

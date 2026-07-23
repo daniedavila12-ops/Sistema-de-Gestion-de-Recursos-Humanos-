@@ -186,7 +186,7 @@ const candidatosFiltrados = computed(() => {
 
 const logout = () => {
   localStorage.clear();
-  navigateTo('/login');
+  navigateTo('/dashboard');
 };
 
 const formatFecha = (fecha) => {

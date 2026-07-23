@@ -69,7 +69,7 @@
       </div>
       
       <div class="p-3 border-t border-slate-100 bg-slate-50 text-center">
-        <NuxtLink to="/" class="text-[10px] font-black text-slate-500 hover:text-slate-700 uppercase tracking-widest">
+        <NuxtLink to="/dashboard" class="text-[10px] font-black text-slate-500 hover:text-slate-700 uppercase tracking-widest">
           Ver panel principal
         </NuxtLink>
       </div>
