@@ -49,21 +49,19 @@
         </div>
         </template>
       </BreadcrumbNav>
-      <header class="mb-10 flex flex-col gap-5 bg-white p-5 rounded-3xl shadow-sm border border-slate-100">
-        <div class="flex justify-between items-center w-full">
-          <div class="flex items-center gap-4">
-            <button @click="toggleMobileMenu" class="md:hidden p-2 text-slate-500 hover:text-slate-800 hover:bg-slate-100 rounded-lg transition-colors shrink-0">
-              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
-            </button>
-            <div>
-              <h1 class="text-3xl font-black text-slate-800 tracking-tight uppercase">Registrar Vacaciones</h1>
-              <p class="text-slate-500 mt-1 font-medium italic">Gestión de vacaciones para los empleados.</p>
-            </div>
-          </div>
-          <button v-if="!empleadoSeleccionado" @click="generarPDFVacacionesGlobal" class="bg-indigo-600 text-white px-6 py-3 rounded-xl font-black uppercase text-xs hover:bg-indigo-700 transition-all shadow-lg shadow-indigo-200 flex items-center gap-2">
-            <span>📄</span> Reportes Vacaciones
+      <header class="mb-10 flex flex-col md:flex-row justify-between items-start md:items-center bg-white p-5 rounded-3xl shadow-sm border border-slate-100 gap-4">
+        <div class="flex items-center gap-4">
+          <button @click="toggleMobileMenu" class="md:hidden p-2 text-slate-500 hover:text-slate-800 hover:bg-slate-100 rounded-lg transition-colors shrink-0">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
           </button>
+          <div>
+            <h1 class="text-2xl md:text-3xl font-black text-slate-800 tracking-tight uppercase">Registrar Vacaciones</h1>
+            <p class="text-slate-500 mt-1 font-medium italic text-sm md:text-base">Gestión de vacaciones para los empleados.</p>
+          </div>
         </div>
+        <button v-if="!empleadoSeleccionado" @click="generarPDFVacacionesGlobal" class="w-full md:w-auto bg-indigo-600 text-white px-6 py-3 rounded-xl font-black uppercase text-xs hover:bg-indigo-700 transition-all shadow-lg shadow-indigo-200 flex items-center justify-center gap-2">
+          <span>📄</span> Reportes Vacaciones
+        </button>
       </header>
 
       <div class="bg-white rounded-3xl shadow-sm border border-slate-100 overflow-hidden p-8">
@@ -136,17 +134,17 @@
                   </button>
                 </div>
                 <!-- Pagination -->
-                <div v-if="totalPages > 1" class="p-4 border-t border-slate-100 flex justify-between items-center bg-slate-50 rounded-b-xl flex-col sm:flex-row gap-4">
-                  <span class="text-xs font-medium text-slate-500">
+                <div v-if="totalPages > 1" class="p-4 border-t border-slate-100 flex flex-col md:flex-row justify-between items-center bg-slate-50 rounded-b-xl gap-4">
+                  <span class="text-xs font-medium text-slate-500 text-center md:text-left w-full md:w-auto">
                     Mostrando {{ (currentPage - 1) * itemsPerPage + 1 }} - 
                     {{ Math.min(currentPage * itemsPerPage, empleadosFiltradosTotales.length) }} de {{ empleadosFiltradosTotales.length }} registros
                   </span>
-                  <div class="flex items-center gap-2">
-                    <button @click="prevPage" :disabled="currentPage === 1" class="px-3 py-1.5 border border-slate-200 rounded-lg text-xs font-bold text-slate-600 hover:bg-white disabled:opacity-50 disabled:cursor-not-allowed transition-colors">Anterior</button>
-                    <div class="flex gap-1 overflow-x-auto max-w-[150px] scrollbar-thin">
+                  <div class="flex items-center gap-2 w-full md:w-auto justify-center md:justify-end">
+                    <button @click="prevPage" :disabled="currentPage === 1" class="px-3 py-1.5 border border-slate-200 rounded-lg text-xs font-bold text-slate-600 hover:bg-white disabled:opacity-50 disabled:cursor-not-allowed transition-colors">Ant.</button>
+                    <div class="flex gap-1 overflow-x-auto max-w-[150px] scrollbar-thin px-1">
                       <button v-for="page in totalPages" :key="page" @click="currentPage = page" :class="['w-8 h-8 shrink-0 rounded-lg text-xs font-bold transition-colors', currentPage === page ? 'bg-blue-600 text-white shadow-md' : 'text-slate-600 hover:bg-white']">{{ page }}</button>
                     </div>
-                    <button @click="nextPage" :disabled="currentPage === totalPages" class="px-3 py-1.5 border border-slate-200 rounded-lg text-xs font-bold text-slate-600 hover:bg-white disabled:opacity-50 disabled:cursor-not-allowed transition-colors">Siguiente</button>
+                    <button @click="nextPage" :disabled="currentPage === totalPages" class="px-3 py-1.5 border border-slate-200 rounded-lg text-xs font-bold text-slate-600 hover:bg-white disabled:opacity-50 disabled:cursor-not-allowed transition-colors">Sig.</button>
                   </div>
                 </div>
               </div>
@@ -296,16 +294,16 @@
             </form>
 
             <div class="mt-12 pt-8 border-t border-slate-100">
-              <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 border-b pb-2 gap-4">
+              <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-4 mt-8 pb-2 border-b">
                 <h3 class="text-[12px] font-black text-blue-500 uppercase tracking-[0.2em]">Historial de Vacaciones</h3>
-                <div v-if="vacacionesEmpleado.length > 0" class="flex items-center gap-2">
-                  <label class="text-[10px] font-black text-slate-500 uppercase">Filtrar por Periodo:</label>
-                  <select v-model="filtroPeriodoHistorial" class="p-2 border border-slate-200 rounded-lg text-xs bg-slate-50 min-w-[120px]">
+                <div v-if="vacacionesEmpleado.length > 0" class="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 w-full md:w-auto">
+                  <label class="text-[10px] font-black text-slate-500 uppercase flex-shrink-0">Filtrar:</label>
+                  <select v-model="filtroPeriodoHistorial" class="p-2 border border-slate-200 rounded-lg text-xs bg-slate-50 flex-1 min-w-[120px]">
                     <option value="">Todos</option>
                     <option v-for="p in periodosHistorialUnicos" :key="p" :value="p">{{ p }}</option>
                   </select>
-                  <button @click="generarPDFHistorial" type="button" class="px-4 py-2 bg-slate-800 hover:bg-slate-900 text-white rounded-lg font-bold text-xs uppercase tracking-widest transition-colors shadow-sm flex items-center justify-center gap-2 ml-2">
-                    <span>📄</span> PDF Historial
+                  <button @click="generarPDFHistorial" type="button" class="px-4 py-2 bg-slate-800 hover:bg-slate-900 text-white rounded-lg font-bold text-xs uppercase tracking-widest transition-colors shadow-sm flex items-center justify-center gap-2 sm:ml-2">
+                    <span>📄</span> Historial
                   </button>
                 </div>
               </div>
@@ -317,29 +315,31 @@
               </div>
               <div v-else class="space-y-4">
                 <div v-for="v in vacacionesHistorialFiltrado" :key="v.id" class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm flex flex-col gap-3">
-                  <div class="flex justify-between items-start">
-                    <div class="flex gap-2 items-center">
+                  <div class="flex flex-col lg:flex-row justify-between items-start gap-4">
+                    <div class="flex flex-wrap gap-2 items-center">
                       <span class="px-3 py-1 bg-blue-50 text-blue-600 text-[10px] font-black uppercase rounded-lg border border-blue-100">Periodo: {{ v.periodo || 'N/A' }}</span>
                       <span v-if="v.tipoSolicitud" :class="v.tipoSolicitud === 'Adelantadas' ? 'bg-red-50 text-red-600 border-red-200' : 'bg-slate-50 text-slate-600 border-slate-200'" class="px-3 py-1 text-[10px] font-black uppercase rounded-lg border">{{ v.tipoSolicitud }}</span>
                       <span v-if="v.tipoSolicitud === 'Permiso Especial' && v.tipoPermiso" class="px-3 py-1 bg-purple-50 text-purple-600 text-[10px] font-black uppercase rounded-lg border border-purple-200">{{ v.tipoPermiso }}</span>
                     </div>
-                    <div class="flex items-start gap-4">
-                      <div class="text-right text-[10px] font-black uppercase tracking-widest text-slate-500 bg-slate-50 p-2 rounded-xl border border-slate-100">
-                        <p><span class="text-slate-400">Creado por:</span> <span class="text-slate-700">{{ v.creadoPorNombre || 'Admin' }}</span> <span class="mx-2 text-slate-300">|</span> <span class="text-slate-400">Fecha:</span> <span class="text-slate-700">{{ v.fechaCreacion ? new Date(v.fechaCreacion).toLocaleDateString('es-HN') : (v.fecha_creacion ? new Date(v.fecha_creacion).toLocaleDateString('es-HN') : 'N/A') }}</span></p>
-                        <p class="mt-1" v-if="(v.fechaModificacion || v.fecha_modificacion) && (v.fechaModificacion || v.fecha_modificacion) !== (v.fechaCreacion || v.fecha_creacion)"><span class="text-slate-400">Modificado:</span> <span class="text-slate-700">{{ v.modificadoPorNombre || v.creadoPorNombre || 's/d' }}</span> <span class="mx-2 text-slate-300">|</span> <span class="text-slate-400">Fecha:</span> <span class="text-slate-700">{{ v.fechaModificacion ? new Date(v.fechaModificacion).toLocaleDateString('es-HN') : new Date(v.fecha_modificacion).toLocaleDateString('es-HN') }}</span></p>
+                    <div class="flex flex-col sm:flex-row items-stretch sm:items-start gap-4 w-full lg:w-auto">
+                      <div class="text-left sm:text-right text-[10px] font-black uppercase tracking-widest text-slate-500 bg-slate-50 p-2 rounded-xl border border-slate-100 flex-1">
+                        <p><span class="text-slate-400">Creado por:</span> <span class="text-slate-700">{{ v.creadoPorNombre || 'Admin' }}</span> <span class="mx-2 text-slate-300 hidden sm:inline">|</span><br class="sm:hidden" /> <span class="text-slate-400">Fecha:</span> <span class="text-slate-700">{{ v.fechaCreacion ? new Date(v.fechaCreacion).toLocaleDateString('es-HN') : (v.fecha_creacion ? new Date(v.fecha_creacion).toLocaleDateString('es-HN') : 'N/A') }}</span></p>
+                        <p class="mt-1" v-if="(v.fechaModificacion || v.fecha_modificacion) && (v.fechaModificacion || v.fecha_modificacion) !== (v.fechaCreacion || v.fecha_creacion)"><span class="text-slate-400">Modificado:</span> <span class="text-slate-700">{{ v.modificadoPorNombre || v.creadoPorNombre || 's/d' }}</span> <span class="mx-2 text-slate-300 hidden sm:inline">|</span><br class="sm:hidden" /> <span class="text-slate-400">Fecha:</span> <span class="text-slate-700">{{ v.fechaModificacion ? new Date(v.fechaModificacion).toLocaleDateString('es-HN') : new Date(v.fecha_modificacion).toLocaleDateString('es-HN') }}</span></p>
                       </div>
-                      <button v-if="hasPermission('Vacaciones', 'puedeCrear') && esUltimoRegistroPeriodo(v) && Number(v.diasPendientes) > 0" @click="continuarVacaciones(v)" class="p-2.5 bg-indigo-50 text-indigo-600 hover:bg-indigo-600 hover:text-white rounded-xl transition-all border border-indigo-100 hover:border-indigo-600 shadow-sm flex items-center gap-1" title="Continuar tomando vacaciones de este periodo">
-                        <span>➕</span> Continuar
-                      </button>
-                      <a v-if="v.documento" :href="`${useRuntimeConfig().public.apiBase}${v.documento}`" target="_blank" class="p-2.5 bg-emerald-50 text-emerald-600 hover:bg-emerald-600 hover:text-white rounded-xl transition-all border border-emerald-100 hover:border-emerald-600 shadow-sm flex items-center gap-1" title="Ver Documento">
-                        <span>📄</span>
-                      </a>
-                      <button v-if="hasPermission('Vacaciones', 'puedeEditar')" @click="editarVacacion(v)" class="p-2.5 bg-blue-50 text-blue-600 hover:bg-blue-600 hover:text-white rounded-xl transition-all border border-blue-100 hover:border-blue-600 shadow-sm flex items-center gap-1" title="Editar Vacaciones">
-                        <span>✏️</span>
-                      </button>
-                      <button v-if="hasPermission('Vacaciones', 'puedeEliminar')" @click="eliminarVacacion(v.id)" class="p-2.5 bg-red-50 text-red-600 hover:bg-red-600 hover:text-white rounded-xl transition-all border border-red-100 hover:border-red-600 shadow-sm flex items-center gap-1" title="Eliminar Vacaciones">
-                        <span>🗑️</span>
-                      </button>
+                      <div class="flex items-center gap-2 justify-end">
+                        <button v-if="hasPermission('Vacaciones', 'puedeCrear') && esUltimoRegistroPeriodo(v) && Number(v.diasPendientes) > 0" @click="continuarVacaciones(v)" class="p-2.5 bg-indigo-50 text-indigo-600 hover:bg-indigo-600 hover:text-white rounded-xl transition-all border border-indigo-100 hover:border-indigo-600 shadow-sm flex items-center gap-1" title="Continuar tomando vacaciones de este periodo">
+                          <span>➕</span> <span class="hidden sm:inline">Cont.</span>
+                        </button>
+                        <a v-if="v.documento" :href="`${useRuntimeConfig().public.apiBase}${v.documento}`" target="_blank" class="p-2.5 bg-emerald-50 text-emerald-600 hover:bg-emerald-600 hover:text-white rounded-xl transition-all border border-emerald-100 hover:border-emerald-600 shadow-sm flex items-center gap-1" title="Ver Documento">
+                          <span>📄</span>
+                        </a>
+                        <button v-if="hasPermission('Vacaciones', 'puedeEditar')" @click="editarVacacion(v)" class="p-2.5 bg-blue-50 text-blue-600 hover:bg-blue-600 hover:text-white rounded-xl transition-all border border-blue-100 hover:border-blue-600 shadow-sm flex items-center gap-1" title="Editar Vacaciones">
+                          <span>✏️</span>
+                        </button>
+                        <button v-if="hasPermission('Vacaciones', 'puedeEliminar')" @click="eliminarVacacion(v.id)" class="p-2.5 bg-red-50 text-red-600 hover:bg-red-600 hover:text-white rounded-xl transition-all border border-red-100 hover:border-red-600 shadow-sm flex items-center gap-1" title="Eliminar Vacaciones">
+                          <span>🗑️</span>
+                        </button>
+                      </div>
                     </div>
                   </div>
                   

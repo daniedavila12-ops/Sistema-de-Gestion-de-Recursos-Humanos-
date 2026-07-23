@@ -104,6 +104,8 @@ const handleFileUpload = (event) => {
   file.value = selectedFile;
 };
 
+const config = useRuntimeConfig();
+
 const submitForm = async () => {
   if (!file.value) {
     mostrarMensaje('Por favor, adjunta tu CV.', 'error');
@@ -121,8 +123,7 @@ const submitForm = async () => {
   formData.append('cv', file.value);
 
   try {
-    const config = useRuntimeConfig();
-    const apiUrl = '/api/candidatos/upload'; // Fallback a localhost
+    const apiUrl = `${config.public.apiBase}/api/candidatos/upload`;
 
     const response = await fetch(apiUrl, {
       method: 'POST',
@@ -138,6 +139,7 @@ const submitForm = async () => {
       mostrarMensaje(data.error || 'Error al enviar la aplicación.', 'error');
     }
   } catch (error) {
+    console.error(error);
     mostrarMensaje('Error de conexión al servidor.', 'error');
   } finally {
     isSubmitting.value = false;

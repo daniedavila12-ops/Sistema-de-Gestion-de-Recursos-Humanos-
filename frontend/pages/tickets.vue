@@ -77,7 +77,7 @@
       </header>
 
       <!-- KPI Summary Cards -->
-      <div class="grid grid-cols-5 gap-4 mb-6">
+      <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 mb-6">
         <!-- Tarjeta Pendiente -->
         <div @click="aplicarFiltro('estado-Pendiente')"
              :class="['relative overflow-hidden rounded-2xl p-4 cursor-pointer transition-all duration-300',
@@ -169,9 +169,9 @@
         </div>
       </div>
 
-      <div class="flex gap-6 items-start">
+      <div class="flex flex-col lg:flex-row gap-6 items-start">
         <!-- Sidebar del Módulo -->
-        <TicketsSidebar :counts="sidebarCounts" :activeFilter="filtroActivo" :ticketsList="unfilteredTicketsForCounts" @filter-changed="aplicarFiltro" @categorias-actualizadas="actualizarCategorias" class="shrink-0 w-64 rounded-2xl shadow-sm border border-slate-200/80 overflow-hidden bg-white" />
+        <TicketsSidebar :counts="sidebarCounts" :activeFilter="filtroActivo" :ticketsList="unfilteredTicketsForCounts" @filter-changed="aplicarFiltro" @categorias-actualizadas="actualizarCategorias" class="shrink-0 w-full lg:w-64 rounded-2xl shadow-sm border border-slate-200/80 overflow-hidden bg-white" />
 
         <div class="flex-1 flex flex-col gap-6">
           <!-- TABLA DE TICKETS -->
@@ -190,13 +190,13 @@
 
               <!-- Search & Filters Bar -->
               <div class="flex flex-col md:flex-row gap-3 items-center">
-                <div class="flex-1 relative">
+                <div class="flex-1 relative w-full">
                   <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
                   <input v-model="searchTrm" type="text" placeholder="Buscar por tema, empleado, identidad..."
                     class="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:border-violet-400 focus:ring-2 focus:ring-violet-100 text-sm font-medium text-slate-700 transition-all placeholder:text-slate-400">
                 </div>
-                <div class="flex items-center gap-2">
-                  <div class="relative">
+                <div class="flex flex-col sm:flex-row items-center gap-2 w-full md:w-auto">
+                  <div class="relative w-full sm:w-auto">
                     <select v-model="priorityFilter" class="appearance-none pl-3 pr-8 py-2.5 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:border-violet-400 text-sm font-semibold text-slate-700 transition-all cursor-pointer">
                       <option value="todas">Prioridad</option>
                       <option value="Urgente">Urgente</option>
@@ -206,8 +206,8 @@
                     </select>
                     <svg class="absolute right-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400 pointer-events-none" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" d="M19 9l-7 7-7-7"/></svg>
                   </div>
-                  <div class="relative">
-                    <select v-model="sortOption" class="appearance-none pl-3 pr-8 py-2.5 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:border-violet-400 text-sm font-semibold text-slate-700 transition-all cursor-pointer">
+                  <div class="relative w-full sm:w-auto">
+                    <select v-model="sortOption" class="w-full sm:w-auto appearance-none pl-3 pr-8 py-2.5 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:border-violet-400 text-sm font-semibold text-slate-700 transition-all cursor-pointer">
                       <option value="reciente">Más reciente</option>
                       <option value="antiguo">Más antiguo</option>
                       <option value="prioridad">Prioridad</option>
@@ -347,7 +347,7 @@
                 <span>+ Agregar otra persona</span>
               </button>
             </div>
-            <div class="grid grid-cols-2 gap-4">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">Tipo de Solicitud</label>
                 <select v-model="nuevoTicket.tipo" class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:border-violet-400 focus:ring-2 focus:ring-violet-100 text-slate-700 font-medium transition-all text-sm">

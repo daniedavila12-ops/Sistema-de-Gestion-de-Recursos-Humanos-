@@ -399,7 +399,7 @@ const handleStatClick = async (link) => {
 }
 
 const mesCumpleaneros = ref(new Date().getMonth() + 1)
-const mesVencimiento = ref(new Date().getMonth() + 1)
+const mesVencimiento = ref('proximos')
 
 const calcularDiasRestantesContratoTexto = (fechaFinal) => {
   if (!fechaFinal) return '';

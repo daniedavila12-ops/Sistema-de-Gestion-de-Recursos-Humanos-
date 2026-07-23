@@ -203,6 +203,8 @@ const manejarClickNotificacion = (notif) => {
     }
   } else if (titulo.includes('departamento')) {
     router.push('/departamentos');
+  } else if (titulo.includes('candidato')) {
+    router.push('/admin/candidatos');
   }
 };
 

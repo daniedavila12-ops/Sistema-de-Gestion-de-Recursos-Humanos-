@@ -50,22 +50,22 @@
         </template>
       </BreadcrumbNav>
       <header class="mb-10 flex flex-col gap-5 bg-white p-5 rounded-3xl shadow-sm border border-slate-100">
-        <div class="flex justify-between items-center w-full">
+        <div class="flex flex-col md:flex-row justify-between items-start md:items-center w-full gap-4">
           <div class="flex items-center gap-4">
             <button @click="toggleMobileMenu" class="md:hidden p-2 text-slate-500 hover:text-slate-800 hover:bg-slate-100 rounded-lg transition-colors shrink-0">
               <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
             </button>
             <div>
-              <h1 class="text-3xl font-black text-slate-800 tracking-tight uppercase">Lista de Empleados</h1>
-              <p class="text-slate-500 mt-1 font-medium italic">Personal registrado en la plataforma.</p>
+              <h1 class="text-2xl md:text-3xl font-black text-slate-800 tracking-tight uppercase">Lista de Empleados</h1>
+              <p class="text-slate-500 mt-1 font-medium italic text-sm md:text-base">Personal registrado en la plataforma.</p>
             </div>
           </div>
-          <button v-if="puedeCrearNuevoEmpleado" @click="abrirModalNuevo" class="bg-green-600 text-white px-6 py-3 rounded-xl font-black uppercase text-xs hover:bg-green-700 transition-all shadow-lg shadow-green-200">
+          <button v-if="puedeCrearNuevoEmpleado" @click="abrirModalNuevo" class="w-full md:w-auto bg-green-600 text-white px-6 py-3 rounded-xl font-black uppercase text-xs hover:bg-green-700 transition-all shadow-lg shadow-green-200">
             + Nuevo Empleado
           </button>
         </div>
-        <div class="flex flex-wrap gap-4 items-center w-full">
-          <div class="flex-1 min-w-[250px]">
+        <div class="flex flex-col md:flex-row flex-wrap gap-4 items-start md:items-center w-full">
+          <div class="flex-1 w-full md:min-w-[250px]">
             <input 
               v-model="searchQuery" 
               type="text" 
@@ -73,26 +73,31 @@
               class="w-full p-3 rounded-xl bg-slate-50 border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all placeholder:italic"
             >
           </div>
-          <div class="flex items-center gap-2">
-            <span class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Departamento:</span>
-            <select v-model="departmentFilter" class="bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 outline-none focus:border-blue-500 text-sm font-medium text-slate-700 transition-colors cursor-pointer max-w-[150px]">
+          <div class="flex flex-wrap items-center gap-2 w-full md:w-auto">
+            <div class="flex items-center gap-2 flex-1 md:flex-none">
+              <span class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Departamento:</span>
+              <select v-model="departmentFilter" class="w-full md:w-auto bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 outline-none focus:border-blue-500 text-sm font-medium text-slate-700 transition-colors cursor-pointer md:max-w-[150px]">
               <option value="todos">Todos</option>
               <option v-for="dep in departamentos" :key="dep.id" :value="dep.id">
                 {{ dep.nombre }}
               </option>
             </select>
-            <span class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-2">Estado:</span>
-            <select v-model="statusFilter" class="bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 outline-none focus:border-blue-500 text-sm font-medium text-slate-700 transition-colors cursor-pointer">
+            </div>
+            <div class="flex items-center gap-2 flex-1 md:flex-none">
+              <span class="text-[10px] font-black text-slate-400 uppercase tracking-widest md:ml-2">Estado:</span>
+              <select v-model="statusFilter" class="w-full md:w-auto bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 outline-none focus:border-blue-500 text-sm font-medium text-slate-700 transition-colors cursor-pointer">
               <option value="todos">Todos</option>
               <option value="activos">Activos</option>
               <option value="inactivos">Inactivos</option>
             </select>
+            </div>
           </div>
         </div>
       </header>
 
       <div class="bg-white rounded-3xl shadow-sm border border-slate-100 overflow-hidden">
-        <table class="w-full text-left">
+        <div class="overflow-x-auto w-full">
+          <table class="w-full text-left whitespace-nowrap md:whitespace-normal min-w-[800px] md:min-w-0">
           <thead>
             <tr class="bg-slate-50 border-b border-slate-100">
               <th class="p-5 text-[10px] font-black text-slate-400 uppercase tracking-widest">Empleado / Código</th>
@@ -168,6 +173,7 @@
             </tr>
           </tbody>
         </table>
+        </div>
       </div>
 
       <!-- Paginación -->

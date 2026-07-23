@@ -5,8 +5,8 @@
     <div class="bg-white rounded-[24px] shadow-2xl w-full max-w-6xl h-full max-h-[95vh] flex flex-col overflow-hidden relative animate-in fade-in zoom-in-95 duration-200">
       
       <!-- Top Modal Header -->
-      <div class="flex items-center justify-between p-4 md:px-6 md:py-4 border-b border-slate-100 bg-white z-10 shrink-0">
-        <div class="flex items-center gap-3">
+      <div class="flex flex-col md:flex-row items-start md:items-center justify-between p-4 md:px-6 md:py-4 border-b border-slate-100 bg-white z-10 shrink-0 gap-4">
+        <div class="flex flex-wrap items-center gap-3">
           <span class="text-sm font-black text-slate-400 tracking-wider">{{ ticket?.id || '---' }}</span>
           <span v-if="ticket" class="px-3 py-1 text-[10px] font-black uppercase tracking-widest rounded-full"
             :class="{
@@ -29,7 +29,7 @@
           </span>
         </div>
 
-        <div class="flex items-center gap-3">
+        <div class="flex items-center gap-3 w-full md:w-auto">
           <button @click="generarPDFTicket" v-if="ticket" class="hidden md:flex items-center gap-2 px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-bold transition-colors">
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
             PDF
@@ -165,7 +165,7 @@
             </div>
 
             <!-- COLUMNA DERECHA: Panel de Detalles (Ocupa 1/3) -->
-            <div class="lg:col-span-1 space-y-8 border-l border-slate-100 pl-8">
+            <div class="lg:col-span-1 space-y-8 border-t lg:border-t-0 lg:border-l border-slate-100 pt-8 lg:pt-0 lg:pl-8">
         
         <!-- Tarjeta de Gestión de Estatus -->
         <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-5">

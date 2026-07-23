@@ -49,24 +49,24 @@
       </BreadcrumbNav>
 
       <header class="mb-6 flex flex-col gap-5 bg-white p-5 rounded-3xl shadow-sm border border-slate-100">
-        <div class="flex justify-between items-center w-full">
+        <div class="flex flex-col md:flex-row justify-between items-start md:items-center w-full gap-4">
           <div class="flex items-center gap-4">
             <button @click="toggleMobileMenu" class="md:hidden p-2 text-slate-500 hover:text-slate-800 hover:bg-slate-100 rounded-lg transition-colors shrink-0">
               <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
             </button>
             <div>
-              <h1 class="text-3xl font-black text-slate-800 tracking-tight uppercase">Candidatos Reclutamiento</h1>
-              <p class="text-slate-500 mt-1 font-medium italic">Gestión de aspirantes y revisión de Currículums.</p>
+              <h1 class="text-2xl md:text-3xl font-black text-slate-800 tracking-tight uppercase">Candidatos Reclutamiento</h1>
+              <p class="text-slate-500 mt-1 font-medium italic text-sm md:text-base">Gestión de aspirantes y revisión de Currículums.</p>
             </div>
           </div>
-          <div class="flex items-center gap-4">
+          <div class="flex flex-col sm:flex-row items-center gap-3 w-full md:w-auto">
             <!-- Botón de Generar QR -->
-            <button @click="generarPDFQR" class="bg-blue-600 hover:bg-blue-700 text-white text-sm font-bold py-2.5 px-4 rounded-xl shadow-md transition-all hover:-translate-y-0.5 flex items-center gap-2 group no-print">
+            <button @click="generarPDFQR" class="w-full sm:w-auto justify-center bg-blue-600 hover:bg-blue-700 text-white text-sm font-bold py-2.5 px-4 rounded-xl shadow-md transition-all hover:-translate-y-0.5 flex items-center gap-2 group no-print">
               <span class="group-hover:scale-110 transition-transform">📱</span>
               <span>Generar QR PDF</span>
             </button>
             <!-- Botón de Generar PDF -->
-            <button @click="generarPDF" class="bg-red-600 hover:bg-red-700 text-white text-sm font-bold py-2.5 px-4 rounded-xl shadow-md transition-all hover:-translate-y-0.5 flex items-center gap-2 group no-print">
+            <button @click="generarPDF" class="w-full sm:w-auto justify-center bg-red-600 hover:bg-red-700 text-white text-sm font-bold py-2.5 px-4 rounded-xl shadow-md transition-all hover:-translate-y-0.5 flex items-center gap-2 group no-print">
               <span class="group-hover:scale-110 transition-transform">📄</span>
               <span>Generar Reporte PDF</span>
             </button>
