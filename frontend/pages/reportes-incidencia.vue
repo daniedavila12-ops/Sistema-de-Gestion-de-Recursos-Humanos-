@@ -4,30 +4,9 @@
     <AppSidebar />
 
     <!-- CONTENIDO PRINCIPAL -->
-    <main class="w-full overflow-x-hidden transition-all duration-300 flex-1 md:ml-64 p-6 overflow-y-auto">
-      <!-- HEADER -->
-      <header class="mb-6 flex justify-between items-center bg-white px-6 py-4 rounded-2xl shadow-sm border border-slate-100">
-        <div>
-          <button @click="toggleMobileMenu" class="md:hidden p-2 text-slate-500 hover:text-slate-800 hover:bg-slate-100 rounded-lg transition-colors mr-3 shrink-0">
-            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
-          </button>
-          <div class="flex items-center gap-3">
-            <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-red-500 to-rose-600 flex items-center justify-center shadow-lg shadow-red-500/25">
-              <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z"/></svg>
-            </div>
-            <div>
-              <h1 class="text-xl font-black text-slate-800 tracking-tight">Incidencias Laborales</h1>
-              <p class="text-slate-400 text-xs font-medium mt-0.5">Gestión de faltas, incidentes y reportes del personal</p>
-            </div>
-          </div>
-        </div>
-        <div class="flex items-center gap-3">
-          <button @click="abrirModalNuevo"
-            class="flex items-center gap-2 bg-gradient-to-r from-red-500 to-rose-600 text-white px-5 py-2.5 rounded-xl font-bold text-xs uppercase tracking-wider hover:shadow-lg hover:shadow-red-500/25 hover:-translate-y-0.5 transition-all duration-200">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" d="M12 5v14m-7-7h14"/></svg>
-            Nuevo Reporte
-          </button>
-
+    <main :class="['w-full overflow-x-hidden transition-all duration-300 flex-1 p-6 overflow-y-auto', isSidebarCollapsed ? 'md:ml-20' : 'md:ml-64']">
+      <BreadcrumbNav :crumbs="[{ text: 'Incidencias Laborales' }]">
+        <template #right>
           <div class="relative w-full md:w-auto flex justify-end">
             <div @click="dropdownPerfilAbierto = !dropdownPerfilAbierto" class="flex items-center gap-3 pl-4 border-l border-slate-200 cursor-pointer hover:bg-slate-50 p-2 rounded-xl transition-colors no-print">
               <div v-if="fotoUsuario" class="h-9 w-9 rounded-full flex items-center justify-center overflow-hidden ring-2 ring-slate-100">
@@ -68,8 +47,34 @@
                 </button>
               </div>
             </div>
+            <!-- Overlay invisible para cerrar el dropdown si se hace click fuera -->
             <div v-if="dropdownPerfilAbierto" @click="dropdownPerfilAbierto = false" class="fixed inset-0 z-40"></div>
           </div>
+        </template>
+      </BreadcrumbNav>
+
+      <!-- HEADER -->
+      <header class="mb-6 mt-6 flex justify-between items-center bg-white px-6 py-4 rounded-2xl shadow-sm border border-slate-100">
+        <div class="flex items-center gap-4">
+          <button @click="toggleMobileMenu" class="md:hidden p-2 text-slate-500 hover:text-slate-800 hover:bg-slate-100 rounded-lg transition-colors shrink-0">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
+          </button>
+          <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-red-500 to-rose-600 flex items-center justify-center shadow-lg shadow-red-500/25">
+              <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z"/></svg>
+            </div>
+            <div>
+              <h1 class="text-xl font-black text-slate-800 tracking-tight">Incidencias Laborales</h1>
+              <p class="text-slate-400 text-xs font-medium mt-0.5">Gestión de faltas, incidentes y reportes del personal</p>
+            </div>
+          </div>
+        </div>
+        <div class="flex items-center gap-3">
+          <button @click="abrirModalNuevo"
+            class="flex items-center gap-2 bg-gradient-to-r from-red-500 to-rose-600 text-white px-5 py-2.5 rounded-xl font-bold text-xs uppercase tracking-wider hover:shadow-lg hover:shadow-red-500/25 hover:-translate-y-0.5 transition-all duration-200">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" d="M12 5v14m-7-7h14"/></svg>
+            Nuevo Reporte
+          </button>
         </div>
       </header>
 
@@ -512,7 +517,7 @@
 
 <script setup>
 import { useSidebar } from '@/composables/useSidebar'
-const { toggleMobileMenu } = useSidebar()
+const { toggleMobileMenu, isSidebarCollapsed } = useSidebar()
 import { ref, computed, watch, onMounted, onUnmounted } from 'vue'
 import axios from 'axios'
 import { useRouter, useRoute } from 'vue-router'

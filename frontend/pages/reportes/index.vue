@@ -34,23 +34,9 @@
     </div>
 
     <!-- MAIN CONTENT -->
-    <main class="flex-1 md:md:ml-64 p-4 md:p-6 w-full transition-all printable-area">
-      <!-- HEADER -->
-      <header class="mb-6 flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-white p-5 rounded-2xl shadow-sm border border-slate-200">
-        <div>
-          <button @click="toggleMobileMenu" class="md:hidden p-2 text-slate-500 hover:text-slate-800 hover:bg-slate-100 rounded-lg transition-colors mr-3 shrink-0">
-            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
-          </button>
-          <div class="flex items-center gap-3">
-             <h1 class="text-2xl font-black text-slate-800 tracking-tight uppercase">Módulo de Reportes</h1>
-             <div class="flex items-center gap-1.5 px-2.5 py-1 bg-emerald-50 border border-emerald-100 rounded-full">
-                <div class="w-2 h-2 rounded-full bg-emerald-500"></div>
-                <span class="text-[9px] font-bold text-emerald-600 uppercase tracking-widest">En Vivo</span>
-             </div>
-          </div>
-          <p class="text-slate-500 mt-1 font-medium text-sm">Dashboard Analítico e Integrado · <span class="text-slate-400">Actualizado: {{ ultimaActualizacion }}</span></p>
-        </div>
-        <div class="w-full md:w-auto flex flex-col md:flex-row items-center gap-4">
+    <main :class="['w-full overflow-x-hidden transition-all duration-300 flex-1 p-4 md:p-6 printable-area', isSidebarCollapsed ? 'md:ml-20' : 'md:ml-64']">
+      <BreadcrumbNav :crumbs="[{ text: 'Módulo de Reportes' }]">
+        <template #right>
           <div class="relative w-full md:w-auto flex justify-end">
             <div @click="dropdownPerfilAbierto = !dropdownPerfilAbierto" class="flex items-center gap-3 pl-6 border-l border-slate-200 cursor-pointer hover:bg-slate-50 p-2 rounded-xl transition-colors no-print">
               <div v-if="fotoUsuario" class="h-10 w-10 rounded-full flex items-center justify-center overflow-hidden ring-2 ring-slate-100">
@@ -92,6 +78,25 @@
             </div>
             <!-- Overlay invisible para cerrar el dropdown si se hace click fuera -->
             <div v-if="dropdownPerfilAbierto" @click="dropdownPerfilAbierto = false" class="fixed inset-0 z-40"></div>
+          </div>
+        </template>
+      </BreadcrumbNav>
+
+      <!-- HEADER -->
+      <header class="mb-6 flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-white p-5 rounded-2xl shadow-sm border border-slate-200">
+        <div class="flex items-center gap-4">
+          <button @click="toggleMobileMenu" class="md:hidden p-2 text-slate-500 hover:text-slate-800 hover:bg-slate-100 rounded-lg transition-colors shrink-0">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
+          </button>
+          <div>
+            <div class="flex items-center gap-3">
+               <h1 class="text-2xl font-black text-slate-800 tracking-tight uppercase">Módulo de Reportes</h1>
+               <div class="flex items-center gap-1.5 px-2.5 py-1 bg-emerald-50 border border-emerald-100 rounded-full">
+                  <div class="w-2 h-2 rounded-full bg-emerald-500"></div>
+                  <span class="text-[9px] font-bold text-emerald-600 uppercase tracking-widest">En Vivo</span>
+               </div>
+            </div>
+            <p class="text-slate-500 mt-1 font-medium text-sm">Dashboard Analítico e Integrado · <span class="text-slate-400">Actualizado: {{ ultimaActualizacion }}</span></p>
           </div>
         </div>
       </header>
@@ -1006,7 +1011,7 @@
 
 <script setup>
 import { useSidebar } from '@/composables/useSidebar'
-const { toggleMobileMenu } = useSidebar()
+const { toggleMobileMenu, isSidebarCollapsed } = useSidebar()
 import { ref, onMounted, onUnmounted, computed, watch } from 'vue'
 import axios from 'axios'
 import { useRouter } from 'vue-router'

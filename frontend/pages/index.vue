@@ -2,18 +2,9 @@
   <div class="min-h-screen bg-gray-100 flex font-sans">
     <AppSidebar />
 
-    <main class="flex-1 md:ml-64 p-4 md:p-8 overflow-y-auto transition-all duration-300 w-full overflow-x-hidden">
-      <header class="mb-10 flex justify-between items-center bg-white p-5 rounded-3xl shadow-sm border border-slate-100">
-        <div class="flex items-center gap-4">
-          <button @click="toggleMobileMenu" class="md:hidden p-2 text-slate-500 hover:text-slate-800 hover:bg-slate-100 rounded-lg transition-colors">
-            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
-          </button>
-          <div>
-            <h1 class="text-2xl md:text-3xl font-black text-slate-800 tracking-tight uppercase">Panel Principal</h1>
-            <p class="text-slate-500 mt-1 text-sm md:text-base font-medium italic">📅 {{ fechaActual }}</p>
-          </div>
-        </div>
-        <div class="flex items-center gap-6">
+    <main :class="['flex-1 p-4 md:p-8 overflow-y-auto transition-all duration-300 w-full overflow-x-hidden', isSidebarCollapsed ? 'md:ml-20' : 'md:ml-64']">
+      <BreadcrumbNav :crumbs="[{ text: 'Dashboard' }]">
+        <template #right>
           <NotificationBell v-if="isDashboardAdmin || allowedDashboard.includes('Campanita de Notificaciones')" />
           <div class="relative">
             <div @click="dropdownPerfilAbierto = !dropdownPerfilAbierto" class="flex items-center gap-3 pl-6 border-l border-slate-200 cursor-pointer hover:bg-slate-50 p-2 rounded-xl transition-colors">
@@ -57,6 +48,25 @@
             <!-- Overlay invisible para cerrar el dropdown si se hace click fuera -->
             <div v-if="dropdownPerfilAbierto" @click="dropdownPerfilAbierto = false" class="fixed inset-0 z-40"></div>
           </div>
+        </template>
+      </BreadcrumbNav>
+      <header class="mb-10 flex flex-col md:flex-row justify-between items-center bg-white p-5 rounded-3xl shadow-sm border border-slate-100 gap-4">
+        <div class="flex items-center gap-4 flex-1">
+          <button @click="toggleMobileMenu" class="md:hidden p-2 text-slate-500 hover:text-slate-800 hover:bg-slate-100 rounded-lg transition-colors">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
+          </button>
+          <div>
+            <h1 class="text-2xl md:text-3xl font-black text-slate-800 tracking-tight uppercase">Panel Principal</h1>
+            <p class="text-slate-500 mt-1 text-sm md:text-base font-medium italic">📅 {{ fechaActual }}</p>
+          </div>
+        </div>
+        
+        <div class="hidden xl:flex flex-1 justify-center">
+          <DailyVerse />
+        </div>
+
+        <div class="hidden md:flex flex-1 justify-end">
+          <WeatherWidget />
         </div>
       </header>
 
@@ -271,7 +281,7 @@
 <script setup>
 import axios from 'axios'
 import { useSidebar } from '@/composables/useSidebar'
-const { toggleMobileMenu } = useSidebar()
+const { toggleMobileMenu, isSidebarCollapsed } = useSidebar()
 
 const menuAbierto = ref(false)
 const nombreUsuario = ref('')
@@ -358,7 +368,7 @@ const tarjetas = computed(() => {
     { label: 'Tickets Ptes.', valor: stats.value.tickets, icon: '🎫', color: 'bg-gradient-to-br from-orange-400 to-orange-500 ring-offset-orange-50', bgIcon: 'bg-white/20 text-white', hoverGlow: 'shadow-orange-500/30', sub: 'Soporte IT', link: '/tickets' },
     { label: 'Incidentes Ptes.', valor: stats.value.incidencias, icon: '⚠️', color: 'bg-gradient-to-br from-red-400 to-red-500 ring-offset-red-50', bgIcon: 'bg-white/20 text-white', hoverGlow: 'shadow-red-500/30', sub: 'Requieren atención', link: '/reportes-incidencia' },
     { label: 'Cumpleañeros', valor: stats.value.cumpleaneros, icon: '🎂', color: 'bg-gradient-to-br from-fuchsia-400 to-fuchsia-500 ring-offset-fuchsia-50', bgIcon: 'bg-white/20 text-white', hoverGlow: 'shadow-fuchsia-500/30', sub: 'Este mes', link: '#cumpleaneros' },
-    { label: 'Vencimientos', valor: stats.value.vencimientos, icon: '📄', color: 'bg-gradient-to-br from-indigo-500 to-indigo-600 ring-offset-indigo-50', bgIcon: 'bg-white/20 text-white', hoverGlow: 'shadow-indigo-500/30', sub: 'Próximos 30 días', link: '#vencimientos' },
+    { label: 'Vencimientos', valor: stats.value.vencimientos, icon: '📄', color: 'bg-gradient-to-br from-indigo-500 to-indigo-600 ring-offset-indigo-50', bgIcon: 'bg-white/20 text-white', hoverGlow: 'shadow-indigo-500/30', sub: 'Mes Actual', link: '#vencimientos' },
   ];
 
   if (!isDashboardAdmin.value) {
@@ -375,7 +385,7 @@ const tarjetas = computed(() => {
 const handleStatClick = async (link) => {
   if (!link) return
   if (link === '#vencimientos') {
-    mesVencimiento.value = 'todos'
+    mesVencimiento.value = new Date().getMonth() + 1
     await fetchVencimientos()
   }
   if (link.startsWith('#')) {
@@ -389,7 +399,7 @@ const handleStatClick = async (link) => {
 }
 
 const mesCumpleaneros = ref(new Date().getMonth() + 1)
-const mesVencimiento = ref('proximos')
+const mesVencimiento = ref(new Date().getMonth() + 1)
 
 const calcularDiasRestantesContratoTexto = (fechaFinal) => {
   if (!fechaFinal) return '';

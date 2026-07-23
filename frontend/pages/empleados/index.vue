@@ -2,63 +2,67 @@
   <div class="min-h-screen bg-gray-100 flex font-sans">
     <AppSidebar />
 
-    <main class="w-full overflow-x-hidden transition-all duration-300 flex-1 md:ml-64 p-8">
-      <header class="mb-10 flex flex-col gap-5 bg-white p-5 rounded-3xl shadow-sm border border-slate-100">
-        <div class="flex justify-between items-center w-full">
-          <button @click="toggleMobileMenu" class="md:hidden p-2 text-slate-500 hover:text-slate-800 hover:bg-slate-100 rounded-lg transition-colors mr-3 shrink-0">
-            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
-          </button>
-          <div>
-            <h1 class="text-3xl font-black text-slate-800 tracking-tight uppercase">Lista de Empleados</h1>
-            <p class="text-slate-500 mt-1 font-medium italic">Personal registrado en la plataforma.</p>
-          </div>
-          <div class="flex items-center gap-6">
-            <button v-if="puedeCrearNuevoEmpleado" @click="abrirModalNuevo" class="bg-green-600 text-white px-6 py-3 rounded-xl font-black uppercase text-xs hover:bg-green-700 transition-all shadow-lg shadow-green-200">
-              + Nuevo Empleado
-            </button>
-            <div class="relative">
-              <div @click="dropdownPerfilAbierto = !dropdownPerfilAbierto" class="flex items-center gap-3 pl-6 border-l border-slate-200 cursor-pointer hover:bg-slate-50 p-2 rounded-xl transition-colors">
-                <div v-if="fotoUsuario" class="h-10 w-10 rounded-full flex items-center justify-center overflow-hidden ring-2 ring-slate-100">
+    <main :class="['w-full overflow-x-hidden transition-all duration-300 flex-1 p-8', isSidebarCollapsed ? 'md:ml-20' : 'md:ml-64']">
+      <BreadcrumbNav :crumbs="[{ text: 'Empleados' }]">
+        <template #right>
+          <div class="relative">
+            <div @click="dropdownPerfilAbierto = !dropdownPerfilAbierto" class="flex items-center gap-3 pl-6 border-l border-slate-200 cursor-pointer hover:bg-slate-50 p-2 rounded-xl transition-colors">
+              <div v-if="fotoUsuario" class="h-10 w-10 rounded-full flex items-center justify-center overflow-hidden ring-2 ring-slate-100">
+                <img :src="`${$config.public.apiBase}${fotoUsuario}`" class="w-full h-full object-cover" />
+              </div>
+              <div v-else class="h-10 w-10 rounded-full bg-slate-800 flex items-center justify-center text-blue-400 font-black text-lg ring-2 ring-slate-100 uppercase">
+                {{ nombreUsuario ? nombreUsuario.charAt(0) : 'U' }}
+              </div>
+              <div class="flex flex-col">
+                <span class="text-[10px] text-slate-400 font-black uppercase tracking-widest">Usuario Activo</span>
+                <span class="text-base font-black text-slate-900 leading-tight">{{ nombreUsuario || 'Cargando...' }}</span>
+              </div>
+            </div>
+
+            <!-- Dropdown Menu -->
+            <div v-if="dropdownPerfilAbierto" class="absolute right-0 mt-2 w-64 bg-white rounded-2xl shadow-xl border border-slate-100 overflow-hidden z-50 animate-in slide-in-from-top-2 duration-200">
+              <div class="p-5 border-b border-slate-100 bg-slate-50 flex items-center gap-4">
+                <div v-if="fotoUsuario" class="h-12 w-12 rounded-full flex items-center justify-center overflow-hidden ring-2 ring-white shadow-sm shrink-0">
                   <img :src="`${$config.public.apiBase}${fotoUsuario}`" class="w-full h-full object-cover" />
                 </div>
-                <div v-else class="h-10 w-10 rounded-full bg-slate-800 flex items-center justify-center text-blue-400 font-black text-lg ring-2 ring-slate-100 uppercase">
+                <div v-else class="h-12 w-12 rounded-full bg-slate-800 flex items-center justify-center text-blue-400 font-black text-xl ring-2 ring-white shadow-sm shrink-0 uppercase">
                   {{ nombreUsuario ? nombreUsuario.charAt(0) : 'U' }}
                 </div>
-                <div class="flex flex-col">
-                  <span class="text-[10px] text-slate-400 font-black uppercase tracking-widest">Usuario Activo</span>
-                  <span class="text-base font-black text-slate-900 leading-tight">{{ nombreUsuario || 'Cargando...' }}</span>
+                <div>
+                  <p class="font-black text-slate-800 text-sm leading-tight">{{ nombreUsuario || 'Cargando...' }}</p>
+                  <p class="text-[10px] font-bold text-blue-500 uppercase tracking-widest mt-0.5">{{ rolNombre || 'Cargando...' }}</p>
                 </div>
               </div>
-
-              <!-- Dropdown Menu -->
-              <div v-if="dropdownPerfilAbierto" class="absolute right-0 mt-2 w-64 bg-white rounded-2xl shadow-xl border border-slate-100 overflow-hidden z-50 animate-in slide-in-from-top-2 duration-200">
-                <div class="p-5 border-b border-slate-100 bg-slate-50 flex items-center gap-4">
-                  <div v-if="fotoUsuario" class="h-12 w-12 rounded-full flex items-center justify-center overflow-hidden ring-2 ring-white shadow-sm shrink-0">
-                    <img :src="`${$config.public.apiBase}${fotoUsuario}`" class="w-full h-full object-cover" />
-                  </div>
-                  <div v-else class="h-12 w-12 rounded-full bg-slate-800 flex items-center justify-center text-blue-400 font-black text-xl ring-2 ring-white shadow-sm shrink-0 uppercase">
-                    {{ nombreUsuario ? nombreUsuario.charAt(0) : 'U' }}
-                  </div>
-                  <div>
-                    <p class="font-black text-slate-800 text-sm leading-tight">{{ nombreUsuario || 'Cargando...' }}</p>
-                    <p class="text-[10px] font-bold text-blue-500 uppercase tracking-widest mt-0.5">{{ rolNombre || 'Cargando...' }}</p>
-                  </div>
-                </div>
-                <div class="p-2 space-y-1">
-                  <button @click="abrirModalPerfil(); dropdownPerfilAbierto = false" class="w-full text-left flex items-center gap-3 p-3 hover:bg-slate-50 rounded-xl transition-colors group">
-                    <span class="text-lg group-hover:scale-110 transition-transform">👤</span>
-                    <span class="text-sm font-bold text-slate-700">Mi Perfil de Usuario</span>
-                  </button>
-                  <button @click="logout" class="w-full text-left flex items-center gap-3 p-3 hover:bg-red-50 rounded-xl transition-colors group">
-                    <span class="text-lg group-hover:scale-110 transition-transform">🚪</span>
-                    <span class="text-sm font-bold text-red-600">Cerrar Sesión</span>
-                  </button>
-                </div>
+              <div class="p-2 space-y-1">
+                <button @click="abrirModalPerfil(); dropdownPerfilAbierto = false" class="w-full text-left flex items-center gap-3 p-3 hover:bg-slate-50 rounded-xl transition-colors group">
+                  <span class="text-lg group-hover:scale-110 transition-transform">👤</span>
+                  <span class="text-sm font-bold text-slate-700">Mi Perfil de Usuario</span>
+                </button>
+                <button @click="logout" class="w-full text-left flex items-center gap-3 p-3 hover:bg-red-50 rounded-xl transition-colors group">
+                  <span class="text-lg group-hover:scale-110 transition-transform">🚪</span>
+                  <span class="text-sm font-bold text-red-600">Cerrar Sesión</span>
+                </button>
               </div>
-              <!-- Overlay invisible para cerrar el dropdown si se hace click fuera -->
-              <div v-if="dropdownPerfilAbierto" @click="dropdownPerfilAbierto = false" class="fixed inset-0 z-40"></div>
+            </div>
+            <!-- Overlay invisible para cerrar el dropdown si se hace click fuera -->
+            <div v-if="dropdownPerfilAbierto" @click="dropdownPerfilAbierto = false" class="fixed inset-0 z-40"></div>
+          </div>
+        </template>
+      </BreadcrumbNav>
+      <header class="mb-10 flex flex-col gap-5 bg-white p-5 rounded-3xl shadow-sm border border-slate-100">
+        <div class="flex justify-between items-center w-full">
+          <div class="flex items-center gap-4">
+            <button @click="toggleMobileMenu" class="md:hidden p-2 text-slate-500 hover:text-slate-800 hover:bg-slate-100 rounded-lg transition-colors shrink-0">
+              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
+            </button>
+            <div>
+              <h1 class="text-3xl font-black text-slate-800 tracking-tight uppercase">Lista de Empleados</h1>
+              <p class="text-slate-500 mt-1 font-medium italic">Personal registrado en la plataforma.</p>
             </div>
           </div>
+          <button v-if="puedeCrearNuevoEmpleado" @click="abrirModalNuevo" class="bg-green-600 text-white px-6 py-3 rounded-xl font-black uppercase text-xs hover:bg-green-700 transition-all shadow-lg shadow-green-200">
+            + Nuevo Empleado
+          </button>
         </div>
         <div class="flex flex-wrap gap-4 items-center w-full">
           <div class="flex-1 min-w-[250px]">
@@ -389,7 +393,7 @@
 
 <script setup>
 import { useSidebar } from '@/composables/useSidebar'
-const { toggleMobileMenu } = useSidebar()
+const { toggleMobileMenu, isSidebarCollapsed } = useSidebar()
 import { ref, onMounted, computed, onUnmounted, watch } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import axios from 'axios'
@@ -584,7 +588,7 @@ const filteredEmpleados = computed(() => {
 })
 
 const currentPage = ref(1)
-const itemsPerPage = ref(10)
+const itemsPerPage = ref(25)
 
 const paginatedEmpleados = computed(() => {
   const start = (currentPage.value - 1) * itemsPerPage.value
@@ -672,11 +676,14 @@ const eliminarEmpleado = async (id) => {
   }
 }
 
-onMounted(async () => {
-  if (route.query.nuevo === 'true') {
+watch(() => route.query.nuevo, (newVal) => {
+  if (newVal === 'true') {
     abrirModalNuevo()
     router.replace('/empleados')
   }
+}, { immediate: true })
+
+onMounted(async () => {
 
   nombreUsuario.value = localStorage.getItem('usuarioNombre') || 'Invitado'
   fotoUsuario.value = localStorage.getItem('usuarioFoto') || null

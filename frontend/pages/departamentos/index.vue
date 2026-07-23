@@ -2,63 +2,68 @@
   <div class="min-h-screen bg-gray-100 flex font-sans">
     <AppSidebar />
 
-    <main class="w-full overflow-x-hidden transition-all duration-300 flex-1 md:ml-64 p-8">
-      <header class="mb-10 flex flex-col gap-5 bg-white p-5 rounded-3xl shadow-sm border border-slate-100">
-        <div class="flex justify-between items-center w-full">
-          <button @click="toggleMobileMenu" class="md:hidden p-2 text-slate-500 hover:text-slate-800 hover:bg-slate-100 rounded-lg transition-colors mr-3 shrink-0">
-            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
-          </button>
-          <div>
-            <h1 class="text-3xl font-black text-slate-800 tracking-tight uppercase">Departamentos</h1>
-            <p class="text-slate-500 mt-1 font-medium italic">Gestión de departamentos de la empresa.</p>
-          </div>
-          <div class="flex items-center gap-4">
-            <button v-if="hasPermission('Departamentos', 'puedeCrear')" @click="abrirModalCrear" class="bg-green-600 text-white px-6 py-3 rounded-xl font-black uppercase text-xs hover:bg-green-700 transition-all shadow-lg shadow-green-200 flex items-center gap-2">
-              <span>+</span> Crear Nuevo
-            </button>
-            <div class="relative w-full md:w-auto flex justify-end">
-              <div @click="dropdownPerfilAbierto = !dropdownPerfilAbierto" class="flex items-center gap-3 pl-6 border-l border-slate-200 cursor-pointer hover:bg-slate-50 p-2 rounded-xl transition-colors no-print">
-                <div v-if="fotoUsuario" class="h-10 w-10 rounded-full flex items-center justify-center overflow-hidden ring-2 ring-slate-100">
+    <main :class="['w-full overflow-x-hidden transition-all duration-300 flex-1 p-8', isSidebarCollapsed ? 'md:ml-20' : 'md:ml-64']">
+      <BreadcrumbNav :crumbs="[{ text: 'Departamentos' }]">
+        <template #right>
+          <div class="relative w-full md:w-auto flex justify-end">
+            <div @click="dropdownPerfilAbierto = !dropdownPerfilAbierto" class="flex items-center gap-3 pl-6 border-l border-slate-200 cursor-pointer hover:bg-slate-50 p-2 rounded-xl transition-colors no-print">
+              <div v-if="fotoUsuario" class="h-10 w-10 rounded-full flex items-center justify-center overflow-hidden ring-2 ring-slate-100">
+                <img :src="`${$config.public.apiBase}${fotoUsuario}`" class="w-full h-full object-cover" />
+              </div>
+              <div v-else class="h-10 w-10 rounded-full bg-slate-800 flex items-center justify-center text-blue-400 font-black text-lg ring-2 ring-slate-100 uppercase">
+                {{ usuarioActual ? usuarioActual.charAt(0) : 'U' }}
+              </div>
+              <div class="flex flex-col text-left">
+                <span class="text-[10px] text-slate-400 font-black uppercase tracking-widest">Usuario Activo</span>
+                <span class="text-base font-black text-slate-900 leading-tight">{{ usuarioActual || 'Cargando...' }}</span>
+              </div>
+            </div>
+
+            <!-- Dropdown Menu -->
+            <div v-if="dropdownPerfilAbierto" class="absolute right-0 mt-14 w-64 bg-white rounded-2xl shadow-xl border border-slate-100 overflow-hidden z-50 animate-in slide-in-from-top-2 duration-200 no-print">
+              <div class="p-5 border-b border-slate-100 bg-slate-50 flex items-center gap-4">
+                <div v-if="fotoUsuario" class="h-12 w-12 rounded-full flex items-center justify-center overflow-hidden ring-2 ring-white shadow-sm shrink-0">
                   <img :src="`${$config.public.apiBase}${fotoUsuario}`" class="w-full h-full object-cover" />
                 </div>
-                <div v-else class="h-10 w-10 rounded-full bg-slate-800 flex items-center justify-center text-blue-400 font-black text-lg ring-2 ring-slate-100 uppercase">
+                <div v-else class="h-12 w-12 rounded-full bg-slate-800 flex items-center justify-center text-blue-400 font-black text-xl ring-2 ring-white shadow-sm shrink-0 uppercase">
                   {{ usuarioActual ? usuarioActual.charAt(0) : 'U' }}
                 </div>
-                <div class="flex flex-col text-left">
-                  <span class="text-[10px] text-slate-400 font-black uppercase tracking-widest">Usuario Activo</span>
-                  <span class="text-base font-black text-slate-900 leading-tight">{{ usuarioActual || 'Cargando...' }}</span>
+                <div>
+                  <p class="font-black text-slate-800 text-sm leading-tight">{{ usuarioActual || 'Cargando...' }}</p>
+                  <p class="text-[10px] font-bold text-blue-500 uppercase tracking-widest mt-0.5">{{ rolNombre || 'Cargando...' }}</p>
                 </div>
               </div>
+              <div class="p-2 space-y-1">
+                <button @click="abrirModalPerfil(); dropdownPerfilAbierto = false" class="w-full text-left flex items-center gap-3 p-3 hover:bg-slate-50 rounded-xl transition-colors group">
+                  <span class="text-lg group-hover:scale-110 transition-transform">👤</span>
+                  <span class="text-sm font-bold text-slate-700">Mi Perfil de Usuario</span>
+                </button>
+                <button @click="logout" class="w-full text-left flex items-center gap-3 p-3 hover:bg-red-50 rounded-xl transition-colors group">
+                  <span class="text-lg group-hover:scale-110 transition-transform">🚪</span>
+                  <span class="text-sm font-bold text-red-600">Cerrar Sesión</span>
+                </button>
+              </div>
+            </div>
+            <!-- Overlay invisible para cerrar el dropdown si se hace click fuera -->
+            <div v-if="dropdownPerfilAbierto" @click="dropdownPerfilAbierto = false" class="fixed inset-0 z-40"></div>
+          </div>
+        </template>
+      </BreadcrumbNav>
 
-              <!-- Dropdown Menu -->
-              <div v-if="dropdownPerfilAbierto" class="absolute right-0 mt-14 w-64 bg-white rounded-2xl shadow-xl border border-slate-100 overflow-hidden z-50 animate-in slide-in-from-top-2 duration-200 no-print">
-                <div class="p-5 border-b border-slate-100 bg-slate-50 flex items-center gap-4">
-                  <div v-if="fotoUsuario" class="h-12 w-12 rounded-full flex items-center justify-center overflow-hidden ring-2 ring-white shadow-sm shrink-0">
-                    <img :src="`${$config.public.apiBase}${fotoUsuario}`" class="w-full h-full object-cover" />
-                  </div>
-                  <div v-else class="h-12 w-12 rounded-full bg-slate-800 flex items-center justify-center text-blue-400 font-black text-xl ring-2 ring-white shadow-sm shrink-0 uppercase">
-                    {{ usuarioActual ? usuarioActual.charAt(0) : 'U' }}
-                  </div>
-                  <div>
-                    <p class="font-black text-slate-800 text-sm leading-tight">{{ usuarioActual || 'Cargando...' }}</p>
-                    <p class="text-[10px] font-bold text-blue-500 uppercase tracking-widest mt-0.5">{{ rolNombre || 'Cargando...' }}</p>
-                  </div>
-                </div>
-                <div class="p-2 space-y-1">
-                  <button @click="abrirModalPerfil(); dropdownPerfilAbierto = false" class="w-full text-left flex items-center gap-3 p-3 hover:bg-slate-50 rounded-xl transition-colors group">
-                    <span class="text-lg group-hover:scale-110 transition-transform">👤</span>
-                    <span class="text-sm font-bold text-slate-700">Mi Perfil de Usuario</span>
-                  </button>
-                  <button @click="logout" class="w-full text-left flex items-center gap-3 p-3 hover:bg-red-50 rounded-xl transition-colors group">
-                    <span class="text-lg group-hover:scale-110 transition-transform">🚪</span>
-                    <span class="text-sm font-bold text-red-600">Cerrar Sesión</span>
-                  </button>
-                </div>
-              </div>
-              <!-- Overlay invisible para cerrar el dropdown si se hace click fuera -->
-              <div v-if="dropdownPerfilAbierto" @click="dropdownPerfilAbierto = false" class="fixed inset-0 z-40"></div>
+      <header class="mb-10 flex flex-col gap-5 bg-white p-5 rounded-3xl shadow-sm border border-slate-100">
+        <div class="flex justify-between items-center w-full">
+          <div class="flex items-center gap-4">
+            <button @click="toggleMobileMenu" class="md:hidden p-2 text-slate-500 hover:text-slate-800 hover:bg-slate-100 rounded-lg transition-colors shrink-0">
+              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
+            </button>
+            <div>
+              <h1 class="text-3xl font-black text-slate-800 tracking-tight uppercase">Departamentos</h1>
+              <p class="text-slate-500 mt-1 font-medium italic">Gestión de departamentos de la empresa.</p>
             </div>
           </div>
+          <button v-if="hasPermission('Departamentos', 'puedeCrear')" @click="abrirModalCrear" class="bg-green-600 text-white px-6 py-3 rounded-xl font-black uppercase text-xs hover:bg-green-700 transition-all shadow-lg shadow-green-200 flex items-center gap-2">
+            <span>+</span> Crear Nuevo
+          </button>
         </div>
         <div class="w-full">
           <input 
@@ -210,7 +215,7 @@
 
 <script setup>
 import { useSidebar } from '@/composables/useSidebar'
-const { toggleMobileMenu } = useSidebar()
+const { toggleMobileMenu, isSidebarCollapsed } = useSidebar()
 import { ref, computed, onMounted } from 'vue'
 import axios from 'axios'
 import { usePermisos } from '~/composables/usePermisos'

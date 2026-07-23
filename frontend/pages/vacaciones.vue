@@ -2,63 +2,67 @@
   <div class="min-h-screen bg-gray-100 flex font-sans">
     <AppSidebar />
 
-    <main class="w-full overflow-x-hidden transition-all duration-300 flex-1 md:ml-64 p-8">
-      <header class="mb-10 flex flex-col gap-5 bg-white p-5 rounded-3xl shadow-sm border border-slate-100">
-        <div class="flex justify-between items-center w-full">
-          <button @click="toggleMobileMenu" class="md:hidden p-2 text-slate-500 hover:text-slate-800 hover:bg-slate-100 rounded-lg transition-colors mr-3 shrink-0">
-            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
-          </button>
-          <div>
-            <h1 class="text-3xl font-black text-slate-800 tracking-tight uppercase">Registrar Vacaciones</h1>
-            <p class="text-slate-500 mt-1 font-medium italic">Gestión de vacaciones para los empleados.</p>
+    <main :class="['w-full overflow-x-hidden transition-all duration-300 flex-1 p-8', isSidebarCollapsed ? 'md:ml-20' : 'md:ml-64']">
+      <BreadcrumbNav :crumbs="[{ text: 'Registrar Vacaciones' }]">
+        <template #right>
+          <div class="relative">
+            <div @click="dropdownPerfilAbierto = !dropdownPerfilAbierto" class="flex items-center gap-3 pl-6 border-l border-slate-200 cursor-pointer hover:bg-slate-50 p-2 rounded-xl transition-colors">
+              <div v-if="fotoUsuario" class="h-10 w-10 rounded-full flex items-center justify-center overflow-hidden ring-2 ring-slate-100">
+              <img :src="`${$config.public.apiBase}${fotoUsuario}`" class="w-full h-full object-cover" />
+            </div>
+            <div v-else class="h-10 w-10 rounded-full bg-slate-800 flex items-center justify-center text-blue-400 font-black text-lg ring-2 ring-slate-100 uppercase">
+              {{ nombreUsuario ? nombreUsuario.charAt(0) : 'U' }}
+            </div>
+            <div class="flex flex-col text-right pr-2">
+              <span class="text-[10px] text-slate-400 font-black uppercase tracking-widest">Usuario Activo</span>
+              <span class="text-base font-black text-slate-900 leading-tight">{{ nombreUsuario || 'Cargando...' }}</span>
+            </div>
           </div>
-          <div class="flex items-center gap-6">
-            <button v-if="!empleadoSeleccionado" @click="generarPDFVacacionesGlobal" class="bg-indigo-600 text-white px-6 py-3 rounded-xl font-black uppercase text-xs hover:bg-indigo-700 transition-all shadow-lg shadow-indigo-200 flex items-center gap-2">
-              <span>📄</span> Reportes Vacaciones
-            </button>
-            <div class="relative">
-              <div @click="dropdownPerfilAbierto = !dropdownPerfilAbierto" class="flex items-center gap-3 pl-6 border-l border-slate-200 cursor-pointer hover:bg-slate-50 p-2 rounded-xl transition-colors">
-                <div v-if="fotoUsuario" class="h-10 w-10 rounded-full flex items-center justify-center overflow-hidden ring-2 ring-slate-100">
+
+          <!-- Dropdown Menu -->
+          <div v-if="dropdownPerfilAbierto" class="absolute right-0 mt-2 w-64 bg-white rounded-2xl shadow-xl border border-slate-100 overflow-hidden z-50 animate-in slide-in-from-top-2 duration-200">
+            <div class="p-5 border-b border-slate-100 bg-slate-50 flex items-center gap-4">
+              <div v-if="fotoUsuario" class="h-12 w-12 rounded-full flex items-center justify-center overflow-hidden ring-2 ring-white shadow-sm shrink-0">
                 <img :src="`${$config.public.apiBase}${fotoUsuario}`" class="w-full h-full object-cover" />
               </div>
-              <div v-else class="h-10 w-10 rounded-full bg-slate-800 flex items-center justify-center text-blue-400 font-black text-lg ring-2 ring-slate-100 uppercase">
+              <div v-else class="h-12 w-12 rounded-full bg-slate-800 flex items-center justify-center text-blue-400 font-black text-xl ring-2 ring-white shadow-sm shrink-0 uppercase">
                 {{ nombreUsuario ? nombreUsuario.charAt(0) : 'U' }}
               </div>
-              <div class="flex flex-col text-right pr-2">
-                <span class="text-[10px] text-slate-400 font-black uppercase tracking-widest">Usuario Activo</span>
-                <span class="text-base font-black text-slate-900 leading-tight">{{ nombreUsuario || 'Cargando...' }}</span>
+              <div>
+                <p class="font-black text-slate-800 text-sm leading-tight">{{ nombreUsuario || 'Cargando...' }}</p>
+                <p class="text-[10px] font-bold text-blue-500 uppercase tracking-widest mt-0.5">{{ rolNombre || 'Cargando...' }}</p>
               </div>
             </div>
-
-            <!-- Dropdown Menu -->
-            <div v-if="dropdownPerfilAbierto" class="absolute right-0 mt-2 w-64 bg-white rounded-2xl shadow-xl border border-slate-100 overflow-hidden z-50 animate-in slide-in-from-top-2 duration-200">
-              <div class="p-5 border-b border-slate-100 bg-slate-50 flex items-center gap-4">
-                <div v-if="fotoUsuario" class="h-12 w-12 rounded-full flex items-center justify-center overflow-hidden ring-2 ring-white shadow-sm shrink-0">
-                  <img :src="`${$config.public.apiBase}${fotoUsuario}`" class="w-full h-full object-cover" />
-                </div>
-                <div v-else class="h-12 w-12 rounded-full bg-slate-800 flex items-center justify-center text-blue-400 font-black text-xl ring-2 ring-white shadow-sm shrink-0 uppercase">
-                  {{ nombreUsuario ? nombreUsuario.charAt(0) : 'U' }}
-                </div>
-                <div>
-                  <p class="font-black text-slate-800 text-sm leading-tight">{{ nombreUsuario || 'Cargando...' }}</p>
-                  <p class="text-[10px] font-bold text-blue-500 uppercase tracking-widest mt-0.5">{{ rolNombre || 'Cargando...' }}</p>
-                </div>
-              </div>
-              <div class="p-2 space-y-1">
-                <button @click="abrirModalPerfil(); dropdownPerfilAbierto = false" class="w-full text-left flex items-center gap-3 p-3 hover:bg-slate-50 rounded-xl transition-colors group">
-                  <span class="text-lg group-hover:scale-110 transition-transform">👤</span>
-                  <span class="text-sm font-bold text-slate-700">Mi Perfil de Usuario</span>
-                </button>
-                <button @click="logout" class="w-full text-left flex items-center gap-3 p-3 hover:bg-red-50 rounded-xl transition-colors group">
-                  <span class="text-lg group-hover:scale-110 transition-transform">🚪</span>
-                  <span class="text-sm font-bold text-red-600">Cerrar Sesión</span>
-                </button>
-              </div>
+            <div class="p-2 space-y-1">
+              <button @click="abrirModalPerfil(); dropdownPerfilAbierto = false" class="w-full text-left flex items-center gap-3 p-3 hover:bg-slate-50 rounded-xl transition-colors group">
+                <span class="text-lg group-hover:scale-110 transition-transform">👤</span>
+                <span class="text-sm font-bold text-slate-700">Mi Perfil de Usuario</span>
+              </button>
+              <button @click="logout" class="w-full text-left flex items-center gap-3 p-3 hover:bg-red-50 rounded-xl transition-colors group">
+                <span class="text-lg group-hover:scale-110 transition-transform">🚪</span>
+                <span class="text-sm font-bold text-red-600">Cerrar Sesión</span>
+              </button>
             </div>
-            <!-- Overlay invisible para cerrar el dropdown si se hace click fuera -->
-            <div v-if="dropdownPerfilAbierto" @click="dropdownPerfilAbierto = false" class="fixed inset-0 z-40"></div>
           </div>
+          <!-- Overlay invisible para cerrar el dropdown si se hace click fuera -->
+          <div v-if="dropdownPerfilAbierto" @click="dropdownPerfilAbierto = false" class="fixed inset-0 z-40"></div>
+        </div>
+        </template>
+      </BreadcrumbNav>
+      <header class="mb-10 flex flex-col gap-5 bg-white p-5 rounded-3xl shadow-sm border border-slate-100">
+        <div class="flex justify-between items-center w-full">
+          <div class="flex items-center gap-4">
+            <button @click="toggleMobileMenu" class="md:hidden p-2 text-slate-500 hover:text-slate-800 hover:bg-slate-100 rounded-lg transition-colors shrink-0">
+              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
+            </button>
+            <div>
+              <h1 class="text-3xl font-black text-slate-800 tracking-tight uppercase">Registrar Vacaciones</h1>
+              <p class="text-slate-500 mt-1 font-medium italic">Gestión de vacaciones para los empleados.</p>
+            </div>
           </div>
+          <button v-if="!empleadoSeleccionado" @click="generarPDFVacacionesGlobal" class="bg-indigo-600 text-white px-6 py-3 rounded-xl font-black uppercase text-xs hover:bg-indigo-700 transition-all shadow-lg shadow-indigo-200 flex items-center gap-2">
+            <span>📄</span> Reportes Vacaciones
+          </button>
         </div>
       </header>
 
@@ -98,11 +102,11 @@
                 placeholder="Buscar por nombre, apellido o identidad..." 
                 class="w-full p-3 rounded-xl bg-slate-50 border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all placeholder:italic shadow-sm"
               >
-              <div class="bg-white border border-slate-200 rounded-xl shadow-sm max-h-96 overflow-y-auto">
+              <div class="bg-white border border-slate-200 rounded-xl shadow-sm">
                 <div v-if="empleadosFiltrados.length === 0" class="p-6 text-center text-slate-400 text-sm italic">
                   No se encontraron resultados
                 </div>
-                <div v-else class="divide-y divide-slate-100">
+                <div v-else class="divide-y divide-slate-100 max-h-[800px] overflow-y-auto">
                   <button 
                     v-for="emp in empleadosFiltrados" 
                     :key="emp.id" 
@@ -130,6 +134,20 @@
                       </span>
                     </div>
                   </button>
+                </div>
+                <!-- Pagination -->
+                <div v-if="totalPages > 1" class="p-4 border-t border-slate-100 flex justify-between items-center bg-slate-50 rounded-b-xl flex-col sm:flex-row gap-4">
+                  <span class="text-xs font-medium text-slate-500">
+                    Mostrando {{ (currentPage - 1) * itemsPerPage + 1 }} - 
+                    {{ Math.min(currentPage * itemsPerPage, empleadosFiltradosTotales.length) }} de {{ empleadosFiltradosTotales.length }} registros
+                  </span>
+                  <div class="flex items-center gap-2">
+                    <button @click="prevPage" :disabled="currentPage === 1" class="px-3 py-1.5 border border-slate-200 rounded-lg text-xs font-bold text-slate-600 hover:bg-white disabled:opacity-50 disabled:cursor-not-allowed transition-colors">Anterior</button>
+                    <div class="flex gap-1 overflow-x-auto max-w-[150px] scrollbar-thin">
+                      <button v-for="page in totalPages" :key="page" @click="currentPage = page" :class="['w-8 h-8 shrink-0 rounded-lg text-xs font-bold transition-colors', currentPage === page ? 'bg-blue-600 text-white shadow-md' : 'text-slate-600 hover:bg-white']">{{ page }}</button>
+                    </div>
+                    <button @click="nextPage" :disabled="currentPage === totalPages" class="px-3 py-1.5 border border-slate-200 rounded-lg text-xs font-bold text-slate-600 hover:bg-white disabled:opacity-50 disabled:cursor-not-allowed transition-colors">Siguiente</button>
+                  </div>
                 </div>
               </div>
             </div>
@@ -502,7 +520,7 @@
 
 <script setup>
 import { useSidebar } from '@/composables/useSidebar'
-const { toggleMobileMenu } = useSidebar()
+const { toggleMobileMenu, isSidebarCollapsed } = useSidebar()
 import { ref, onMounted, onUnmounted, watch, computed } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import axios from 'axios'
@@ -816,7 +834,10 @@ const vacacionesHistorialFiltrado = computed(() => {
 });
 
 const searchQuery = ref('')
-const empleadosFiltrados = computed(() => {
+const currentPage = ref(1)
+const itemsPerPage = ref(10)
+
+const empleadosFiltradosTotales = computed(() => {
   // Filtrar solo empleados activos
   const empleadosActivos = listaEmpleados.value.filter(emp => emp.estado === 'Activo' || emp.estado === 1 || emp.estado === true);
 
@@ -829,6 +850,21 @@ const empleadosFiltrados = computed(() => {
     const code = emp.codigo_empleado?.toLowerCase() || '';
     return fullName.includes(lowerCaseQuery) || identity.includes(lowerCaseQuery) || code.includes(lowerCaseQuery);
   });
+})
+
+const totalPages = computed(() => Math.ceil(empleadosFiltradosTotales.value.length / itemsPerPage.value))
+
+const empleadosFiltrados = computed(() => {
+  const start = (currentPage.value - 1) * itemsPerPage.value
+  const end = start + itemsPerPage.value
+  return empleadosFiltradosTotales.value.slice(start, end)
+})
+
+const prevPage = () => { if (currentPage.value > 1) currentPage.value-- }
+const nextPage = () => { if (currentPage.value < totalPages.value) currentPage.value++ }
+
+watch(searchQuery, () => {
+  currentPage.value = 1
 })
 
 const formVacaciones = ref({
