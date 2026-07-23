@@ -333,11 +333,27 @@
         <div class="p-6">
           <form @submit.prevent="crearTicket" class="space-y-4">
             <div>
-              <div v-for="(idObj, index) in identidades" :key="index" class="mb-4">
+              <div v-for="(idObj, index) in identidades" :key="index" class="mb-4 relative">
                 <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">Número de Identidad {{ index + 1 }}</label>
-                <div class="flex items-center gap-2">
-                  <input v-model="idObj.value" @input="formatIdentidad(idObj)" type="text" placeholder="Ej: 0801-1990-12345" required
-                    class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:border-violet-400 focus:ring-2 focus:ring-violet-100 text-slate-700 font-medium transition-all text-sm">
+                <div class="flex items-center gap-2 relative">
+                  <div class="relative flex-1">
+                    <input v-model="idObj.value" @input="e => onIdentidadInput(e, index)" @focus="onIdentidadFocus(index)" @blur="onIdentidadBlur" type="text" placeholder="Buscar por identidad o nombre..." required
+                      class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:border-violet-400 focus:ring-2 focus:ring-violet-100 text-slate-700 font-medium transition-all text-sm">
+                    
+                    <!-- Dropdown de sugerencias -->
+                    <div v-if="activeDropdown === index && suggestions[index] && suggestions[index].length > 0" class="absolute z-50 w-full mt-1 bg-white border border-slate-200 rounded-xl shadow-xl max-h-48 overflow-y-auto">
+                      <div v-for="emp in suggestions[index]" :key="emp.identidad" @mousedown.prevent="selectEmpleado(emp, index)" class="p-3 hover:bg-slate-50 cursor-pointer border-b border-slate-100 last:border-0 flex items-center gap-3">
+                        <div class="h-8 w-8 rounded-full bg-slate-100 overflow-hidden shrink-0 flex items-center justify-center font-bold text-xs text-slate-500">
+                          <img v-if="emp.foto" :src="`${$config.public.apiBase}${emp.foto}`" class="w-full h-full object-cover"/>
+                          <span v-else>{{ emp.nombre.charAt(0) }}</span>
+                        </div>
+                        <div>
+                          <p class="text-sm font-bold text-slate-800">{{ emp.nombre }} {{ emp.apellido }}</p>
+                          <p class="text-xs text-slate-500 font-medium">{{ emp.identidad }}</p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
                   <button v-if="identidades.length > 1" type="button" @click="removeIdentidad(index)" class="p-3 text-red-500 hover:bg-red-50 rounded-xl transition-colors" title="Eliminar">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
                   </button>
@@ -528,12 +544,51 @@ const removeIdentidad = (index) => {
   identidades.value.splice(index, 1)
 }
 
-const formatIdentidad = (idObj) => {
-  let val = idObj.value.replace(/\D/g, '')
-  if (val.length > 4) val = val.substring(0, 4) + '-' + val.substring(4)
-  if (val.length > 9) val = val.substring(0, 9) + '-' + val.substring(9)
-  if (val.length > 15) val = val.substring(0, 15)
-  idObj.value = val
+const empleadosDB = ref([])
+const activeDropdown = ref(null)
+const suggestions = ref({})
+
+const onIdentidadFocus = (index) => {
+  activeDropdown.value = index
+}
+
+const onIdentidadBlur = () => {
+  activeDropdown.value = null
+}
+
+const selectEmpleado = (emp, index) => {
+  identidades.value[index].value = emp.identidad
+  suggestions.value[index] = []
+  activeDropdown.value = null
+}
+
+const onIdentidadInput = (event, index) => {
+  let val = event.target.value
+  
+  if (/^[\d-]*$/.test(val)) {
+    let cleanVal = val.replace(/\D/g, '')
+    if (cleanVal.length > 13) cleanVal = cleanVal.slice(0, 13)
+    
+    if (cleanVal.length > 8) {
+      val = cleanVal.slice(0, 4) + '-' + cleanVal.slice(4, 8) + '-' + cleanVal.slice(8)
+    } else if (cleanVal.length > 4) {
+      val = cleanVal.slice(0, 4) + '-' + cleanVal.slice(4)
+    } else {
+      val = cleanVal
+    }
+  }
+  identidades.value[index].value = val
+  
+  const searchTerm = val.toLowerCase().trim()
+  if (searchTerm.length >= 2) {
+    suggestions.value[index] = empleadosDB.value.filter(emp => 
+      (emp.identidad || '').toLowerCase().includes(searchTerm) ||
+      (emp.nombre || '').toLowerCase().includes(searchTerm) ||
+      (emp.apellido || '').toLowerCase().includes(searchTerm)
+    ).slice(0, 5)
+  } else {
+    suggestions.value[index] = []
+  }
 }
 
 const nuevoTicket = ref({
@@ -822,6 +877,13 @@ const formatearFecha = (fechaStr) => {
 }
 
 onMounted(async () => {
+  try {
+    const resEmp = await axios.get('/api/empleados/lista')
+    empleadosDB.value = resEmp.data || []
+  } catch (err) {
+    console.error('Error fetching empleados:', err)
+  }
+
   if (route.query.id) {
     selectedTicketId.value = parseInt(route.query.id, 10)
   }

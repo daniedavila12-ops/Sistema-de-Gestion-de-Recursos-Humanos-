@@ -450,10 +450,28 @@
           <form @submit.prevent="crearReporte" class="space-y-5">
             <div>
               <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5 pl-0.5">Número de Identidad (Reportado)</label>
-              <div v-for="(id, index) in nuevoReporte.identidades" :key="index" class="flex gap-2 mb-2">
-                <input :value="nuevoReporte.identidades[index]" type="text" placeholder="Ej: 0801-1990-12345" required
-                  @input="e => formatIdentidad(e, index)" maxlength="15"
-                  class="flex-1 p-3.5 bg-slate-50/80 border border-slate-200 rounded-xl outline-none focus:border-red-400 focus:ring-3 focus:ring-red-500/10 text-slate-800 font-semibold text-sm transition-all placeholder:text-slate-400">
+              <div v-for="(id, index) in nuevoReporte.identidades" :key="index" class="flex gap-2 mb-2 relative">
+                <div class="relative flex-1">
+                  <input :value="nuevoReporte.identidades[index]" type="text" placeholder="Buscar por identidad o nombre..." required
+                    @input="e => onIdentidadInput(e, index)"
+                    @focus="onIdentidadFocus(index)"
+                    @blur="onIdentidadBlur"
+                    class="w-full p-3.5 bg-slate-50/80 border border-slate-200 rounded-xl outline-none focus:border-red-400 focus:ring-3 focus:ring-red-500/10 text-slate-800 font-semibold text-sm transition-all placeholder:text-slate-400">
+                  
+                  <!-- Dropdown de sugerencias -->
+                  <div v-if="activeDropdown === index && suggestions[index] && suggestions[index].length > 0" class="absolute z-50 w-full mt-1 bg-white border border-slate-200 rounded-xl shadow-xl max-h-48 overflow-y-auto">
+                    <div v-for="emp in suggestions[index]" :key="emp.identidad" @mousedown.prevent="selectEmpleado(emp, index)" class="p-3 hover:bg-slate-50 cursor-pointer border-b border-slate-100 last:border-0 flex items-center gap-3">
+                      <div class="h-8 w-8 rounded-full bg-slate-100 overflow-hidden shrink-0 flex items-center justify-center font-bold text-xs text-slate-500">
+                        <img v-if="emp.foto" :src="`${$config.public.apiBase}${emp.foto}`" class="w-full h-full object-cover"/>
+                        <span v-else>{{ emp.nombre.charAt(0) }}</span>
+                      </div>
+                      <div>
+                        <p class="text-sm font-bold text-slate-800">{{ emp.nombre }} {{ emp.apellido }}</p>
+                        <p class="text-xs text-slate-500 font-medium">{{ emp.identidad }}</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
                 <button v-if="nuevoReporte.identidades.length > 1" type="button" @click="nuevoReporte.identidades.splice(index, 1)" class="px-3 bg-slate-100 text-red-500 rounded-xl hover:bg-red-50 transition-colors font-bold flex items-center justify-center">
                   &times;
                 </button>
@@ -670,17 +688,53 @@ const nuevoReporte = ref({
 const archivoReporte = ref(null)
 const fileInputRef = ref(null)
 
-const formatIdentidad = (event, index) => {
-  let val = event.target.value.replace(/\D/g, '')
-  if (val.length > 13) val = val.slice(0, 13)
+const empleadosDB = ref([])
+const activeDropdown = ref(null)
+const suggestions = ref({})
+
+const onIdentidadFocus = (index) => {
+  activeDropdown.value = index
+}
+
+const onIdentidadBlur = () => {
+  activeDropdown.value = null
+}
+
+const selectEmpleado = (emp, index) => {
+  nuevoReporte.value.identidades[index] = emp.identidad
+  suggestions.value[index] = []
+  activeDropdown.value = null
+}
+
+const onIdentidadInput = (event, index) => {
+  let val = event.target.value
   
-  if (val.length > 8) {
-    val = val.slice(0, 4) + '-' + val.slice(4, 8) + '-' + val.slice(8)
-  } else if (val.length > 4) {
-    val = val.slice(0, 4) + '-' + val.slice(4)
+  // Si solo ingresa números y guiones, aplicamos el formato de identidad
+  if (/^[\d-]*$/.test(val)) {
+    let cleanVal = val.replace(/\D/g, '')
+    if (cleanVal.length > 13) cleanVal = cleanVal.slice(0, 13)
+    
+    if (cleanVal.length > 8) {
+      val = cleanVal.slice(0, 4) + '-' + cleanVal.slice(4, 8) + '-' + cleanVal.slice(8)
+    } else if (cleanVal.length > 4) {
+      val = cleanVal.slice(0, 4) + '-' + cleanVal.slice(4)
+    } else {
+      val = cleanVal
+    }
   }
-  
   nuevoReporte.value.identidades[index] = val
+  
+  // Buscar sugerencias
+  const searchTerm = val.toLowerCase().trim()
+  if (searchTerm.length >= 2) {
+    suggestions.value[index] = empleadosDB.value.filter(emp => 
+      (emp.identidad || '').toLowerCase().includes(searchTerm) ||
+      (emp.nombre || '').toLowerCase().includes(searchTerm) ||
+      (emp.apellido || '').toLowerCase().includes(searchTerm)
+    ).slice(0, 5)
+  } else {
+    suggestions.value[index] = []
+  }
 }
 
 const filtroActivo = ref('todas')
@@ -1074,6 +1128,13 @@ const generarPDF = async () => {
 }
 
 onMounted(async () => {
+  try {
+    const resEmp = await axios.get('/api/empleados/lista')
+    empleadosDB.value = resEmp.data || []
+  } catch (err) {
+    console.error('Error fetching empleados:', err)
+  }
+
   if (route.query.id) {
     selectedTicketId.value = parseInt(route.query.id, 10)
   }
