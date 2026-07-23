@@ -858,6 +858,6 @@ watch(() => route.query.id, (newId) => {
 
 const logout = () => { 
   localStorage.clear()
-  navigateTo('/dashboard') 
+  navigateTo('/login') 
 }
 </script>

@@ -823,7 +823,7 @@ const guardarPermisos = async () => {
 // GENERAL
 const logout = () => {
   localStorage.clear()
-  navigateTo('/dashboard')
+  navigateTo('/login')
 }
 
 onMounted(async () => {

@@ -387,7 +387,7 @@ const eliminarDepartamento = async (dept) => {
 
 const logout = () => {
   localStorage.clear()
-  navigateTo('/dashboard')
+  navigateTo('/login')
 }
 
 onMounted(async () => {

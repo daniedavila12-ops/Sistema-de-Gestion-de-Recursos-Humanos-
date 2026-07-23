@@ -480,7 +480,7 @@ const isRestrictedRole = computed(() => {
   return rolID.value == 6 || rolID.value == 8;
 })
 
-const logout = () => { localStorage.clear(); navigateTo('/dashboard') }
+const logout = () => { localStorage.clear(); navigateTo('/login') }
 
 const obtenerNombreDepartamento = (id) => {
   if (!id) return 'N/A'

@@ -388,7 +388,7 @@ const generarPDFAuditoria = async () => {
 
 const logout = () => {
   localStorage.clear()
-  navigateTo('/dashboard')
+  navigateTo('/login')
 }
 
 onMounted(async () => {
@@ -398,7 +398,7 @@ onMounted(async () => {
 
   // Solo Super Admin puede ver esto, pero por si acaso validamos
   if (rolID.value != 1) {
-    navigateTo('/dashboard')
+    navigateTo('/')
     return
   }
 

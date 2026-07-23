@@ -92,6 +92,6 @@ const abrirModalEmpleado = () => {
 
 const logout = () => {
   localStorage.clear();
-  navigateTo('/dashboard')
+  navigateTo('/login')
 }
 </script>
